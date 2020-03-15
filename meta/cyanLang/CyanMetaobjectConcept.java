@@ -45,8 +45,8 @@ import meta.Token;
 import meta.Tuple2;
 import meta.Tuple5;
 import meta.VariableKind;
-import meta.WrCompilationUnit;
 import meta.WrAnnotationAt;
+import meta.WrCompilationUnit;
 import meta.WrCyanPackage;
 import meta.WrEnv;
 import meta.WrExpr;
@@ -1897,6 +1897,8 @@ public class CyanMetaobjectConcept extends CyanMetaobjectAtAnnot
 					/*
 					 * supertypeName is not a generic parameter
 					 */
+					WrProgramUnit whoIsAsking = compiler.getCompilationUnit().getPublicPrototype();
+
 					final WrType pu = env.searchPackagePrototype(supertypeName, this.metaobjectAnnotation.getFirstSymbol());
 					if ( pu == null ) {
 						compiler.error(this.metaobjectAnnotation.getFirstSymbol(), "'" + supertypeName + "', used in the concept of this "
@@ -1989,6 +1991,8 @@ public class CyanMetaobjectConcept extends CyanMetaobjectAtAnnot
 					info.overrideMethodSignatureList.addAll(interInfo.allMethodSignatures);
 				}
 				else {
+					WrProgramUnit whoIsAsking = compiler.getCompilationUnit().getPublicPrototype();
+
 					final WrType pu = env.searchPackagePrototype(interfaceName, this.metaobjectAnnotation.getFirstSymbol());
 					if ( pu == null ) {
 						compiler.error(this.metaobjectAnnotation.getFirstSymbol(), "'" + interfaceName + "', used in the concept of this "

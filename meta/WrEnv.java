@@ -130,8 +130,23 @@ public class WrEnv {
 		hidden.removeAllLocalVariableDec();
 	}
 
+	public void addDependentToCurrentProgramUnit( WrProgramUnit dependentProgramUnit ) {
+
+		if ( this.getCurrentProgramUnit() != null ) {
+			Type cpu = getCurrentProgramUnit().hidden;
+			if ( cpu instanceof ProgramUnit ) {
+				ProgramUnit pu = (ProgramUnit ) cpu;
+				pu.addDependentProgramUnit(dependentProgramUnit.getHidden());
+			}
+		}
+	}
+
+
 	public WrMethodSignature searchMethodSignature(WrMethodSignature ms,
 			List<WrMethodSignature> msList2) {
+
+		// objDec.checkDependenteProgramUnit(this);
+
 		if ( msList2 != null ) {
 			final List<MethodSignature> methodSignatureList = new ArrayList<>();
 			for ( final WrMethodSignature ims : msList2 ) {
@@ -165,7 +180,10 @@ public class WrEnv {
 	}
 
 
-	public WrType searchPackagePrototype(String packageName, String prototypeName) {
+	public WrType searchPackagePrototype( WrProgramUnit whoIsAsking,
+			String packageName, String prototypeName) {
+		whoIsAsking.addThisAsDependenteToCurrentProgramUnit(this);
+
 		Type t = hidden.searchPackagePrototype(packageName, prototypeName);
 		return t == null ? null : t.getI();
 	}
@@ -177,10 +195,15 @@ public class WrEnv {
 		return t == null ? null : t.getI();
 	}
 
-	public List<WrMethodSignature> searchMethodProtectedPublicSuperProtectedPublic(WrProgramUnit objDec, String methodName) {
+	public List<WrMethodSignature> searchMethodProtectedPublicSuperProtectedPublic(
+			WrProgramUnit objDec, String methodName) {
+
+		objDec.addThisAsDependenteToCurrentProgramUnit(this);
+
 		if ( objDec.isInterface() ) {
 			return null;
 		}
+
 
 		final List<MethodSignature> msList =
 				objDec.hidden.searchMethodProtectedPublicPackageSuperProtectedPublicPackage(methodName, hidden);
@@ -199,6 +222,8 @@ public class WrEnv {
 
 	public List<WrMethodSignature> searchMethodPublicSuperPublic(WrProgramUnit objDec, String methodName) {
 		// List<MethodSignature> msList = pu.searchMethodPublicPackageSuperPublicPackage(methodName, hidden);
+
+		objDec.addThisAsDependenteToCurrentProgramUnit(this);
 
 		final List<MethodSignature> msList =
 				objDec.hidden.searchMethodPublicPackageSuperPublicPackage(methodName, hidden);

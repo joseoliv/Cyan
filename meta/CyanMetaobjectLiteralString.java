@@ -46,7 +46,6 @@ public class CyanMetaobjectLiteralString extends CyanMetaobjectLiteralObject {
 		return name + ")";
 	}
 
-
 	/**
 	 * the prefixes that may appear before the first " of the string
 	 */

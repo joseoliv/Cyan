@@ -2,7 +2,6 @@ package meta.util;
 
 import meta.CyanMetaobjectNumber;
 import meta.ICompiler_dsa;
-import meta.WrAnnotationAt;
 
 public class CyanMetaobjectKg  extends CyanMetaobjectNumber {
 
@@ -38,7 +37,7 @@ public class CyanMetaobjectKg  extends CyanMetaobjectNumber {
 	public StringBuffer dsa_codeToAdd(ICompiler_dsa compiler_dsa) {
 
 
-		String code = new String( ((WrAnnotationAt) metaobjectAnnotation).getTextAttachedDSL() );
+		String code = this.getUsefulString();
 		String s = "";
 		int size = code.length();
 		for (int i = 0; i < size; ++i) {

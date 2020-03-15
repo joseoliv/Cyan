@@ -2,7 +2,6 @@ package meta.cyanLang;
 
 import meta.CyanMetaobjectNumber;
 import meta.ICompiler_dsa;
-import meta.WrAnnotationAt;
 
 public class CyanMetaobjectNumberHex extends CyanMetaobjectNumber {
 
@@ -30,7 +29,7 @@ public class CyanMetaobjectNumberHex extends CyanMetaobjectNumber {
 
 	@Override
 	public StringBuffer dsa_codeToAdd(ICompiler_dsa compiler_dsa) {
-		dpa_parse(new String(((WrAnnotationAt ) this.metaobjectAnnotation).getTextAttachedDSL()));
+		dpa_parse(this.getUsefulString());
 		// // return (StringBuffer ) getInfo();
 		return new StringBuffer("" + number);
 	}

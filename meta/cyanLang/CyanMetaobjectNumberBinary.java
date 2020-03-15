@@ -5,7 +5,6 @@ import meta.CyanMetaobjectNumber;
 import meta.ICodeg;
 import meta.ICompiler_ded;
 import meta.ICompiler_dsa;
-import meta.WrAnnotationAt;
 
 public class CyanMetaobjectNumberBinary extends CyanMetaobjectNumber implements ICodeg {
 
@@ -30,7 +29,7 @@ public class CyanMetaobjectNumberBinary extends CyanMetaobjectNumber implements 
 	@Override
 	public StringBuffer dsa_codeToAdd(ICompiler_dsa compiler_dsa) {
 		// // return (StringBuffer ) getInfo();
-		String code = new String(((WrAnnotationAt ) this.metaobjectAnnotation).getTextAttachedDSL());
+		String code = this.getUsefulString();
 		dpa_parse(code);
 		return new StringBuffer("" + number);
 	}

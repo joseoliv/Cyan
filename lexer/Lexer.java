@@ -772,9 +772,9 @@ public class Lexer implements Cloneable {
 								state = 9;
 							}
 							else {
-								String usefullString = "";
+								String usefulString = "";
 								for (int iii = positionStartingNumber; iii < k; ++iii) {
-									usefullString += in[iii];
+									usefulString += in[iii];
 								}
 
 								extension = new StringBuffer();
@@ -818,16 +818,17 @@ public class Lexer implements Cloneable {
 
 										// k = positionStartingNumber;
 										final String strnumStr = (strnum + ext).toString();
-										usefullString += ext;
+										usefulString += ext;
 										final AnnotationLiteralObject metaobjectAnnotation  =
 												new AnnotationLiteralObject(compilationUnit, programUnit, cyanMetaobjectNumber);
 										symbol = new SymbolLiteralObject(Token.LITERALOBJECT,
 												        metaobjectAnnotation, null,
 												        strnumStr,
-												        usefullString,
+												        usefulString,
 												        stringToCharArray(strnumStr),
 												        startLine,  lineNumber, getColumn(), positionStartingNumber, compilationUnit);
 										metaobjectAnnotation.setSymbolLiteralObject( symbol );
+										metaobjectAnnotation.setUsefulString(usefulString);
 										state = 100;
 
 									}
@@ -1407,6 +1408,8 @@ public class Lexer implements Cloneable {
 							    				textStr,
 							    				text,
 							    				startLine,  lineNumber, getColumn(), positionStartingToken, compilationUnit);
+										metaobjectAnnotation.setUsefulString(textStr);
+
 
 						    		}
 						    		metaobjectAnnotation.setSymbolLiteralObject( symbol );

@@ -3,9 +3,9 @@ package meta;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import ast.AnnotationAt;
 import ast.CompilationUnit;
 import ast.ContextParameter;
-import ast.AnnotationAt;
 import ast.Expr;
 import ast.FieldDec;
 import ast.GenericParameter;
@@ -54,7 +54,7 @@ public class WrProgramUnit extends WrType implements IDeclarationWritable {
     public WrCompilationUnit getCompilationUnit(WrEnv env) {
     	securityCheck(env);
 
-    	checkDependenteProgramUnit(env);
+    	addThisAsDependenteToCurrentProgramUnit(env);
     	CompilationUnit cunit = ((ProgramUnit ) hidden).getCompilationUnit();
     	return cunit == null ? null : cunit.getI();
     }
@@ -117,7 +117,7 @@ public class WrProgramUnit extends WrType implements IDeclarationWritable {
 	public List<WrContextParameter> getSuperContextParameterList(WrEnv env) {
 
     	securityCheck(env);
-    	checkDependenteProgramUnit(env);
+    	addThisAsDependenteToCurrentProgramUnit(env);
 
 
 		if ( thisMethod_wasNeverCalled2 ) {
@@ -237,7 +237,7 @@ public class WrProgramUnit extends WrType implements IDeclarationWritable {
     @Override
     public List<Tuple2<String, String>> getDocumentTextList(WrEnv env) {
 
-    	checkDependenteProgramUnit(env);
+    	addThisAsDependenteToCurrentProgramUnit(env);
         return ((ProgramUnit ) hidden).getDocumentTextList();
     }
 
@@ -249,7 +249,7 @@ public class WrProgramUnit extends WrType implements IDeclarationWritable {
     @Override
     public List<Tuple2<String, String>> getDocumentExampleList(WrEnv env) {
 
-    	checkDependenteProgramUnit(env);
+    	addThisAsDependenteToCurrentProgramUnit(env);
         return ((ProgramUnit ) hidden).getDocumentExampleList();
     }
 
@@ -261,7 +261,7 @@ public class WrProgramUnit extends WrType implements IDeclarationWritable {
     @Override
     public List<Tuple2<String, WrExprAnyLiteral>> getFeatureList(WrEnv env) {
 
-    	checkDependenteProgramUnit(env);
+    	addThisAsDependenteToCurrentProgramUnit(env);
     	return ((ProgramUnit ) hidden).getFeatureList();
     }
 
@@ -271,7 +271,7 @@ public class WrProgramUnit extends WrType implements IDeclarationWritable {
     @Override
     public List<WrExprAnyLiteral> searchFeature(String name, WrEnv env) {
 
-    	checkDependenteProgramUnit(env);
+    	addThisAsDependenteToCurrentProgramUnit(env);
     	return ((ProgramUnit ) hidden).searchFeature(name);
     }
 
@@ -290,7 +290,7 @@ public class WrProgramUnit extends WrType implements IDeclarationWritable {
 	@Override
 	public boolean isSupertypeOf(WrType other, WrEnv env) {
 
-    	checkDependenteProgramUnit(env);
+    	addThisAsDependenteToCurrentProgramUnit(env);
 		return ((ProgramUnit ) hidden).isSupertypeOf(other.hidden, env.hidden);
 	}
 
@@ -309,7 +309,7 @@ public class WrProgramUnit extends WrType implements IDeclarationWritable {
 	 */
 	public boolean getIsFinal(WrEnv env) {
 
-    	checkDependenteProgramUnit(env);
+    	addThisAsDependenteToCurrentProgramUnit(env);
 		return ((ProgramUnit ) hidden).getIsFinal();
 	}
 
@@ -319,7 +319,7 @@ public class WrProgramUnit extends WrType implements IDeclarationWritable {
 	 */
 	public boolean isGeneric(WrEnv env) {
 
-    	checkDependenteProgramUnit(env);
+    	addThisAsDependenteToCurrentProgramUnit(env);
 		return ((ProgramUnit ) hidden).isGeneric();
 	}
 
@@ -329,7 +329,7 @@ public class WrProgramUnit extends WrType implements IDeclarationWritable {
 	 */
 	public List<List<WrGenericParameter>> getGenericParameterListList(WrEnv env) {
 
-    	checkDependenteProgramUnit(env);
+    	addThisAsDependenteToCurrentProgramUnit(env);
 		if ( igpListList == null ) {
 			if ( ((ProgramUnit ) hidden).getGenericParameterListList() == null ) {
 				return null;
@@ -360,7 +360,7 @@ public class WrProgramUnit extends WrType implements IDeclarationWritable {
 	 */
 	public List<WrMethodDec> getMethodDecList(WrEnv env) {
 
-    	checkDependenteProgramUnit(env);
+    	addThisAsDependenteToCurrentProgramUnit(env);
 
 		if ( hidden instanceof InterfaceDec ) {
 			return null;
@@ -443,7 +443,7 @@ public class WrProgramUnit extends WrType implements IDeclarationWritable {
 	 */
 	public List<WrMethodDec> getInitDecList(WrEnv env) {
 
-    	checkDependenteProgramUnit(env);
+    	addThisAsDependenteToCurrentProgramUnit(env);
 
 		if ( hidden instanceof InterfaceDec ) {
 			return null;
@@ -491,7 +491,7 @@ public class WrProgramUnit extends WrType implements IDeclarationWritable {
 				}
 			}
 		}
-    	checkDependenteProgramUnit(env);
+    	addThisAsDependenteToCurrentProgramUnit(env);
 
 		return wrMethodList;
 	}
@@ -535,7 +535,7 @@ public class WrProgramUnit extends WrType implements IDeclarationWritable {
 					}
 				}
 				if ( annotList.size() > 0 ) {
-					checkDependenteProgramUnit(env);
+					env.addDependentToCurrentProgramUnit(this);
 				}
 		}
 		return wrAnnotList;
@@ -622,7 +622,7 @@ public class WrProgramUnit extends WrType implements IDeclarationWritable {
 	 */
 	public WrProgramUnit getSuperobject(WrEnv env) {
 
-    	checkDependenteProgramUnit(env);
+    	addThisAsDependenteToCurrentProgramUnit(env);
 		if ( hidden instanceof ObjectDec ) {
 			ProgramUnit pu = ((ObjectDec ) hidden).getSuperobject();
 			return pu == null ? null : pu.getI();
@@ -635,7 +635,7 @@ public class WrProgramUnit extends WrType implements IDeclarationWritable {
 	   @return
 	 */
 	public List<WrProgramUnit> getInterfaceList(WrEnv env) {
-    	checkDependenteProgramUnit(env);
+    	addThisAsDependenteToCurrentProgramUnit(env);
 
 		if ( hidden instanceof ObjectDec ) {
 			if ( iExprInterfaceList == null ) {
@@ -678,7 +678,7 @@ public class WrProgramUnit extends WrType implements IDeclarationWritable {
 			}
 
 		}
-    	checkDependenteProgramUnit(env);
+    	addThisAsDependenteToCurrentProgramUnit(env);
 
 		if ( fromList == null ) {
 			return null;
@@ -700,7 +700,7 @@ public class WrProgramUnit extends WrType implements IDeclarationWritable {
 		List<MethodSignature> fromList =  ((ObjectDec ) hidden)
 				.searchMethodPublicSuperPublicProto(methodName, env.hidden);
 
-    	checkDependenteProgramUnit(env);
+    	addThisAsDependenteToCurrentProgramUnit(env);
 
 		if ( fromList == null ) {
 			return null;
@@ -733,7 +733,7 @@ public class WrProgramUnit extends WrType implements IDeclarationWritable {
         		throw new MetaSecurityException();
     		}
     	}
-    	checkDependenteProgramUnit(env);
+    	addThisAsDependenteToCurrentProgramUnit(env);
 
 		//return ((ProgramUnit ) hidden).searchMethodProtectedPublicPackageSuperProtectedPublicPackage(methodName, ienv.hidden);
 
@@ -758,7 +758,7 @@ public class WrProgramUnit extends WrType implements IDeclarationWritable {
 	   @return
 	 */
 	public boolean getIsAbstract(WrEnv env) {
-    	checkDependenteProgramUnit(env);
+    	addThisAsDependenteToCurrentProgramUnit(env);
 
 		if ( hidden instanceof ObjectDec ) {
 			return ((ObjectDec ) hidden).getIsAbstract();
@@ -787,15 +787,22 @@ public class WrProgramUnit extends WrType implements IDeclarationWritable {
 				allSuperPrototypes = Collections.unmodifiableList(superList);
 			}
 		}
-		checkDependenteProgramUnit(env);
+		for ( WrProgramUnit dependentProgramUnit : allSuperPrototypes ) {
+			this.addDependentProgramUnit(dependentProgramUnit);
+		}
 		return allSuperPrototypes;
 	}
+
+	public void addDependentProgramUnit( WrProgramUnit dependentProgramUnit ) {
+		( (ProgramUnit ) this.hidden).addDependentProgramUnit(dependentProgramUnit.getHidden());
+	}
+
 
 
 	/**
 	   @param env
 	 */
-	private void checkDependenteProgramUnit(WrEnv env) {
+	public void addThisAsDependenteToCurrentProgramUnit(WrEnv env) {
 		if ( env.getCurrentProgramUnit() != null ) {
 			Type cpu = env.getCurrentProgramUnit().hidden;
 			if ( cpu instanceof ProgramUnit ) {
@@ -824,7 +831,7 @@ public class WrProgramUnit extends WrType implements IDeclarationWritable {
 	 */
 	public List<WrMethodSignature> getMethodSignatureList(WrEnv env) {
 
-    	checkDependenteProgramUnit(env);
+    	addThisAsDependenteToCurrentProgramUnit(env);
 
 		if ( thisMethod_wasNeverCalled ) {
 			thisMethod_wasNeverCalled = false;
@@ -865,7 +872,7 @@ public class WrProgramUnit extends WrType implements IDeclarationWritable {
 			String methodName, WrEnv env) {
 
     	securityCheck(env);
-    	checkDependenteProgramUnit(env);
+    	addThisAsDependenteToCurrentProgramUnit(env);
 
 		if ( hidden instanceof ObjectDec ) {
 			List<MethodSignature> fromList =  ((ObjectDec ) hidden).searchMethodPrivateProtectedPublic(methodName) ;
@@ -897,7 +904,7 @@ public class WrProgramUnit extends WrType implements IDeclarationWritable {
 			String methodNameGet, WrEnv env) {
 
     	securityCheck(env);
-    	checkDependenteProgramUnit(env);
+    	addThisAsDependenteToCurrentProgramUnit(env);
 
 		if ( hidden instanceof ObjectDec ) {
 //			return CastList.fromTo( hidden

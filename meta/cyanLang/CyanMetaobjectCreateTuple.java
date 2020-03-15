@@ -14,6 +14,7 @@ import meta.Token;
 import meta.Tuple2;
 import meta.WrAnnotation;
 import meta.WrEnv;
+import meta.WrProgramUnit;
 import meta.WrSymbol;
 import meta.WrType;
 import meta.WrTypeJavaClass;
@@ -317,6 +318,8 @@ public class CyanMetaobjectCreateTuple extends CyanMetaobjectAtAnnot
 		WrEnv env = compiler.getEnv();
 		WrSymbol first = this.metaobjectAnnotation.getFirstSymbol();
 		for ( String aType : typeList ) {
+			WrProgramUnit pu = compiler.getCompilationUnit().getPublicPrototype();
+
 			WrType paramType = env.searchPackagePrototype(aType, first);
 			if ( paramType instanceof WrTypeJavaClass || paramType instanceof meta.WrTypeJavaRefArray ) {
 				hasJavaTypeParam = true;

@@ -64,4 +64,9 @@ public class CyanMetaobjectLiteralObject extends CyanMetaobject
 		return null;
 	}
 
+	public String getUsefulString() {
+		return ((meta.WrAnnotationLiteralObject ) this.metaobjectAnnotation).getUsefulString();
+	
+	}
+
 }

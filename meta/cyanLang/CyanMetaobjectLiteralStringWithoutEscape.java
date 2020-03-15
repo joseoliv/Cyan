@@ -2,7 +2,6 @@ package meta.cyanLang;
 
 import meta.CyanMetaobjectLiteralString;
 import meta.ICompiler_dsa;
-import meta.WrAnnotationAt;
 import meta.lexer.MetaLexer;
 
 /**
@@ -27,7 +26,8 @@ public class CyanMetaobjectLiteralStringWithoutEscape extends CyanMetaobjectLite
 		@Override
 		public StringBuffer dsa_codeToAdd(ICompiler_dsa compiler_dsa) {
 			// // return (StringBuffer ) getInfo();
-			String code = new String(((WrAnnotationAt ) this.metaobjectAnnotation).getTextAttachedDSL());
+
+			String code = getUsefulString();
 			// this.codeToGenerate = new StringBuffer("\"" + MetaLexer.escapeJavaString(code) + "\"");
 			return new StringBuffer("\"" + MetaLexer.escapeJavaString(code) + "\"");
 		}

@@ -55,6 +55,7 @@ public class CyanMetaobjectCreateArrayMethods  extends CyanMetaobjectAtAnnot
 			paramTypeName = "Object";
 		}
 		else {
+			WrProgramUnit pu = compiler_afti.getCompilationUnit().getPublicPrototype();
 			aType = env.searchPackagePrototype(paramTypeName, env.getCurrentProgramUnit().getFirstSymbol(env));
 		}
 

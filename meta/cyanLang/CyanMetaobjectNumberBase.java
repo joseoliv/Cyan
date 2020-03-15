@@ -2,7 +2,6 @@ package meta.cyanLang;
 
 import meta.CyanMetaobjectNumber;
 import meta.ICompiler_dsa;
-import meta.WrAnnotationAt;
 
 public class CyanMetaobjectNumberBase extends CyanMetaobjectNumber {
 
@@ -64,8 +63,9 @@ public class CyanMetaobjectNumberBase extends CyanMetaobjectNumber {
 	@Override
 	public StringBuffer dsa_codeToAdd(ICompiler_dsa compiler_dsa) {
 		// return (StringBuffer ) getInfo();
-		String code = new String(((WrAnnotationAt ) this.metaobjectAnnotation).getTextAttachedDSL());
+		//String code = new String(((WrAnnotationAt ) this.metaobjectAnnotation).getTextAttachedDSL());
 
+		dpa_parse(this.getUsefulString());
 		return new StringBuffer("" + number);
 	}
 

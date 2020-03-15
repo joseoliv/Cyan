@@ -2,7 +2,6 @@ package meta.cyanLang;
 
 import meta.CyanMetaobjectLiteralString;
 import meta.ICompiler_dsa;
-import meta.WrAnnotationAt;
 
 /**
  * literal string that is a regular expression.
@@ -33,8 +32,7 @@ public class CyanMetaobjectLiteralStringRegExpr extends CyanMetaobjectLiteralStr
 	@Override
 	public StringBuffer dsa_codeToAdd(ICompiler_dsa compiler_dsa) {
 
-		String code = new String(((WrAnnotationAt ) this.metaobjectAnnotation).getTextAttachedDSL());
-		dpa_parse(code);
+		dpa_parse(this.getUsefulString());
 
 		return this.codeToGenerate;
 	}
