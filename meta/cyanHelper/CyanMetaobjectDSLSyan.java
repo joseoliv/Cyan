@@ -12,7 +12,7 @@ public class CyanMetaobjectDSLSyan extends CyanMetaobjectFromDSL_toPrototype {
 		super("syan");
 	}
 	@Override
-	public List<Tuple3<String, String, char[]>> dpa_NewPrototype(ICompiler_dsl compiler_dsl) {
+	public List<Tuple3<String, String, char[]>> parsing_NewPrototype(ICompiler_dsl compiler_dsl) {
 		StringBuffer sb = new StringBuffer();
 		sb.append("package " + this.getPackageNameDSL() + "\n\n");
 		sb.append("object " + this.getPrototypeName() + "\n\n");

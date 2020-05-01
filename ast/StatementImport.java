@@ -11,7 +11,8 @@ import saci.Env;
  */
 public class StatementImport extends Statement {
 
-	public StatementImport(ExprIdentStar importId) {
+	public StatementImport(ExprIdentStar importId, MethodDec method) {
+		super(method);
 		this.importId = importId;
 	}
 
@@ -47,6 +48,10 @@ public class StatementImport extends Statement {
 		}
 		return this.iStatementImport;
 	}
+
+	@Override
+	public boolean demandSemicolon() { return false; }
+
 
 	WrStatementImport iStatementImport = null;
 	ExprIdentStar importId;

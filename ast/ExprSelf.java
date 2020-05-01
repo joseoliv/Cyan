@@ -19,9 +19,10 @@ public class ExprSelf extends Expr {
 	/**
 	 *
 	 */
-	public ExprSelf(Symbol selfSymbol, ProgramUnit currentProgramUnit) {
+	public ExprSelf(Symbol selfSymbol, Prototype currentPrototype, MethodDec method) {
+		super(method);
 		this.selfSymbol = selfSymbol;
-		type = currentProgramUnit;
+		type = currentPrototype;
 	}
 
 	@Override
@@ -102,15 +103,15 @@ public class ExprSelf extends Expr {
 	@Override
 	public void calcInternalTypes(Env env) {
 
-		ProgramUnit currentProgramUnit;
-		type = currentProgramUnit = env.getCurrentProgramUnit();
+		Prototype currentPrototype;
+		type = currentPrototype = env.getCurrentPrototype();
 
 
 		String currentMethodName = env.getCurrentMethod().getNameWithoutParamNumber();
 		env.getCurrentMethod().setSelfLeak(true);
 		if ( currentMethodName.equals("init") || currentMethodName.equals("init:") ) {
 
-			if ( currentProgramUnit.getIsFinal() ) {
+			if ( currentPrototype.getIsFinal() ) {
 				/** in a final prototype and
 				 * inside an init or init: method, it is illegal to access 'self' if some field has not been initialized
 				 */

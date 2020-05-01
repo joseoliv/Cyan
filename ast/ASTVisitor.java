@@ -13,7 +13,7 @@ public abstract class ASTVisitor {
 	public void visit(CyanPackage node) { }
 	public void visit(JVMPackage node) { }
 	public void visit(CompilationUnit node) { }
-	public void visit(ProgramUnit node) {
+	public void visit(Prototype node) {
 		if ( node instanceof InterfaceDec ) {
 			this.visit((InterfaceDec ) node);
 		}
@@ -51,7 +51,7 @@ public abstract class ASTVisitor {
 	public void preVisit(JVMPackage node) { }
 	public void preVisit(CompilationUnit node) { }
 	public void preVisit(CompilationUnitSuper compilationUnitSuper) { }
-	public void preVisit(ProgramUnit node) {
+	public void preVisit(Prototype node) {
 		if ( node instanceof InterfaceDec ) {
 			this.preVisit((InterfaceDec ) node);
 		}
@@ -348,8 +348,8 @@ public abstract class ASTVisitor {
 		else if ( node instanceof StatementBreak ) {
 			this.visit( (StatementBreak ) node );
 		}
-		else if ( node instanceof StatementMetaobjectAnnotation ) {
-			this.visit( (StatementMetaobjectAnnotation ) node );
+		else if ( node instanceof StatementAnnotation ) {
+			this.visit( (StatementAnnotation ) node );
 		}
 		else if ( node instanceof StatementFor ) {
 			this.visit( (StatementFor ) node );
@@ -400,7 +400,7 @@ public abstract class ASTVisitor {
 	public void visit(StatementList node) { }
 	public void visit(StatementAssignmentList node) { }
 	public void visit(StatementBreak node) { }
-	public void visit(StatementMetaobjectAnnotation node) { }
+	public void visit(StatementAnnotation node) { }
 
 	public void visit(StatementFor node) { }
 	public void visit(StatementIf node) { }

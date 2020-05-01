@@ -3,12 +3,12 @@ package meta.cyanLang;
 import meta.AnnotationArgumentsKind;
 import meta.CyanMetaobject;
 import meta.CyanMetaobjectAtAnnot;
-import meta.IAction_dsa;
-import meta.ICompiler_dsa;
+import meta.IAction_semAn;
+import meta.ICompiler_semAn;
 import meta.MetaHelper;
 
 public class CyanMetaobjectGetPackageValueFromKey extends CyanMetaobjectAtAnnot
-				implements IAction_dsa {
+				implements IAction_semAn {
 
 	public CyanMetaobjectGetPackageValueFromKey() {
 		super("getPackageValueFromKey", AnnotationArgumentsKind.OneParameter);
@@ -16,7 +16,7 @@ public class CyanMetaobjectGetPackageValueFromKey extends CyanMetaobjectAtAnnot
 
 	@Override
 	public void check() {
-		Object p = this.getMetaobjectAnnotation().getJavaParameterList().get(0);
+		Object p = this.getAnnotation().getJavaParameterList().get(0);
 		if ( !(p instanceof String) ) {
 			this.addError("The parameter to this annotation should be an identifier or literal string");
 		}
@@ -26,9 +26,9 @@ public class CyanMetaobjectGetPackageValueFromKey extends CyanMetaobjectAtAnnot
 	}
 
 	@Override
-	public StringBuffer dsa_codeToAdd(ICompiler_dsa compiler_dsa) {
+	public StringBuffer semAn_codeToAdd(ICompiler_semAn compiler_semAn) {
 
-		Object value = compiler_dsa.getEnv().getCurrentCompilationUnit().getCyanPackage().getPackageValueFromKey(variableName);
+		Object value = compiler_semAn.getEnv().getCurrentCompilationUnit().getCyanPackage().getPackageValueFromKey(variableName);
 		if ( value == null ) {
 			return new StringBuffer( "\"\"" );
 		}

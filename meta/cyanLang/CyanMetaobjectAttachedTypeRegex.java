@@ -3,10 +3,11 @@ package meta.cyanLang;
 import java.util.List;
 import ast.AnnotationAt;
 import meta.AnnotationArgumentsKind;
+import meta.AttachedDeclarationKind;
 import meta.CyanMetaobject;
 import meta.CyanMetaobjectAtAnnot;
-import meta.IActionAttachedType_dsa;
-import meta.ICompiler_dsa;
+import meta.IActionAttachedType_semAn;
+import meta.ICompiler_semAn;
 import meta.LeftHandSideKind;
 import meta.MetaHelper;
 import meta.WrAnnotationAt;
@@ -16,16 +17,16 @@ import meta.WrType;
 import meta.WrTypeWithAnnotations;
 
 
-public class CyanMetaobjectAttachedTypeRegex extends CyanMetaobjectAtAnnot implements IActionAttachedType_dsa {
+public class CyanMetaobjectAttachedTypeRegex extends CyanMetaobjectAtAnnot implements IActionAttachedType_semAn {
 
 	public CyanMetaobjectAttachedTypeRegex() {
-		super("regex", AnnotationArgumentsKind.OneOrMoreParameters);
+		super("regex", AnnotationArgumentsKind.OneOrMoreParameters, new AttachedDeclarationKind[] { AttachedDeclarationKind.TYPE });
 	}
 
 
 	@Override
 	public void check() {
-		final List<Object> paramList = this.getMetaobjectAnnotation().getJavaParameterList();
+		final List<Object> paramList = this.getAnnotation().getJavaParameterList();
 		if ( paramList.size() != 1 ) {
 			this.addError("This metaobject should take two elements");
 		}
@@ -49,7 +50,7 @@ public class CyanMetaobjectAttachedTypeRegex extends CyanMetaobjectAtAnnot imple
 
 
 	@Override
-	public StringBuffer dsa_checkLeftTypeChangeRightExpr(ICompiler_dsa compiler_dsa, WrType leftType, Object leftASTNode,
+	public StringBuffer semAn_checkLeftTypeChangeRightExpr(ICompiler_semAn compiler_semAn, WrType leftType, Object leftASTNode,
 			LeftHandSideKind leftKind,
 			WrType rightType, WrExpr rightExpr) {
 
@@ -81,7 +82,7 @@ public class CyanMetaobjectAttachedTypeRegex extends CyanMetaobjectAtAnnot imple
 			final StringBuffer sb = new StringBuffer("");
 			final String tmpVar = MetaHelper.nextIdentifier();
 			final String msg = "In line " + rightExpr.getFirstSymbol().getLineNumber() + " of file '"
-					 + CyanMetaobject.escapeString(compiler_dsa.getEnv().getCurrentCompilationUnit().getFullFileNamePath()) +
+					 + CyanMetaobject.escapeString(compiler_semAn.getEnv().getCurrentCompilationUnit().getFullFileNamePath()) +
 					 "' String '" + rightExpr.asString() + "' did not match the regular expression '" +
 					 CyanMetaobject.escapeString(strPattern) + "'. Its value is '$" + tmpVar + "'";
 			sb.append("({ (: String " + tmpVar + " :) \r\n" +
@@ -99,7 +100,7 @@ public class CyanMetaobjectAttachedTypeRegex extends CyanMetaobjectAtAnnot imple
 
 	@Override
 	public void checkAnnotation() {
-		final WrAnnotationAt annot = this.getMetaobjectAnnotation();
+		final WrAnnotationAt annot = this.getAnnotation();
 		if ( ! "String".equals(annot.getTypeAttached().getName()) ) {
 			this.addError("The metaobject annotation '" + getName() + "' can only be attached to prototype String");
 		}

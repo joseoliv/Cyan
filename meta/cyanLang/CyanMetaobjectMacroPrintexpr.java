@@ -1,8 +1,8 @@
 package meta.cyanLang;
 
 import meta.CyanMetaobjectMacro;
-import meta.ICompilerMacro_dpa;
-import meta.ICompiler_dsa;
+import meta.ICompilerMacro_parsing;
+import meta.ICompiler_semAn;
 import meta.WrEnv;
 import meta.WrExpr;
 import meta.Token;
@@ -23,28 +23,28 @@ public class CyanMetaobjectMacroPrintexpr extends CyanMetaobjectMacro {
 	}
 
 	@Override
-	public void dpa_parseMacro(ICompilerMacro_dpa compiler_dpa) {
+	public void parsing_parseMacro(ICompilerMacro_parsing compiler_parsing) {
 
-		offsetStartLine = compiler_dpa.getSymbol().getColumnNumber();
+		offsetStartLine = compiler_parsing.getSymbol().getColumnNumber();
 
-		compiler_dpa.next();
-		expr = compiler_dpa.expr();
-		if ( compiler_dpa.getThereWasErrors() )
+		compiler_parsing.next();
+		expr = compiler_parsing.expr();
+		if ( compiler_parsing.getThereWasErrors() )
 			return ;
-		if ( compiler_dpa.getSymbol().token == Token.SEMICOLON ) {
-			compiler_dpa.next();
+		if ( compiler_parsing.getSymbol().token == Token.SEMICOLON ) {
+			compiler_parsing.next();
 		}
 
-		// // ((AnnotationMacroCall ) this.getMetaobjectAnnotation()).setInfo_dpa( new Tuple2<Expr, Integer>(expr, offsetStartLine) );
+		// // ((AnnotationMacroCall ) this.getAnnotation()).setInfo_parsing( new Tuple2<Expr, Integer>(expr, offsetStartLine) );
 		return ;
 	}
 
 	@Override
-	public StringBuffer dsa_codeToAdd(ICompiler_dsa compiler_dsa) {
+	public StringBuffer semAn_codeToAdd(ICompiler_semAn compiler_semAn) {
 
-		// // Tuple2<Expr, Integer> info = (Tuple2<Expr, Integer> ) ((AnnotationMacroCall ) this.getMetaobjectAnnotation()).getInfo_dpa();
+		// // Tuple2<Expr, Integer> info = (Tuple2<Expr, Integer> ) ((AnnotationMacroCall ) this.getAnnotation()).getInfo_parsing();
 		// // Expr expr = info.f1;
-		WrEnv env = compiler_dsa.getEnv();
+		WrEnv env = compiler_semAn.getEnv();
 		if ( env.isThereWasError() )
 			return null;
 

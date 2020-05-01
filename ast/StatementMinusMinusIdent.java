@@ -2,10 +2,10 @@ package ast;
 
 import java.lang.reflect.Field;
 import cyan.reflect._CyanMetaobject;
-import cyan.reflect._IActionFieldAccess__dsa;
+import cyan.reflect._IActionFieldAccess__semAn;
 import lexer.Symbol;
 import meta.CyanMetaobject;
-import meta.IActionFieldAccess_dsa;
+import meta.IActionFieldAccess_semAn;
 import meta.IdentStarKind;
 import meta.WrStatementMinusMinusIdent;
 import saci.CyanEnv;
@@ -19,7 +19,8 @@ import saci.Env;
 public class StatementMinusMinusIdent extends Statement {
 
 
-	public StatementMinusMinusIdent(Symbol minusMinus, ExprIdentStar varId) {
+	public StatementMinusMinusIdent(Symbol minusMinus, ExprIdentStar varId, MethodDec method) {
+		super(method);
 		this.minusMinus = minusMinus;
 		this.varId = varId;
 	}
@@ -160,17 +161,20 @@ public class StatementMinusMinusIdent extends Statement {
 
 		if ( varId.getIdentStarKind() == IdentStarKind.instance_variable_t ) {
 			StatementPlusPlusIdent.replaceOpOpFieldAccessIfAsked(env,
-					this, (IActionFieldAccess_dsa access, Statement stat) -> {
+					this, (IActionFieldAccess_semAn access, Statement stat) -> {
+
 
 						_CyanMetaobject other = ((CyanMetaobject ) access).getMetaobjectInCyan();
 						if ( other == null ) {
-							return access.dsa_replaceMinusMinusField(stat.getI(), env.getI());
+							return access.semAn_replaceMinusMinusField(stat.getI(), env.getI());
 						}
-						else if ( other instanceof _IActionFieldAccess__dsa ) {
-							return new StringBuffer( ((_IActionFieldAccess__dsa ) other)._dsa__replaceMinusMinusField_2(
+						else
+							if ( other instanceof _IActionFieldAccess__semAn ) {
+							return new StringBuffer( ((_IActionFieldAccess__semAn ) other)._semAn__replaceMinusMinusField_2(
 									stat.getI(), env.getI()).s);
 						}
-						else {
+						else
+						{
 							return null;
 						}
 					} );

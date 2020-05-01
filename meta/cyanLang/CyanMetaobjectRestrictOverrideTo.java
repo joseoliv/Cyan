@@ -6,8 +6,8 @@ import java.util.List;
 import meta.AnnotationArgumentsKind;
 import meta.AttachedDeclarationKind;
 import meta.CyanMetaobjectAtAnnot;
-import meta.ICheckOverride_afsa;
-import meta.ICompiler_dsa;
+import meta.ICheckOverride_afterSemAn;
+import meta.ICompiler_semAn;
 import meta.MetaHelper;
 import meta.WrMethodDec;
 
@@ -23,7 +23,7 @@ import meta.WrMethodDec;
    @author jose
  */
 public class CyanMetaobjectRestrictOverrideTo extends CyanMetaobjectAtAnnot
-		implements ICheckOverride_afsa {
+		implements ICheckOverride_afterSemAn {
 
 	public CyanMetaobjectRestrictOverrideTo() {
 		super("restrictOverrideTo", AnnotationArgumentsKind.OneOrMoreParameters,
@@ -36,7 +36,7 @@ public class CyanMetaobjectRestrictOverrideTo extends CyanMetaobjectAtAnnot
 	public void check() {
 		fullSubPrototypeNameList = new ArrayList<>();
 		int n = 1;
-		for (Object obj : this.getMetaobjectAnnotation().getJavaParameterList() ) {
+		for (Object obj : this.getAnnotation().getJavaParameterList() ) {
 			if ( !(obj instanceof String) ) {
 				this.addError("Parameter number '" + n + "' is not a String. It should be");
 				return ;
@@ -49,7 +49,7 @@ public class CyanMetaobjectRestrictOverrideTo extends CyanMetaobjectAtAnnot
 
 
 	@Override
-	public void afsa_checkOverride(ICompiler_dsa compiler_dsa,
+	public void afterSemAn_checkOverride(ICompiler_semAn compiler_semAn,
 			WrMethodDec method) {
 		String protoName = method.getDeclaringObject().getFullName();
 		if ( protoName.startsWith(MetaHelper.cyanLanguagePackageNameDot) ) {
@@ -71,7 +71,7 @@ public class CyanMetaobjectRestrictOverrideTo extends CyanMetaobjectAtAnnot
 		}
 		if ( !found ) {
 			WrMethodDec attachedMethod = (WrMethodDec ) this.getAttachedDeclaration();
-			this.addError(method.getFirstSymbol(compiler_dsa.getEnv()), "This method cannot override the "
+			this.addError(method.getFirstSymbol(compiler_semAn.getEnv()), "This method cannot override the "
 					+ "superprototype method. See annotation " +
 					this.getName() + " attached to method " +
 					attachedMethod.getName() + " of prototype '" + attachedMethod.getDeclaringObject().getFullName() + "'");

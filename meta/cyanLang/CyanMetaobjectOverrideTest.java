@@ -4,8 +4,8 @@ import java.util.Set;
 import meta.AnnotationArgumentsKind;
 import meta.AttachedDeclarationKind;
 import meta.CyanMetaobjectAtAnnot;
-import meta.ICheckOverride_afsa;
-import meta.ICompiler_dsa;
+import meta.ICheckOverride_afterSemAn;
+import meta.ICompiler_semAn;
 import meta.IDeclaration;
 import meta.MetaHelper;
 import meta.WrAnnotationAt;
@@ -17,7 +17,7 @@ import meta.WrMethodSignature;
 import saci.NameServer;
 
 public class CyanMetaobjectOverrideTest extends CyanMetaobjectAtAnnot
-    implements ICheckOverride_afsa {
+    implements ICheckOverride_afterSemAn {
 
 	public CyanMetaobjectOverrideTest() {
 		super("overrideTest", AnnotationArgumentsKind.ZeroParameters,
@@ -32,19 +32,19 @@ public class CyanMetaobjectOverrideTest extends CyanMetaobjectAtAnnot
 
 
 	@Override
-	public void afsa_checkOverride(ICompiler_dsa compiler_dsa,
+	public void afterSemAn_checkOverride(ICompiler_semAn compiler_semAn,
 			WrMethodDec method) {
 		/*
 		 * FileError meta.IAbstractCyanCompiler.writeTestFileTo(StringBuffer data, String fileName, String dirName, String packageName)
 		 */
-		final WrEnv env = compiler_dsa.getEnv();
+		final WrEnv env = compiler_semAn.getEnv();
 		final String subPrototypeName = method.getDeclaringObject().getName();
 		final String subPrototypeFullName = method.getDeclaringObject().getFullName();
 		final String subPrototypePackageName = method.getDeclaringObject().getPackageName();
 		final WrCyanPackage prototypePackage = method.getDeclaringObject().getCompilationUnit(env).getCyanPackage();
 		boolean generateTestCase = false;
 		Set<String> set = prototypePackage.getPackageKeyValueSet(overrideTest);
-		Set<String> prset = compiler_dsa.getProgramKeyValueSet(overrideTest);
+		Set<String> prset = compiler_semAn.getProgramKeyValueSet(overrideTest);
 		if ( set != null && (set.contains(subPrototypeFullName) ||
 				 set.contains(subPrototypeName)) ) {
 			generateTestCase = true;
@@ -56,7 +56,7 @@ public class CyanMetaobjectOverrideTest extends CyanMetaobjectAtAnnot
 		if ( generateTestCase ) {
 			final StringBuffer code = new StringBuffer();
 			final String packageName1 = overrideTest;
-			WrAnnotationAt annot = this.getMetaobjectAnnotation();
+			WrAnnotationAt annot = this.getAnnotation();
 			code.append("/*\n  This test was created by the metaobject associated to the annotation \r\n" +
 					"  " + this.getName()  +  "  in line " + annot.getFirstSymbol().getLineNumber() +
 					" of prototype " + ((WrCompilationUnit ) annot.getCompilationUnit()).getPublicPrototype().getFullName() + " of file \r\n  "
@@ -87,13 +87,13 @@ public class CyanMetaobjectOverrideTest extends CyanMetaobjectAtAnnot
 			    methodName;
 			code.append("object " + protoName + "\n");
 			// code.append("    func test { \n");
-			final WrAnnotationAt annotation = this.getMetaobjectAnnotation();
+			final WrAnnotationAt annotation = this.getAnnotation();
 			String text = new String(annotation.getTextAttachedDSL());
 			text = text.replace("(%SUBPROTOTYPE%)", subPrototypeName);
 			code.append(text);
 			// code.append("        \n");
 			code.append("\nend\n");
-			compiler_dsa.writeTestFileTo(code, protoName + ".cyan", "",
+			compiler_semAn.writeTestFileTo(code, protoName + ".cyan", "",
 					method.getDeclaringObject().getPackageName().replace('.', NameServer.fileSeparator) );
 		}
 

@@ -5,8 +5,8 @@ package ast;
 
 import lexer.Symbol;
 import meta.Function0;
-import meta.WrExprLiteralChar;
 import meta.MetaHelper;
+import meta.WrExprLiteralChar;
 import meta.lexer.MetaLexer;
 import saci.CyanEnv;
 import saci.Env;
@@ -30,8 +30,8 @@ public class ExprLiteralChar extends ExprLiteral {
 	/**
 	 * @param symbol
 	 */
-	public ExprLiteralChar(Symbol symbol) {
-		super(symbol);
+	public ExprLiteralChar(Symbol symbol, MethodDec currentMethod) {
+		super(symbol, currentMethod);
 	}
 
 

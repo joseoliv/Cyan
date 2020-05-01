@@ -14,17 +14,17 @@ import meta.MetaHelper;
 
   </li>
   <li>  <code>{@literal @}pushCompilationContext(id, pp)</code> means that
-  the code was generated in phase dpa (parsing) with the addition of methods <code>prototype</code>
+  the code was generated in phase parsing (parsing) with the addition of methods <code>prototype</code>
   and <code>prototypeNew</code>.
   </li>
   <li> <code>{@literal @}pushCompilationContext(id, new)</code> means that
-  the code was generated in phase dpa (parsing) with the addition of methods <code>new</code>, <code>new:</code>,
+  the code was generated in phase parsing (parsing) with the addition of methods <code>new</code>, <code>new:</code>,
   <code>defaultValue</code>, etc. These are the methods that the compiler adds to every prototype if necessary
   (there are <code>init</code> or <code>init:</code> methods and the source code does not define some methods such
   as <code>defaultValue</code>).
   </li>
   <li> <code>{@literal @}pushCompilationContext(id, inner)</code> means that
-  the code was generated in phase dpa (parsing) with the addition of inner prototypes. For each
+  the code was generated in phase parsing (parsing) with the addition of inner prototypes. For each
   method and anonymous function the compiler creates an inner prototype that is added to the code
   of the original prototype.
   </li>
@@ -52,7 +52,7 @@ import meta.MetaHelper;
 
 	@Override
 	public void check() {
-		List<Object> javaObjectList = this.getMetaobjectAnnotation().getJavaParameterList();
+		List<Object> javaObjectList = this.getAnnotation().getJavaParameterList();
 		if ( javaObjectList == null || (javaObjectList.size() != 5 && javaObjectList.size() != 6 && javaObjectList.size() != 2) ) {
 			addError("An annotation of a metaobject that implements ICompilationContextInfoPush should have exactly two, five, or six parameters");
 			return ;

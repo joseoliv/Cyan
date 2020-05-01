@@ -11,7 +11,7 @@ public class HighlightColor {
 		colorNameIntMap.put("booleanLiteral", HighlightColor.booleanLiteral);
 		colorNameIntMap.put("byteLiteral", HighlightColor.byteLiteral);
 		colorNameIntMap.put("charLiteral", HighlightColor.charLiteral);
-		colorNameIntMap.put("cyanMetaobjectAnnotation", HighlightColor.cyanMetaobjectAnnotation);
+		colorNameIntMap.put("cyanAnnotation", HighlightColor.cyanAnnotation);
 		colorNameIntMap.put("cyanSymbol", HighlightColor.cyanSymbol);
 		colorNameIntMap.put("doubleLiteral", HighlightColor.doubleLiteral);
 		colorNameIntMap.put("floatLiteral", HighlightColor.floatLiteral);
@@ -39,7 +39,7 @@ public class HighlightColor {
 	public static int booleanLiteral = 0x8E0B4A;
 	public static int byteLiteral = 0x1041CB;
 	public static int charLiteral = 0x1041CB;
-	public static int cyanMetaobjectAnnotation = 0xCB1F10;
+	public static int cyanAnnotation = 0xCB1F10;
 	public static int cyanSymbol = 0x1041CB;
 	public static int doubleLiteral = 0x1041CB;
 	public static int floatLiteral = 0x1041CB;

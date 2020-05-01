@@ -21,15 +21,15 @@ import meta.WrExprMessageSend;
  */
 abstract public class ExprMessageSend  extends Expr implements ASTNode {
 
-	public ExprMessageSend(Symbol nextSymbol) {
-		super();
+	public ExprMessageSend(Symbol nextSymbol, MethodDec method) {
+		super(method);
 		this.nextSymbol = nextSymbol;
 		wasReplacedByExpr = false;
 		javaReceiver = false;
 	}
 
-	public ExprMessageSend() {
-		super();
+	public ExprMessageSend(MethodDec method) {
+		super(method);
 		this.nextSymbol = null;
 		wasReplacedByExpr = false;
 		javaReceiver = false;
@@ -169,7 +169,7 @@ abstract public class ExprMessageSend  extends Expr implements ASTNode {
 
 
 	/**
-	 * true if this message send was replaced by an expression in the first dpa phase.
+	 * true if this message send was replaced by an expression in the first parsing phase.
 	 * This happens, for example, when the method to be called is a grammar method
 	 */
 	protected boolean wasReplacedByExpr;

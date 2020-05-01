@@ -12,7 +12,7 @@ import meta.IdentStarKind;
 import meta.LocalVarInfo;
 import meta.MetaHelper;
 import meta.WrExprIdentStar;
-import meta.WrProgramUnit;
+import meta.WrPrototype;
 import meta.WrType;
 import saci.CyanEnv;
 import saci.Env;
@@ -53,13 +53,14 @@ import saci.TupleTwo;
 public class ExprIdentStar extends Expr
           implements Identifier, LeftHandSideAssignment, IReceiverCompileTimeMessageSend  {
 
-	public ExprIdentStar(List<Symbol> identSymbolArray, Symbol nextSymbol ) {
+	public ExprIdentStar(List<Symbol> identSymbolArray, Symbol nextSymbol, MethodDec method) {
+		super(method);
 		this.identSymbolArray = identSymbolArray;
 		this.nextSymbol = nextSymbol;
 		precededByRemaninder = false;
 		this.identStarKind = null;
 		nameWithPackageAndType = null;
-		messageSendToMetaobjectAnnotation = null;
+		messageSendToAnnotation = null;
 		originalJavaName = null;
 	}
 
@@ -213,7 +214,8 @@ public class ExprIdentStar extends Expr
 
 	}
 
-	public ExprIdentStar(Symbol ... symbolArray) {
+	public ExprIdentStar(MethodDec method, Symbol ... symbolArray) {
+		super(method);
 		precededByRemaninder = false;
 		this.identSymbolArray = new ArrayList<Symbol>(symbolArray.length);
 		for ( Symbol s : symbolArray )
@@ -398,7 +400,7 @@ public class ExprIdentStar extends Expr
 		 * etc. If it is not, it may be a prototype
 		 */
 
-		ProgramUnit currentProgramUnit = env.getCurrentProgramUnit();
+		Prototype currentPrototype = env.getCurrentPrototype();
 		String name = getName();
 
 
@@ -418,18 +420,18 @@ public class ExprIdentStar extends Expr
 			  /*
 			   * just one Id, no dots
 			   */
-			if ( currentProgramUnit == null ) {
+			if ( currentPrototype == null ) {
 				/** the identifier is outside a prototype or interface declaration.
 				 */
-				ProgramUnit programUnit = env.searchVisibleProgramUnit(name, this.getFirstSymbol(), false);
+				Prototype prototype = env.searchVisiblePrototype(name, this.getFirstSymbol(), false);
 				// try to find a prototype
-				if ( programUnit != null ) {
+				if ( prototype != null ) {
 					identStarKind = IdentStarKind.prototype_t;
 
-					type = programUnit;
+					type = prototype;
 					// foundIdent = true;
-					if ( programUnit instanceof InterfaceDec ) {
-						javaName = MetaHelper.getJavaName(NameServer.prototypeFileNameFromInterfaceFileName(programUnit.getName())) + ".prototype";
+					if ( prototype instanceof InterfaceDec ) {
+						javaName = MetaHelper.getJavaName(NameServer.prototypeFileNameFromInterfaceFileName(prototype.getName())) + ".prototype";
 					}
 					else {
 						javaName = MetaHelper.getJavaName(name) + ".prototype";
@@ -442,20 +444,20 @@ public class ExprIdentStar extends Expr
 
 					}
 					if ( env.peekCheckUsePossiblyNonInitializedPrototype()
-							&& !(programUnit instanceof InterfaceDec)
+							&& !(prototype instanceof InterfaceDec)
 							&& ! env.getIsArgumentToIsA() ) {
 						List<MethodSignature> initMSList =
-								programUnit.searchMethodPrivateProtectedPublicPackage("init", env);
+								prototype.searchMethodPrivateProtectedPublicPackage("init", env);
 						if ( (initMSList == null || initMSList.size() == 0) && type != Type.Nil ) {
 							initMSList =
-									programUnit.searchMethodPrivateProtectedPublicPackage("new", env);
+									prototype.searchMethodPrivateProtectedPublicPackage("new", env);
 							if ( (initMSList == null || initMSList.size() == 0) ) {
 								/*
 								 * It is illegal to use a prototype that does not have an
 								 * 'init' method
 								 */
 								initMSList =
-										programUnit.searchMethodPrivateProtectedPublicPackage("new", env);
+										prototype.searchMethodPrivateProtectedPublicPackage("new", env);
 								if ( (initMSList == null || initMSList.size() == 0) && type != Type.Nil ) {
 									/*
 									 * It is illegal to use a prototype that does not have an
@@ -480,10 +482,10 @@ public class ExprIdentStar extends Expr
 
 			}
 			else if ( env.getCurrentMethod() == null ) {
-				calcInternalTypes_single_id_outside_method(env, currentProgramUnit, name);
+				calcInternalTypes_single_id_outside_method(env, currentPrototype, name);
 			}
 			else {
-				calcInternalTypesSingleIdInsideMethod(env, leftHandSideAssignment, currentProgramUnit, name);
+				calcInternalTypesSingleIdInsideMethod(env, leftHandSideAssignment, currentPrototype, name);
 			}
 		}
 		else {
@@ -494,7 +496,7 @@ public class ExprIdentStar extends Expr
 						"Identifier expected. Found '" + name + "'", true, true);
 			}
 			else {
-				calcInternalTypesPackagePrototype(env, leftHandSideAssignment, currentProgramUnit, name);
+				calcInternalTypesPackagePrototype(env, leftHandSideAssignment, currentPrototype, name);
 
 			}
 		}
@@ -503,12 +505,12 @@ public class ExprIdentStar extends Expr
 	/**
 	   @param env
 	   @param leftHandSideAssignment
-	   @param currentProgramUnit
+	   @param currentPrototype
 	   @param name
 	 */
 	private void calcInternalTypesPackagePrototype(Env env, boolean leftHandSideAssignment,
-			ProgramUnit currentProgramUnit, String name) {
-		ProgramUnit programUnit;
+			Prototype currentPrototype, String name) {
+		Prototype prototype;
 		// something like "math.Complex", "cyan.lang.Function"
 		// the last identifier should be a prototype name. The others are the package name.
 		// For example, in "cyan.lang.Function", "Function" is a prototype name and "cyan.lang" is a package name
@@ -543,12 +545,12 @@ public class ExprIdentStar extends Expr
 		}
 		else {
 			   // found the package. Try to find the prototype
-			programUnit = aPackage.searchPublicNonGenericProgramUnit(prototypeName);
-			if ( programUnit != null ) {
+			prototype = aPackage.searchPublicNonGenericPrototype(prototypeName);
+			if ( prototype != null ) {
 
 				identStarKind = IdentStarKind.prototype_t;
-				type = programUnit;
-				if ( programUnit instanceof InterfaceDec ) {
+				type = prototype;
+				if ( prototype instanceof InterfaceDec ) {
 					javaName = MetaHelper.getJavaName(NameServer.prototypeFileNameFromInterfaceFileName(this.getName())) + ".prototype";
 				}
 				else
@@ -565,13 +567,13 @@ public class ExprIdentStar extends Expr
 
 				}
 				if ( env.peekCheckUsePossiblyNonInitializedPrototype()
-						&& !(programUnit instanceof InterfaceDec)
+						&& !(prototype instanceof InterfaceDec)
 						&& ! env.getIsArgumentToIsA() ) {
-					List<MethodSignature> initMSList = programUnit.searchMethodPrivateProtectedPublicPackage("init", env);
+					List<MethodSignature> initMSList = prototype.searchMethodPrivateProtectedPublicPackage("init", env);
 					if ( (initMSList == null || initMSList.size() == 0) && type != Type.Nil ) {
 
 						initMSList =
-								programUnit.searchMethodPrivateProtectedPublicPackage("new", env);
+								prototype.searchMethodPrivateProtectedPublicPackage("new", env);
 						if ( initMSList == null || initMSList.size() == 0 ) {
 
 							/*
@@ -579,7 +581,7 @@ public class ExprIdentStar extends Expr
 							 * 'init' method
 							 */
 							initMSList =
-									programUnit.searchMethodPrivateProtectedPublicPackage("new", env);
+									prototype.searchMethodPrivateProtectedPublicPackage("new", env);
 							if ( (initMSList == null || initMSList.size() == 0) && type != Type.Nil ) {
 								/*
 								 * It is illegal to use a prototype that does not have an
@@ -605,10 +607,10 @@ public class ExprIdentStar extends Expr
 
 					}
 				}
-				MethodDec currentMethod = env.getCurrentMethod();
-				if ( currentMethod != null && currentProgramUnit != null &&
-						currentMethod.getName().equals("init") &&
-						name.equals(currentProgramUnit.getName()) ) {
+				MethodDec currentMethod1 = env.getCurrentMethod();
+				if ( currentMethod1 != null && currentPrototype != null &&
+						currentMethod1.getName().equals("init") &&
+						name.equals(currentPrototype.getName()) ) {
 					env.error(getFirstSymbol(), "Prototype '" + name + "' "
 							+ "uses itself in its 'init' method. However, fields from "
 							+ "the prototype, considered as an object, are "
@@ -622,10 +624,10 @@ public class ExprIdentStar extends Expr
 			}
 			else {
 
-				programUnit = env.searchPrivateProgramUnit(prototypeName);
-				if ( programUnit == null ) {
-					//env.searchVisibleProgramUnit(name, this.getFirstSymbol(), true);
-				    //currentProgramUnit.searchMethodPrivateProtectedPublicSuperProtectedPublic(name, env);
+				prototype = env.searchPrivatePrototype(prototypeName);
+				if ( prototype == null ) {
+					//env.searchVisiblePrototype(name, this.getFirstSymbol(), true);
+				    //currentPrototype.searchMethodPrivateProtectedPublicSuperProtectedPublic(name, env);
 				    /* env.error(true, getFirstSymbol(),
 						"Identifier '" + name + "' was not declared", name, ErrorKind.variable_was_not_declared); */
 				    type = Type.Dyn;
@@ -635,8 +637,8 @@ public class ExprIdentStar extends Expr
 				}
 				else {
 					identStarKind = IdentStarKind.prototype_t;
-					type = programUnit;
-					if ( programUnit instanceof InterfaceDec ) {
+					type = prototype;
+					if ( prototype instanceof InterfaceDec ) {
 						javaName = MetaHelper.getJavaName(NameServer.prototypeFileNameFromInterfaceFileName(prototypeName)) + ".prototype";
 					}
 					else
@@ -653,13 +655,13 @@ public class ExprIdentStar extends Expr
 
 					}
 					if ( env.peekCheckUsePossiblyNonInitializedPrototype()
-							&& !(programUnit instanceof InterfaceDec)
+							&& !(prototype instanceof InterfaceDec)
 							&& ! env.getIsArgumentToIsA() ) {
-						List<MethodSignature> initMSList = programUnit.searchMethodPrivateProtectedPublicPackage("init", env);
+						List<MethodSignature> initMSList = prototype.searchMethodPrivateProtectedPublicPackage("init", env);
 						if ( (initMSList == null || initMSList.size() == 0) && type != Type.Nil ) {
 
 							initMSList =
-									programUnit.searchMethodPrivateProtectedPublicPackage("new", env);
+									prototype.searchMethodPrivateProtectedPublicPackage("new", env);
 							if ( initMSList == null || initMSList.size() == 0 ) {
 
 								/*
@@ -667,7 +669,7 @@ public class ExprIdentStar extends Expr
 								 * 'init' method
 								 */
 								initMSList =
-										programUnit.searchMethodPrivateProtectedPublicPackage("new", env);
+										prototype.searchMethodPrivateProtectedPublicPackage("new", env);
 								if ( (initMSList == null || initMSList.size() == 0) && type != Type.Nil ) {
 									/*
 									 * It is illegal to use a prototype that does not have an
@@ -692,10 +694,10 @@ public class ExprIdentStar extends Expr
 
 						}
 					}
-					MethodDec currentMethod = env.getCurrentMethod();
-					if ( currentMethod != null && currentProgramUnit != null &&
-							currentMethod.getName().equals("init") &&
-							name.equals(currentProgramUnit.getName()) ) {
+					MethodDec currentMethod1 = env.getCurrentMethod();
+					if ( currentMethod1 != null && currentPrototype != null &&
+							currentMethod1.getName().equals("init") &&
+							name.equals(currentPrototype.getName()) ) {
 						env.error(getFirstSymbol(), "Prototype '" + name + "' "
 								+ "uses itself in its 'init' method. However, fields from "
 								+ "the prototype, considered as an object, are "
@@ -716,11 +718,11 @@ public class ExprIdentStar extends Expr
 				env.error(getFirstSymbol(),
 						"Prototype '" + prototypeName + "' was not found in package '" + packageName + "'",
 						true, false);
-				// programUnit == null, prototype was not found
+				// prototype == null, prototype was not found
 
 				if ( env.getCurrentMethod() == null ) {
 
-					if ( env.getCurrentProgramUnit() == null ) {
+					if ( env.getCurrentPrototype() == null ) {
 						env.error(true, getFirstSymbol(),
 								"Prototype '" + prototypeName + "' was not found in package '" + packageName + "'", name, ErrorKind.prototype_was_not_found_outside_prototype);
 					}
@@ -743,21 +745,21 @@ public class ExprIdentStar extends Expr
 	/**
 	   @param env
 	   @param leftHandSideAssignment
-	   @param currentProgramUnit
+	   @param currentPrototype
 	   @param name
 	 */
 	private void calcInternalTypesSingleIdInsideMethod(Env env, boolean leftHandSideAssignment,
-			ProgramUnit currentProgramUnit, String name) {
+			Prototype currentPrototype, String name) {
 
 
-		ProgramUnit programUnit;
+		Prototype prototype;
 		// inside a method
 
 		type = null;
 
 
 		if ( env.getEnclosingObjectDec() == null ) {
-			calcInternalTypes_single_id_inside_method_outer_prototype(env, leftHandSideAssignment, currentProgramUnit, name);
+			calcInternalTypes_single_id_inside_method_outer_prototype(env, leftHandSideAssignment, currentPrototype, name);
 		}
 		else {
 			/*
@@ -768,7 +770,7 @@ public class ExprIdentStar extends Expr
 			}
 			else {
 				calcInternalTypes_single_id_inside_method_inner_prototype_NOT_eval(env, leftHandSideAssignment,
-						currentProgramUnit, name);
+						currentPrototype, name);
 			}
 		}
 		if ( type == null ) {
@@ -776,28 +778,28 @@ public class ExprIdentStar extends Expr
 			/*
 			 * did not find an unary method. Search for a program unit
 			 */
-			programUnit = env.searchPrivateProgramUnit(name);
-			if ( programUnit == null )
-				programUnit = env.searchVisibleProgramUnit(name, this.getFirstSymbol(), true);
-			if ( programUnit == null ) {
+			prototype = env.searchPrivatePrototype(name);
+			if ( prototype == null )
+				prototype = env.searchVisiblePrototype(name, this.getFirstSymbol(), true);
+			if ( prototype == null ) {
 				WrType newType = env.searchType(name);
 				if ( newType != null ) {
-					if ( !(newType instanceof WrProgramUnit) ) {
+					if ( !(newType instanceof WrPrototype) ) {
 						env.error(this.getFirstSymbol(), "New types should be associated to Cyan prototypes");
 						return ;
 					}
 					else {
-						programUnit = meta.GetHiddenItem.getHiddenProgramUnit((WrProgramUnit ) newType);
+						prototype = meta.GetHiddenItem.getHiddenPrototype((WrPrototype ) newType);
 					}
 				}
 			}
-			if ( programUnit == null ) {
+			if ( prototype == null ) {
 
 				TypeJavaRef javaClass = env.searchVisibleJavaClass(name);
 				if ( javaClass == null ) {
 
 					if ( this.identSymbolArray.size() == 1 &&
-						 env.getCompInstSet().contains(CompilationInstruction.dsa_actions) &&
+						 env.getCompInstSet().contains(CompilationInstruction.semAn_actions) &&
 						 super.lookForUnaryMethodAtCompileTime(
 						     null, identSymbolArray.get(0).getI(), env.getCurrentObjectDec(), env) ) {
 						return ;
@@ -830,10 +832,10 @@ public class ExprIdentStar extends Expr
 			}
 			else {
 				identStarKind = IdentStarKind.prototype_t;
-				type = programUnit;
+				type = prototype;
 				// foundIdent = true;
-				if ( programUnit instanceof InterfaceDec ) {
-					javaName = MetaHelper.getJavaName(NameServer.prototypeFileNameFromInterfaceFileName(programUnit.getName())) + ".prototype";
+				if ( prototype instanceof InterfaceDec ) {
+					javaName = MetaHelper.getJavaName(NameServer.prototypeFileNameFromInterfaceFileName(prototype.getName())) + ".prototype";
 				}
 				else
 					javaName = MetaHelper.getJavaName(name) + ".prototype";
@@ -849,15 +851,15 @@ public class ExprIdentStar extends Expr
 
 				}
 				if ( env.peekCheckUsePossiblyNonInitializedPrototype()
-						&& !(programUnit instanceof InterfaceDec)
+						&& !(prototype instanceof InterfaceDec)
 						&& ! env.getIsArgumentToIsA() ) {
-					List<MethodSignature> initMSList = programUnit.searchMethodPrivateProtectedPublicPackage("init", env);
+					List<MethodSignature> initMSList = prototype.searchMethodPrivateProtectedPublicPackage("init", env);
 					if ( (initMSList == null || initMSList.size() == 0) && type != Type.Nil
 							) {
 
 
 						initMSList =
-								programUnit.searchMethodPrivateProtectedPublicPackage("new", env);
+								prototype.searchMethodPrivateProtectedPublicPackage("new", env);
 						if ( initMSList == null || initMSList.size() == 0 ) {
 
 							/*
@@ -865,7 +867,7 @@ public class ExprIdentStar extends Expr
 							 * 'init' method
 							 */
 							initMSList =
-									programUnit.searchMethodPrivateProtectedPublicPackage("new", env);
+									prototype.searchMethodPrivateProtectedPublicPackage("new", env);
 							if ( (initMSList == null || initMSList.size() == 0) && type != Type.Nil ) {
 								/*
 								 * It is illegal to use a prototype that does not have an
@@ -892,10 +894,10 @@ public class ExprIdentStar extends Expr
 
 					}
 				}
-				MethodDec currentMethod = env.getCurrentMethod();
-				if ( currentMethod != null && currentProgramUnit != null &&
-						currentMethod.getName().equals("init") &&
-						name.equals(currentProgramUnit.getName()) ) {
+				MethodDec currentMethod1 = env.getCurrentMethod();
+				if ( currentMethod1 != null && currentPrototype != null &&
+						currentMethod1.getName().equals("init") &&
+						name.equals(currentPrototype.getName()) ) {
 					env.error(getFirstSymbol(), "Prototype '" + name + "' "
 							+ "uses itself in its 'init' method. However, fields from "
 							+ "the prototype, considered as an object, are "
@@ -914,17 +916,17 @@ public class ExprIdentStar extends Expr
 	/**
 	   @param env
 	   @param leftHandSideAssignment
-	   @param currentProgramUnit
+	   @param currentPrototype
 	   @param name
 	 */
 	private void calcInternalTypes_single_id_inside_method_inner_prototype_NOT_eval(Env env,
-			boolean leftHandSideAssignment, ProgramUnit currentProgramUnit, String name) {
+			boolean leftHandSideAssignment, Prototype currentPrototype, String name) {
 		/*
 		 * inside a method of an inner prototype that is not 'eval', 'eval:eval: ...'
 		 */
 
 		VariableDecInterface varDec;
-		if ( NameServer.isNameInnerProtoForContextFunction(currentProgramUnit.getName()) &&
+		if ( NameServer.isNameInnerProtoForContextFunction(currentPrototype.getName()) &&
 				env.getCurrentMethod().getName().equals(NameServer.bindToFunctionWithParamNumber)	) {
 			/*
 		           The identifiers visible inside the function body are those declared in the function itself, those
@@ -943,7 +945,7 @@ public class ExprIdentStar extends Expr
 			}
 			List<MethodSignature>  methodSignatureList;
 			if ( varDec == null ) {
-				String protoName = currentProgramUnit.getName();
+				String protoName = currentPrototype.getName();
 				/*
 				 * if the method is bindToFunction  in a context function, all message sends
 				 * to self are considered as message sends to newSelf__ whose type is
@@ -992,9 +994,9 @@ public class ExprIdentStar extends Expr
 							} */
 
 							identStarKind = IdentStarKind.unaryMethod_t;
-							MethodDec currentMethod = env.getCurrentMethod();
-							currentMethod.addSelfMessagePassing(methodSignatureForMessageSend);
-							currentMethod.setSelfLeak(true);
+							MethodDec currentMethod1 = env.getCurrentMethod();
+							currentMethod1.addSelfMessagePassing(methodSignatureForMessageSend);
+							currentMethod1.setSelfLeak(true);
 
 
 							type = methodSignatureForMessageSend.getReturnType(env);
@@ -1012,7 +1014,7 @@ public class ExprIdentStar extends Expr
 
 //							if ( env.getProject().getCompilerManager().getCompilationStep() == CompilationStep.step_9 ) {
 //								MetaInfoServer.checkMessageSendWithMethodMetaobject(methodSignatureList,
-//										currentProgramUnit, receiverExprOrFirstUnary,
+//										currentPrototype, receiverExprOrFirstUnary,
 //										receiverKind, env, unarySymbol);
 //							}
 //
@@ -1024,8 +1026,8 @@ public class ExprIdentStar extends Expr
 //								//TODO  this search should not be made again. The code below should replace
 //								// the previous search
 //								List<MethodSignature> allMethodSignatureList = new ArrayList<>();
-//								List<ProgramUnit> superList = currentProgramUnit.getAllSuperPrototypes();
-//								for ( ProgramUnit current : superList ) {
+//								List<Prototype> superList = currentPrototype.getAllSuperPrototypes();
+//								for ( Prototype current : superList ) {
 //									List<MethodSignature> currentMSList = current.searchMethodPublicPackage(name, env);
 //									if ( currentMSList != null ) {
 //										allMethodSignatureList.addAll(currentMSList);
@@ -1092,11 +1094,11 @@ public class ExprIdentStar extends Expr
 			setOriginalJavaName(varDec.getJavaName());
 
 			if ( identStarKind == IdentStarKind.instance_variable_t &&  ! leftHandSideAssignment ) {
-				MethodDec currentMethod = env.getCurrentMethod();
-				if ( currentMethod != null ) {
-					currentMethod.addReadFromFieldList( (FieldDec ) varDec );
+				MethodDec currentMethod1 = env.getCurrentMethod();
+				if ( currentMethod1 != null ) {
+					currentMethod1.addReadFromFieldList( (FieldDec ) varDec );
 				}
-				ExprSelfPeriodIdent.actionFieldAccess_dsa( env, this, (FieldDec ) varDec);
+				ExprSelfPeriodIdent.actionFieldAccess_semAn( env, this, (FieldDec ) varDec);
 			}
 
 
@@ -1120,8 +1122,8 @@ public class ExprIdentStar extends Expr
 			 * search for an unary method in the CURRENT prototype only, which is an inner prototype.
 			 */
 			List<MethodSignature> methodSignatureList;
-			ProgramUnit pu = currentProgramUnit;
-			String protoName = currentProgramUnit.getName();
+			Prototype pu = currentPrototype;
+			String protoName = currentPrototype.getName();
 			/*
 			 * if the method is bindToFunction  in a context function, all message sends
 			 * to self are considered as message sends to newSelf__ whose type is
@@ -1327,11 +1329,11 @@ public class ExprIdentStar extends Expr
 			setOriginalJavaName(varDec.getJavaName());
 
 			if ( identStarKind == IdentStarKind.instance_variable_t &&  ! leftHandSideAssignment ) {
-				MethodDec currentMethod = env.getCurrentMethod();
-				if ( currentMethod != null ) {
-					currentMethod.addReadFromFieldList( (FieldDec ) varDec );
+				MethodDec currentMethod1 = env.getCurrentMethod();
+				if ( currentMethod1 != null ) {
+					currentMethod1.addReadFromFieldList( (FieldDec ) varDec );
 				}
-				ExprSelfPeriodIdent.actionFieldAccess_dsa( env, this, (FieldDec ) varDec);
+				ExprSelfPeriodIdent.actionFieldAccess_semAn( env, this, (FieldDec ) varDec);
 			}
 			if ( leftHandSideAssignment ) {
 
@@ -1395,9 +1397,9 @@ public class ExprIdentStar extends Expr
 				} */
 
 				identStarKind = IdentStarKind.unaryMethod_t;
-				MethodDec currentMethod = env.getCurrentMethod();
-				currentMethod.addSelfMessagePassing(methodSignatureForMessageSend);
-				currentMethod.setSelfLeak(true);
+				MethodDec currentMethod1 = env.getCurrentMethod();
+				currentMethod1.addSelfMessagePassing(methodSignatureForMessageSend);
+				currentMethod1.setSelfLeak(true);
 
 
 				type = methodSignatureForMessageSend.getReturnType(env);
@@ -1432,11 +1434,11 @@ public class ExprIdentStar extends Expr
 	/**
 	   @param env
 	   @param leftHandSideAssignment
-	   @param currentProgramUnit
+	   @param currentPrototype
 	   @param name
 	 */
 	private void calcInternalTypes_single_id_inside_method_outer_prototype(Env env, boolean leftHandSideAssignment,
-			ProgramUnit currentProgramUnit, String name) {
+			Prototype currentPrototype, String name) {
 		/*
 		 * inside a regular prototype that is NOT inside another prototype
 		 */
@@ -1445,9 +1447,9 @@ public class ExprIdentStar extends Expr
 
 			if ( varDec instanceof FieldDec ) {
 				identStarKind = IdentStarKind.instance_variable_t;
-				MethodDec currentMethod = env.getCurrentMethod();
-				if ( currentMethod != null ) {
-					currentMethod.addToAccessedFieldSet( (FieldDec ) varDec);
+				MethodDec currentMethod1 = env.getCurrentMethod();
+				if ( currentMethod1 != null ) {
+					currentMethod1.addToAccessedFieldSet( (FieldDec ) varDec);
 				}
 			}
 			else {
@@ -1482,11 +1484,11 @@ public class ExprIdentStar extends Expr
 			}
 
 			if ( identStarKind == IdentStarKind.instance_variable_t &&  ! leftHandSideAssignment ) {
-				MethodDec currentMethod = env.getCurrentMethod();
-				if ( currentMethod != null ) {
-					currentMethod.addReadFromFieldList( (FieldDec ) varDec );
+				MethodDec currentMethod1 = env.getCurrentMethod();
+				if ( currentMethod1 != null ) {
+					currentMethod1.addReadFromFieldList( (FieldDec ) varDec );
 				}
-				ExprSelfPeriodIdent.actionFieldAccess_dsa( env, this, (FieldDec ) varDec );
+				ExprSelfPeriodIdent.actionFieldAccess_semAn( env, this, (FieldDec ) varDec );
 			}
 
 
@@ -1525,7 +1527,7 @@ public class ExprIdentStar extends Expr
 			/*
 			 * search for an unary method
 			 */
-			List<MethodSignature> methodSignatureList = currentProgramUnit.searchMethodPrivateProtectedPublicPackageSuperProtectedPublicPackage(name, env);
+			List<MethodSignature> methodSignatureList = currentPrototype.searchMethodPrivateProtectedPublicPackageSuperProtectedPublicPackage(name, env);
 
 			if ( name.equals("init") ) {
 				env.error(this.getFirstSymbol(), "'init' and 'init:' messages can only be sent to 'super' inside an 'init' or 'init:' method", true, true);
@@ -1533,8 +1535,8 @@ public class ExprIdentStar extends Expr
 
 
 			if ( methodSignatureList == null ) {
-				if ( currentProgramUnit instanceof ObjectDec ) {
-					methodSignatureList = ((ObjectDec ) currentProgramUnit).searchInitNewMethod(name);
+				if ( currentPrototype instanceof ObjectDec ) {
+					methodSignatureList = ((ObjectDec ) currentPrototype).searchInitNewMethod(name);
 				}
 			}
 			if ( methodSignatureList != null  && methodSignatureList.size() > 0) {
@@ -1544,7 +1546,7 @@ public class ExprIdentStar extends Expr
 				if ( currentMethodName.equals("init") || currentMethodName.equals("init:") ) {
 
 					String nameiv = "_" + name;
-					FieldDec unaryMethodList = ((ObjectDec ) currentProgramUnit).searchField(nameiv);
+					FieldDec unaryMethodList = ((ObjectDec ) currentPrototype).searchField(nameiv);
 					if ( unaryMethodList != null ) {
 						env.error(getFirstSymbol(), "Message send to 'self' inside an 'init' or 'init:' method." +
 					      " Since there is a field '" + nameiv + "', you probably wanted to write it instead of '" + name + "'",
@@ -1562,14 +1564,14 @@ public class ExprIdentStar extends Expr
 				methodSignatureForMessageSend.calcInterfaceTypes(env);
 
 				if ( env.getProject().getCompilerManager().getCompilationStep() == CompilationStep.step_9 )  {
-					MetaInfoServer.checkMessageSendWithMethodMetaobject(methodSignatureList, currentProgramUnit, null,
+					MetaInfoServer.checkMessageSendWithMethodMetaobject(methodSignatureList, currentPrototype, null,
 							ExprReceiverKind.SELF_R, env, this.getFirstSymbol());
 				}
 
 				identStarKind = IdentStarKind.unaryMethod_t;
-				MethodDec currentMethod = env.getCurrentMethod();
-				currentMethod.addSelfMessagePassing(methodSignatureForMessageSend);
-				currentMethod.setSelfLeak(true);
+				MethodDec currentMethod1 = env.getCurrentMethod();
+				currentMethod1.addSelfMessagePassing(methodSignatureForMessageSend);
+				currentMethod1.setSelfLeak(true);
 
 				type = methodSignatureForMessageSend.getReturnType(env);
 				javaName = MetaHelper.getJavaName(name) + "()";
@@ -1592,11 +1594,11 @@ public class ExprIdentStar extends Expr
 
 	/**
 	   @param env
-	   @param currentProgramUnit
+	   @param currentPrototype
 	   @param name
 	 */
-	private void calcInternalTypes_single_id_outside_method(Env env, ProgramUnit currentProgramUnit, String name) {
-		ProgramUnit programUnit;
+	private void calcInternalTypes_single_id_outside_method(Env env, Prototype currentPrototype, String name) {
+		Prototype prototype;
 		// outside a method
 
 
@@ -1625,11 +1627,11 @@ public class ExprIdentStar extends Expr
 			javaName = varDec.getJavaName();
 
 			if ( identStarKind == IdentStarKind.instance_variable_t  ) {
-				MethodDec currentMethod = env.getCurrentMethod();
-				if ( currentMethod != null ) {
-					currentMethod.addReadFromFieldList( (FieldDec ) varDec );
+				MethodDec currentMethod1 = env.getCurrentMethod();
+				if ( currentMethod1 != null ) {
+					currentMethod1.addReadFromFieldList( (FieldDec ) varDec );
 				}
-				ExprSelfPeriodIdent.actionFieldAccess_dsa( env, this, (FieldDec ) varDec);
+				ExprSelfPeriodIdent.actionFieldAccess_semAn( env, this, (FieldDec ) varDec);
 			}
 
 
@@ -1646,25 +1648,25 @@ public class ExprIdentStar extends Expr
 			List<MethodSignature> methodSignatureList;
 
 
-			if ( ! calcInternalTypesUnaryMethod(env, currentProgramUnit, name) ) {
-				programUnit = env.searchPrivateProgramUnit(name);
-				if ( programUnit == null )
-					programUnit = env.searchVisibleProgramUnit(name, this.getFirstSymbol(), false);
+			if ( ! calcInternalTypesUnaryMethod(env, currentPrototype, name) ) {
+				prototype = env.searchPrivatePrototype(name);
+				if ( prototype == null )
+					prototype = env.searchVisiblePrototype(name, this.getFirstSymbol(), false);
 
 
-				if ( programUnit == null ) {
+				if ( prototype == null ) {
 					WrType newType = env.searchType(name);
 					if ( newType != null ) {
-						if ( !(newType instanceof WrProgramUnit) ) {
+						if ( !(newType instanceof WrPrototype) ) {
 							env.error(this.getFirstSymbol(), "New types should be associated to Cyan prototypes");
 							return ;
 						}
 						else {
-							programUnit = meta.GetHiddenItem.getHiddenProgramUnit((WrProgramUnit ) newType);
+							prototype = meta.GetHiddenItem.getHiddenPrototype((WrPrototype ) newType);
 						}
 					}
 				}
-				if ( programUnit == null ) {
+				if ( prototype == null ) {
 
 					TypeJavaRef javaClass = env.searchVisibleJavaClass(name);
 					if ( javaClass != null ) {
@@ -1684,13 +1686,13 @@ public class ExprIdentStar extends Expr
 				}
 
 				// try to find a prototype
-				if ( programUnit != null ) {
+				if ( prototype != null ) {
 					identStarKind = IdentStarKind.prototype_t;
 
-					type = programUnit;
+					type = prototype;
 					// foundIdent = true;
-					if ( programUnit instanceof InterfaceDec ) {
-						javaName = MetaHelper.getJavaName(NameServer.prototypeFileNameFromInterfaceFileName(programUnit.getName())) + ".prototype";
+					if ( prototype instanceof InterfaceDec ) {
+						javaName = MetaHelper.getJavaName(NameServer.prototypeFileNameFromInterfaceFileName(prototype.getName())) + ".prototype";
 					}
 					else {
 						javaName = MetaHelper.getJavaName(name) + ".prototype";
@@ -1702,10 +1704,10 @@ public class ExprIdentStar extends Expr
 						twa.checkAnnotation(env);
 					}
 					if ( env.peekCheckUsePossiblyNonInitializedPrototype()
-							&& !(programUnit instanceof InterfaceDec)
+							&& !(prototype instanceof InterfaceDec)
 							&& ! env.getIsArgumentToIsA()
 							) {
-						List<MethodSignature> initMSList = programUnit.searchMethodPrivateProtectedPublicPackage("init", env);
+						List<MethodSignature> initMSList = prototype.searchMethodPrivateProtectedPublicPackage("init", env);
 						if ( (initMSList == null || initMSList.size() == 0) && type != Type.Nil ) {
 							/*
 							 * It is illegal to use a prototype that does not have an
@@ -1717,9 +1719,9 @@ public class ExprIdentStar extends Expr
 							 );
 						}
 					}
-					MethodDec currentMethod = env.getCurrentMethod();
-					if ( currentMethod != null && currentMethod.getName().equals("init") &&
-							name.equals(currentProgramUnit.getName()) ) {
+					MethodDec currentMethod1 = env.getCurrentMethod();
+					if ( currentMethod1 != null && currentMethod1.getName().equals("init") &&
+							name.equals(currentPrototype.getName()) ) {
 						env.error(getFirstSymbol(), "Prototype '" + this.getName() + "' "
 								+ "uses itself in its 'init' method. However, fields from "
 								+ "the prototype, considered as an object, are "
@@ -1731,8 +1733,8 @@ public class ExprIdentStar extends Expr
 
 				}
 				else {
-					if ( currentProgramUnit instanceof ObjectDec ) {
-						ObjectDec proto = (ObjectDec ) currentProgramUnit;
+					if ( currentPrototype instanceof ObjectDec ) {
+						ObjectDec proto = (ObjectDec ) currentPrototype;
 						methodSignatureList = proto.searchMethodPrivateProtectedPublicPackageSuperProtectedPublicPackage(name, env);
 
 						if ( name.equals("init") ) {
@@ -1790,16 +1792,16 @@ public class ExprIdentStar extends Expr
 
 	/**
 	   @param env
-	   @param currentProgramUnit
+	   @param currentPrototype
 	   @param name
 	 */
-	private boolean calcInternalTypesUnaryMethod(Env env, ProgramUnit currentProgramUnit, String name) {
+	private boolean calcInternalTypesUnaryMethod(Env env, Prototype currentPrototype, String name) {
 		ObjectDec currentObjectDec = null;
 		List<MethodSignature> methodSignatureList = null;
 
-		if ( currentProgramUnit instanceof ObjectDec ) {
+		if ( currentPrototype instanceof ObjectDec ) {
 
-			currentObjectDec = (ObjectDec ) currentProgramUnit;
+			currentObjectDec = (ObjectDec ) currentPrototype;
 			methodSignatureList = currentObjectDec.searchMethodPrivateProtectedPublicPackageSuperProtectedPublicPackage(name, env);
 
 			if ( name.equals("init") ) {
@@ -1838,9 +1840,9 @@ public class ExprIdentStar extends Expr
 				}
 
 				identStarKind = IdentStarKind.unaryMethod_t;
-				MethodDec currentMethod = env.getCurrentMethod();
-				currentMethod.addSelfMessagePassing(methodSignatureForMessageSend);
-				currentMethod.setSelfLeak(true);
+				MethodDec currentMethod1 = env.getCurrentMethod();
+				currentMethod1.addSelfMessagePassing(methodSignatureForMessageSend);
+				currentMethod1.setSelfLeak(true);
 
 
 				type = methodSignatureForMessageSend.getReturnType(env);
@@ -1867,11 +1869,11 @@ public class ExprIdentStar extends Expr
 	@Override
 	public saci.TupleTwo<String, CompilationUnit> returnsNameWithPackage(Env env)  {
 		TupleTwo<String, Type> t =  ifPrototypeReturnsNameWithPackageAndType(env);
-		if ( t == null || !(t.f2.getInsideType() instanceof ProgramUnit)) {
+		if ( t == null || !(t.f2.getInsideType() instanceof Prototype)) {
 			return null;
 		}
 		else {
-			ProgramUnit pu = (ProgramUnit ) t.f2.getInsideType();
+			Prototype pu = (Prototype ) t.f2.getInsideType();
 			return new TupleTwo<String, CompilationUnit>(t.f1, pu.getCompilationUnit());
 		}
 	}
@@ -1898,7 +1900,7 @@ public class ExprIdentStar extends Expr
 			if ( indexOfDot < 0 ) {
 				  // no package preceding the name. It should be a prototype visible in
 					  // this compilation unit
-				ProgramUnit pu3 = env.searchVisibleProgramUnit(name, this.getFirstSymbol(), true);
+				Prototype pu3 = env.searchVisiblePrototype(name, this.getFirstSymbol(), true);
 				if ( pu3 == null ) {
 					if ( name.equals(MetaHelper.dynName) ) {
 						nameWithPackageAndType = new saci.TupleTwo<String, Type>(name, Type.Dyn);
@@ -1934,7 +1936,7 @@ public class ExprIdentStar extends Expr
 				// package name
 				String prototypeName = name.substring(indexOfDot + 1);
 				String packageName = name.substring(0, indexOfDot);
-				ProgramUnit pu4 = env.searchPackagePrototype(packageName, prototypeName);
+				Prototype pu4 = env.searchPackagePrototype(packageName, prototypeName);
 				if ( pu4 == null ) {
 					TypeJavaRef javaClass = env.searchPackageJavaClass(packageName, prototypeName);
 					if ( javaClass != null ) {
@@ -1960,12 +1962,12 @@ public class ExprIdentStar extends Expr
 
 
 
-	public MessageSendToMetaobjectAnnotation getMessageSendToMetaobjectAnnotation() {
-		return messageSendToMetaobjectAnnotation;
+	public MessageSendToAnnotation getMessageSendToAnnotation() {
+		return messageSendToAnnotation;
 	}
 
-	public void setMessageSendToMetaobjectAnnotation(MessageSendToMetaobjectAnnotation messageSendToMetaobjectAnnotation) {
-		this.messageSendToMetaobjectAnnotation = messageSendToMetaobjectAnnotation;
+	public void setMessageSendToAnnotation(MessageSendToAnnotation messageSendToAnnotation) {
+		this.messageSendToAnnotation = messageSendToAnnotation;
 	}
 
 	/**
@@ -2057,7 +2059,7 @@ public class ExprIdentStar extends Expr
 	 * this expression represents a prototype. Example: <br>
 	 * {@code var Person.#writeCode  p;}<br>
 	 */
-	private MessageSendToMetaobjectAnnotation messageSendToMetaobjectAnnotation;
+	private MessageSendToAnnotation messageSendToAnnotation;
 
 
 

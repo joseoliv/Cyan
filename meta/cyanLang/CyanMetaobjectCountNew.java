@@ -3,9 +3,9 @@ package meta.cyanLang;
 import meta.AnnotationArgumentsKind;
 import meta.AttachedDeclarationKind;
 import meta.CyanMetaobjectAtAnnot;
-import meta.IActionMessageSend_dsa;
-import meta.IAction_dsa;
-import meta.ICompiler_dsa;
+import meta.IActionMessageSend_semAn;
+import meta.IAction_semAn;
+import meta.ICompiler_semAn;
 import meta.MetaHelper;
 import meta.Tuple3;
 import meta.WrEnv;
@@ -29,7 +29,7 @@ import meta.WrType;
    @author jose
  */
 public class CyanMetaobjectCountNew extends CyanMetaobjectAtAnnot
-      implements IActionMessageSend_dsa, IAction_dsa {
+      implements IActionMessageSend_semAn, IAction_semAn {
 
 	public CyanMetaobjectCountNew() {
 		super("countNew", AnnotationArgumentsKind.ZeroParameters,
@@ -38,7 +38,7 @@ public class CyanMetaobjectCountNew extends CyanMetaobjectAtAnnot
 
 
 	@Override
-	public Tuple3<StringBuffer, String, String> dsa_analyzeReplaceKeywordMessage(
+	public Tuple3<StringBuffer, String, String> semAn_analyzeReplaceKeywordMessage(
 			WrExprMessageSendWithKeywordsToExpr messageSendExpr, WrEnv env) {
 
 		String strMessageSend = messageSendExpr.asString();
@@ -53,7 +53,7 @@ public class CyanMetaobjectCountNew extends CyanMetaobjectAtAnnot
 	 *
 	 */
 	@Override
-	public Tuple3<StringBuffer, String, String> dsa_analyzeReplaceUnaryMessage(WrExprMessageSendUnaryChainToExpr messageSendExpr, WrEnv env) {
+	public Tuple3<StringBuffer, String, String> semAn_analyzeReplaceUnaryMessage(WrExprMessageSendUnaryChainToExpr messageSendExpr, WrEnv env) {
 
 		String strMessageSend = messageSendExpr.asString();
 		WrType type = messageSendExpr.getReceiver().getType();
@@ -67,12 +67,12 @@ public class CyanMetaobjectCountNew extends CyanMetaobjectAtAnnot
 
 	@Override
 	public
-	Tuple3<StringBuffer, String, String> dsa_analyzeReplaceUnaryMessageWithoutSelf(
+	Tuple3<StringBuffer, String, String> semAn_analyzeReplaceUnaryMessageWithoutSelf(
 			WrExprIdentStar messageSendExpr, WrEnv env) {
 
 
 		String strMessageSend = messageSendExpr.asString();
-		WrType type = env.getCurrentProgramUnit();
+		WrType type = env.getCurrentPrototype();
 
 
 		StringBuffer s = genCountFunction(strMessageSend, type);
@@ -81,31 +81,31 @@ public class CyanMetaobjectCountNew extends CyanMetaobjectAtAnnot
 	}
 
 	@Override
-	public StringBuffer dsa_codeToAdd(ICompiler_dsa compiler) {
+	public StringBuffer semAn_codeToAdd(ICompiler_semAn compiler) {
 
-		WrMethodDec m = ((WrMethodDec ) this.getMetaobjectAnnotation().getDeclaration());
+		WrMethodDec m = ((WrMethodDec ) this.getAnnotation().getDeclaration());
 		String protoName = m.getDeclaringObject().getFullName();
-		compiler.createNewGenericPrototype(this.getMetaobjectAnnotation().getFirstSymbol(),
-				compiler.getEnv().getCurrentCompilationUnit(), compiler.getEnv().getCurrentProgramUnit(),
+		compiler.createNewGenericPrototype(this.getAnnotation().getFirstSymbol(),
+				compiler.getEnv().getCurrentCompilationUnit(), compiler.getEnv().getCurrentPrototype(),
 				MetaHelper.cyanLanguagePackageName + ".Function<" +
 						protoName + ", " + protoName + ">",
-		            "Error caused by method dsa_codeToAdd of metaobject '" +
-		            		this.getMetaobjectAnnotation().getCyanMetaobject().getName() + "'. "
+		            "Error caused by method semAn_codeToAdd of metaobject '" +
+		            		this.getAnnotation().getCyanMetaobject().getName() + "'. "
 		            );
 
-		compiler.createNewGenericPrototype(this.getMetaobjectAnnotation().getFirstSymbol(),
-				compiler.getEnv().getCurrentCompilationUnit(), compiler.getEnv().getCurrentProgramUnit(),
+		compiler.createNewGenericPrototype(this.getAnnotation().getFirstSymbol(),
+				compiler.getEnv().getCurrentCompilationUnit(), compiler.getEnv().getCurrentPrototype(),
 				MetaHelper.cyanLanguagePackageName + ".Function<String, Int, Nil>",
-		            "Error caused by method dsa_codeToAdd of metaobject '" +
-		            		this.getMetaobjectAnnotation().getCyanMetaobject().getName() + "'. "
+		            "Error caused by method semAn_codeToAdd of metaobject '" +
+		            		this.getAnnotation().getCyanMetaobject().getName() + "'. "
 		            );
 
 
-		compiler.createNewGenericPrototype(this.getMetaobjectAnnotation().getFirstSymbol(),
-				compiler.getEnv().getCurrentCompilationUnit(), compiler.getEnv().getCurrentProgramUnit(),
+		compiler.createNewGenericPrototype(this.getAnnotation().getFirstSymbol(),
+				compiler.getEnv().getCurrentCompilationUnit(), compiler.getEnv().getCurrentPrototype(),
 				MetaHelper.cyanLanguagePackageName + ".HashMap<String, Int>",
-		            "Error caused by method dsa_codeToAdd of metaobject '" +
-		            		this.getMetaobjectAnnotation().getCyanMetaobject().getName() + "'. "
+		            "Error caused by method semAn_codeToAdd of metaobject '" +
+		            		this.getAnnotation().getCyanMetaobject().getName() + "'. "
 		            );
 
 		return null;

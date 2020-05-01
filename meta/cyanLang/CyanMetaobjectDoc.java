@@ -6,8 +6,8 @@ import meta.AttachedDeclarationKind;
 import meta.CyanMetaobjectAtAnnot;
 import meta.IAction_cge;
 import meta.IAction_dpp;
-import meta.ICompilerAction_dpa;
-import meta.ICompilerInfo_dpa;
+import meta.ICompilerAction_parsing;
+import meta.ICompilerInfo_parsing;
 import meta.ICompiler_dpp;
 import meta.IDeclaration;
 import meta.IDeclarationWritable;
@@ -32,7 +32,7 @@ import meta.WrProgram_dpp;
  */
 
 public class CyanMetaobjectDoc extends CyanMetaobjectAtAnnot
-		implements IAction_cge, ICompilerInfo_dpa, IAction_dpp {
+		implements IAction_cge, ICompilerInfo_parsing, IAction_dpp {
 
 	public CyanMetaobjectDoc() {
 		super("doc", AnnotationArgumentsKind.ZeroParameters,
@@ -51,7 +51,7 @@ public class CyanMetaobjectDoc extends CyanMetaobjectAtAnnot
 	}
 
 	/*
-	 * @see ast.CyanMetaobject#dsa_javaCodeThatReplacesMetaobjectAnnotation()()
+	 * @see ast.CyanMetaobject#semAn_javaCodeThatReplacesAnnotation()()
 	 */
 	@Override
 	public StringBuffer cge_codeToAdd() {
@@ -59,7 +59,7 @@ public class CyanMetaobjectDoc extends CyanMetaobjectAtAnnot
 
 
 		sb.append("    /**");
-		sb.append( ((WrAnnotationAt) metaobjectAnnotation)
+		sb.append( ((WrAnnotationAt) annotation)
 				.getTextAttachedDSL() );
 		sb.append("    */");
 		return sb;
@@ -72,8 +72,8 @@ public class CyanMetaobjectDoc extends CyanMetaobjectAtAnnot
 
 
 	@Override
-	public void action_dpa(ICompilerAction_dpa compiler)	 {
-		final WrAnnotationAt annot = this.getMetaobjectAnnotation();
+	public void action_parsing(ICompilerAction_parsing compiler)	 {
+		final WrAnnotationAt annot = this.getAnnotation();
 		final IDeclaration dec = annot.getDeclaration();
 		String text = new String( annot.getTextAttachedDSL() );
 		if ( dec instanceof IDeclarationWritable ) {
@@ -84,7 +84,7 @@ public class CyanMetaobjectDoc extends CyanMetaobjectAtAnnot
 	@Override
 	public void dpp_action(ICompiler_dpp project) {
 
-		String text = new String( ((WrAnnotationAt) metaobjectAnnotation)
+		String text = new String( ((WrAnnotationAt) annotation)
 				.getTextAttachedDSL() );
 		IDeclaration dec = this.getAttachedDeclaration();
 		if ( dec instanceof WrProgram_dpp ) {

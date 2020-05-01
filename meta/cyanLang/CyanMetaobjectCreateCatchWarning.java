@@ -5,8 +5,8 @@ import java.util.List;
 import java.util.HashSet;
 import meta.AnnotationArgumentsKind;
 import meta.CyanMetaobjectAtAnnot;
-import meta.IAction_dpa;
-import meta.ICompilerAction_dpa;
+import meta.IAction_parsing;
+import meta.ICompilerAction_parsing;
 
 /**
  * This metaobject create the  methods for the CatchWarning prototype
@@ -14,7 +14,7 @@ import meta.ICompilerAction_dpa;
  */
 
 public class CyanMetaobjectCreateCatchWarning extends CyanMetaobjectAtAnnot 
-	implements IAction_dpa {
+	implements IAction_parsing {
 
 		public CyanMetaobjectCreateCatchWarning() { 
 			super("createCatchWarning", AnnotationArgumentsKind.ZeroParameters);
@@ -22,12 +22,12 @@ public class CyanMetaobjectCreateCatchWarning extends CyanMetaobjectAtAnnot
 
 
 		@Override
-		public StringBuffer dpa_codeToAdd(ICompilerAction_dpa compiler) {
+		public StringBuffer parsing_codeToAdd(ICompilerAction_parsing compiler) {
 			
 			StringBuffer s = new StringBuffer();
 			
 			if ( ! compiler.getCurrentPrototypeId().equals("CatchWarning") ) {
-				compiler.error(this.getMetaobjectAnnotation().getFirstSymbol(), "Metaobject '" + getName() + 
+				compiler.error(this.getAnnotation().getFirstSymbol(), "Metaobject '" + getName() + 
 						"' should only be used in prototype CatchWarning");
 				return null;
 			}
@@ -35,16 +35,16 @@ public class CyanMetaobjectCreateCatchWarning extends CyanMetaobjectAtAnnot
 			
 			List<List<String>> strListList = compiler.getGenericPrototypeArgListList();
 			/* if ( strListList == null || ! compiler.getCurrentPrototypeName().startsWith("Union") ) {
-				compiler.error(this.getMetaobjectAnnotation().getFirstSymbol(), "Metaobject '" + getName() + 
+				compiler.error(this.getAnnotation().getFirstSymbol(), "Metaobject '" + getName() + 
 						"' should only be used in a generic prototype", 
-						this.getMetaobjectAnnotation().getFirstSymbol().getSymbolString(), ErrorKind.metaobject_error);
+						this.getAnnotation().getFirstSymbol().getSymbolString(), ErrorKind.metaobject_error);
 				return null;
 			}
 			*/
 			
 			int sizeListList = strListList.size();
 			if ( sizeListList != 1 ) {
-				compiler.error(this.getMetaobjectAnnotation().getFirstSymbol(), 
+				compiler.error(this.getAnnotation().getFirstSymbol(), 
 						"Prototype 'CatchWarning' should have just one pair of '<' and '>' with parameters (like 'CatchWarning<Exception1, Exception2>')");
 				return null;
 			}
@@ -58,7 +58,7 @@ public class CyanMetaobjectCreateCatchWarning extends CyanMetaobjectAtAnnot
 				s.append("    }\n");
 				
 				if ( set.contains(protoName) ) {
-					compiler.error(this.getMetaobjectAnnotation().getFirstSymbol(), 
+					compiler.error(this.getAnnotation().getFirstSymbol(), 
 							"Prototype '" + protoName + "' has been used twice in the instantiation of 'CatchWarning'");
 				}
 				set.add(protoName);

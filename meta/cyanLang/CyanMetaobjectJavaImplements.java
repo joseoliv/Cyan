@@ -4,11 +4,11 @@ import ast.ObjectDec;
 import meta.AnnotationArgumentsKind;
 import meta.AttachedDeclarationKind;
 import meta.CyanMetaobjectAtAnnot;
-import meta.ICheckDeclaration_afsa;
-import meta.ICompiler_dsa;
+import meta.ICheckDeclaration_afterSemAn;
+import meta.ICompiler_semAn;
 import meta.MetaHelper;
 import meta.WrAnnotationAt;
-import meta.WrProgramUnit;
+import meta.WrPrototype;
 
 /**
  * The annotation of this metaobject should be attached to a prototype and should have a sole parameter.
@@ -19,7 +19,7 @@ import meta.WrProgramUnit;
  * object Test ... end<br>
    @author jose
  */
-public class CyanMetaobjectJavaImplements extends CyanMetaobjectAtAnnot implements ICheckDeclaration_afsa {
+public class CyanMetaobjectJavaImplements extends CyanMetaobjectAtAnnot implements ICheckDeclaration_afterSemAn {
 
 	public CyanMetaobjectJavaImplements() {
 		super("javaImplements", AnnotationArgumentsKind.OneParameter,
@@ -28,9 +28,9 @@ public class CyanMetaobjectJavaImplements extends CyanMetaobjectAtAnnot implemen
 
 
 	@Override
-	public void afsa_checkDeclaration(ICompiler_dsa compiler) {
-		final WrAnnotationAt annotation = (WrAnnotationAt  ) this.metaobjectAnnotation;
-		final WrProgramUnit pu = (WrProgramUnit  ) annotation.getDeclaration();
+	public void afterSemAn_checkDeclaration(ICompiler_semAn compiler) {
+		final WrAnnotationAt annotation = (WrAnnotationAt  ) this.annotation;
+		final WrPrototype pu = (WrPrototype  ) annotation.getDeclaration();
 		if ( pu == null ) {
 			addError("This metaobject should be used inside a prototype");
 			return ;
@@ -47,7 +47,7 @@ public class CyanMetaobjectJavaImplements extends CyanMetaobjectAtAnnot implemen
 		String param = (String ) objParam;
 		param = MetaHelper.removeQuotes(param);
 
-		ObjectDec hiddenPU = (ObjectDec ) meta.GetHiddenItem.getHiddenProgramUnit(pu);
+		ObjectDec hiddenPU = (ObjectDec ) meta.GetHiddenItem.getHiddenPrototype(pu);
 		// this.addError("Metaobject javaImplements should not be used. If necessary, uncomment the lines below");
 		if ( ! hiddenPU.addJavaInterface(param) ) {
 			compiler.error(annotation.getFirstSymbol(), "The interface '" + param + "' is already in the list of Java interfaces "

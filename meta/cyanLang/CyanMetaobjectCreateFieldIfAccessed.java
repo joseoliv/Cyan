@@ -4,12 +4,12 @@ import java.util.List;
 import meta.AnnotationArgumentsKind;
 import meta.AttachedDeclarationKind;
 import meta.CyanMetaobjectAtAnnot;
-import meta.IActionFieldMissing_dsa;
-import meta.IAction_afti;
-import meta.IAction_dsa;
-import meta.ICompiler_afti;
-import meta.ICompiler_dsa;
-import meta.ISlotInterface;
+import meta.IActionFieldMissing_semAn;
+import meta.IAction_afterResTypes;
+import meta.IAction_semAn;
+import meta.ICompiler_afterResTypes;
+import meta.ICompiler_semAn;
+import meta.ISlotSignature;
 import meta.MetaHelper;
 import meta.Tuple2;
 import meta.Tuple3;
@@ -18,7 +18,7 @@ import meta.WrEnv;
 import meta.WrExpr;
 import meta.WrExprSelfPeriodIdent;
 import meta.WrFieldDec;
-import meta.WrProgramUnit;
+import meta.WrPrototype;
 
 /**
  *  Annotation 'createFieldIfAccessed' should be attached to a prototype. The associated metaobject
@@ -30,7 +30,7 @@ import meta.WrProgramUnit;
    @author jose
  */
 public class CyanMetaobjectCreateFieldIfAccessed extends CyanMetaobjectAtAnnot
-    implements IActionFieldMissing_dsa, IAction_afti, IAction_dsa {
+    implements IActionFieldMissing_semAn, IAction_afterResTypes, IAction_semAn {
 
 	public CyanMetaobjectCreateFieldIfAccessed() {
 		super("createFieldIfAccessed", AnnotationArgumentsKind.ZeroParameters,
@@ -41,15 +41,15 @@ public class CyanMetaobjectCreateFieldIfAccessed extends CyanMetaobjectAtAnnot
 
 	@Override
 	public
-	Tuple3<String, String, StringBuffer> dsa_replaceGetMissingField(
+	Tuple3<String, String, StringBuffer> semAn_replaceGetMissingField(
 			WrExprSelfPeriodIdent fieldToGet, WrEnv env) {
 
 //		String fieldSelfName = fieldToGet.asString().substring(5);
 //		boolean found = false;
-//		int size = this.getMetaobjectAnnotation().getJavaParameterList().size();
+//		int size = this.getAnnotation().getJavaParameterList().size();
 //		args = new String[size];
 //		for (int i = 0; i < size; ++i) {
-//			args[i] = this.getMetaobjectAnnotation().getJavaParameterList().get(i).toString();
+//			args[i] = this.getAnnotation().getJavaParameterList().get(i).toString();
 //			if ( args[i].equals(fieldSelfName) ) {
 //				found = true;
 //			}
@@ -86,7 +86,7 @@ public class CyanMetaobjectCreateFieldIfAccessed extends CyanMetaobjectAtAnnot
 
 	@Override
 	public
-	StringBuffer dsa_replaceSetMissingField(
+	StringBuffer semAn_replaceSetMissingField(
 			WrExprSelfPeriodIdent fieldToSet, WrExpr rightHandSideAssignment, WrEnv env) {
 		String fn = fieldToSet.asString();
 		if ( fn.startsWith("self.") ) { fn = fn.substring(5); }
@@ -98,16 +98,16 @@ public class CyanMetaobjectCreateFieldIfAccessed extends CyanMetaobjectAtAnnot
 
 
 	@Override
-	public StringBuffer dsa_codeToAdd(ICompiler_dsa compiler) {
+	public StringBuffer semAn_codeToAdd(ICompiler_semAn compiler) {
 
-		WrProgramUnit proto = (WrProgramUnit ) this.getMetaobjectAnnotation().getDeclaration();
+		WrPrototype proto = (WrPrototype ) this.getAnnotation().getDeclaration();
 		for ( WrFieldDec iv : proto.getFieldList(compiler.getEnv()) ) {
 			String protoName = iv.getType().getFullName();
-			compiler.createNewGenericPrototype(this.getMetaobjectAnnotation().getFirstSymbol(),
-					compiler.getEnv().getCurrentCompilationUnit(), compiler.getEnv().getCurrentProgramUnit(),
+			compiler.createNewGenericPrototype(this.getAnnotation().getFirstSymbol(),
+					compiler.getEnv().getCurrentCompilationUnit(), compiler.getEnv().getCurrentPrototype(),
 					MetaHelper.cyanLanguagePackageName + ".Function<" + protoName + ">",
-					"Error caused by method dsa_codeToAdd of metaobject '" +
-							this.getMetaobjectAnnotation().getCyanMetaobject().getName() + "'. "
+					"Error caused by method semAn_codeToAdd of metaobject '" +
+							this.getAnnotation().getCyanMetaobject().getName() + "'. "
 					);
 
 		}
@@ -117,9 +117,9 @@ public class CyanMetaobjectCreateFieldIfAccessed extends CyanMetaobjectAtAnnot
 
 	@Override
 	public
-	Tuple2<StringBuffer, String> afti_codeToAdd(
-			ICompiler_afti compiler, List<Tuple2<WrAnnotation, List<ISlotInterface>>> infoList)  {
-		if ( this.metaobjectAnnotation.getMetaobjectAnnotationNumberByKind() == 1 ) {
+	Tuple2<StringBuffer, String> afterResTypes_codeToAdd(
+			ICompiler_afterResTypes compiler, List<Tuple2<WrAnnotation, List<ISlotSignature>>> infoList)  {
+		if ( this.annotation.getAnnotationNumberByKind() == 1 ) {
 			return new Tuple2<StringBuffer, String>(new StringBuffer("    var IMap<String, Dyn> missingFieldMap = HashMap<String, Dyn>();\n"),
 					"    var IMap<String, Dyn> missingFieldMap;");
 		}

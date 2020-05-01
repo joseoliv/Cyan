@@ -27,7 +27,8 @@ public class ExprLiteralMap extends ExprAnyLiteral {
 	 *
 	 */
 	public ExprLiteralMap( Symbol startSymbol, Symbol endSymbol,
-			                 List<Expr> exprList ) {
+			                 List<Expr> exprList, MethodDec method) {
+		super(method);
 		this.startSymbol = startSymbol;
 		this.endSymbol = endSymbol;
 		this.exprList = exprList;
@@ -179,8 +180,8 @@ public class ExprLiteralMap extends ExprAnyLiteral {
 		valueType = exprList.get(1).getType(env);
 
 
-		if ( (keyType.getInsideType() instanceof ProgramUnit || keyType == Type.Dyn) &&
-				(valueType.getInsideType() instanceof ProgramUnit || valueType == Type.Dyn) ) {
+		if ( (keyType.getInsideType() instanceof Prototype || keyType == Type.Dyn) &&
+				(valueType.getInsideType() instanceof Prototype || valueType == Type.Dyn) ) {
 
 			int size = exprList.size();
 			for (int i = 0; i < size; ++i) {
@@ -222,7 +223,7 @@ public class ExprLiteralMap extends ExprAnyLiteral {
 
 			SymbolIdent symbolIdent = new SymbolIdent(Token.IDENT, "HashMap", sym.getStartLine(),
 					sym.getLineNumber(), sym.getColumnNumber(), sym.getOffset(), sym.getCompilationUnit() );
-			ExprIdentStar typeIdent = new ExprIdentStar(symbolIdent);
+			ExprIdentStar typeIdent = new ExprIdentStar(null, symbolIdent);
 
 			List<List<Expr>> realTypeListList = new ArrayList<List<Expr>>();
 			List<Expr> realTypeList = new ArrayList<Expr>();
@@ -235,7 +236,7 @@ public class ExprLiteralMap extends ExprAnyLiteral {
 			realTypeListList.add(realTypeList);
 
 			ExprGenericPrototypeInstantiation gpi = new ExprGenericPrototypeInstantiation( typeIdent,
-					realTypeListList, env.getCurrentProgramUnit(), null);
+					realTypeListList, env.getCurrentPrototype(), null, null);
 			type = null;
 			List<Expr> interfaceExprList = ((ObjectDec ) CompilerManager.createGenericPrototype(gpi, env)).getInterfaceList();
 			for ( Expr interfaceExpr : interfaceExprList ) {
@@ -249,7 +250,7 @@ public class ExprLiteralMap extends ExprAnyLiteral {
 						+ NameServer.IMapName + "<...>'" );
 			}
 			/* String typeName = "Array<" + p.getName() + ">";
-			type = env.searchVisibleProgramUnit(typeName, exprList.get(0).getFirstSymbol(), true); */
+			type = env.searchVisiblePrototype(typeName, exprList.get(0).getFirstSymbol(), true); */
 			assert type != null;
 		}
 		else //if ( keyType instanceof TypeJava )

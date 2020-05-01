@@ -4,11 +4,11 @@ import java.util.List;
 import meta.AnnotationArgumentsKind;
 import meta.AttachedDeclarationKind;
 import meta.CyanMetaobjectAtAnnot;
-import meta.IAction_afti;
-import meta.ICheckDeclaration_afsa;
-import meta.ICompiler_afti;
-import meta.ICompiler_dsa;
-import meta.ISlotInterface;
+import meta.IAction_afterResTypes;
+import meta.ICheckDeclaration_afterSemAn;
+import meta.ICompiler_afterResTypes;
+import meta.ICompiler_semAn;
+import meta.ISlotSignature;
 import meta.Tuple2;
 import meta.WrASTVisitor;
 import meta.WrAnnotation;
@@ -17,7 +17,7 @@ import meta.WrEnv;
 import meta.WrFieldDec;
 import meta.WrMethodDec;
 import meta.WrMethodSignature;
-import meta.WrProgramUnit;
+import meta.WrPrototype;
 
 /**
  * This is a demonstration metaobject. <br>
@@ -25,7 +25,7 @@ import meta.WrProgramUnit;
    @author jose
  */
 public class CyanMetaobjectAddComp extends CyanMetaobjectAtAnnot
-           implements IAction_afti, ICheckDeclaration_afsa   {
+           implements IAction_afterResTypes, ICheckDeclaration_afterSemAn   {
 
 	public CyanMetaobjectAddComp() {
 		super("addComp", AnnotationArgumentsKind.ZeroParameters,
@@ -37,27 +37,27 @@ public class CyanMetaobjectAddComp extends CyanMetaobjectAtAnnot
 
     /*
     @Override
-	public Tuple2<String, ExprAnyLiteral> infoToAddProgramUnit() {
-		// List<Expr> exprList = ((AnnotationAt ) metaobjectAnnotation).getRealParameterList();
+	public Tuple2<String, ExprAnyLiteral> infoToAddPrototype() {
+		// List<Expr> exprList = ((AnnotationAt ) annotation).getRealParameterList();
 		@SuppressWarnings("unchecked")
-		Tuple2<String, ExprAnyLiteral> t = (Tuple2<String, ExprAnyLiteral> ) getMetaobjectAnnotation().getInfo_dpa();
+		Tuple2<String, ExprAnyLiteral> t = (Tuple2<String, ExprAnyLiteral> ) getAnnotation().getInfo_parsing();
 		return t;
 	}
     */
 
 
 	@Override
-	public Tuple2<StringBuffer, String> afti_codeToAdd(
-			ICompiler_afti compiler, List<Tuple2<WrAnnotation, List<ISlotInterface>>> infoList){
+	public Tuple2<StringBuffer, String> afterResTypes_codeToAdd(
+			ICompiler_afterResTypes compiler, List<Tuple2<WrAnnotation, List<ISlotSignature>>> infoList){
 
-		final WrAnnotationAt annot = this.getMetaobjectAnnotation();
+		final WrAnnotationAt annot = this.getAnnotation();
 
 		// ObjectDec é a classe da AST que representa protótipos que não são
 		// interfaces
         // =============================== A ==============================
 			/* conferir se T e um prototipo (nao pode ser interface);  */
 
-		final WrProgramUnit prototype = (WrProgramUnit ) annot.getDeclaration();
+		final WrPrototype prototype = (WrPrototype ) annot.getDeclaration();
 		if ( prototype.isInterface() )  {
         	this.addError("Tipo do prototipo nao pode ser uma interface");
         	return null;
@@ -71,9 +71,9 @@ public class CyanMetaobjectAddComp extends CyanMetaobjectAtAnnot
 		final String methodName = "<1";
 		List<WrMethodSignature> mList;
 		WrMethodDec lessThanMethod = null;
-		mList = compiler.getProgramUnit().searchMethodPrivateProtectedPublic(methodName, compiler.getEnv());
+		mList = compiler.getPrototype().searchMethodPrivateProtectedPublic(methodName, compiler.getEnv());
 		if ( mList != null && mList.size() > 0 ) {
-			if ( mList.get(0).getParameterList().get(0).getType() != compiler.getProgramUnit() ) {
+			if ( mList.get(0).getParameterList().get(0).getType() != compiler.getPrototype() ) {
 				// erro
 				this.addError("Tipo de parâmetro errado para método <");
 				return null;
@@ -214,15 +214,15 @@ public class CyanMetaobjectAddComp extends CyanMetaobjectAtAnnot
 
 
 	@Override
-	public void afsa_checkDeclaration(ICompiler_dsa compiler)  {
-		final WrAnnotationAt annot = this.getMetaobjectAnnotation();
+	public void afterSemAn_checkDeclaration(ICompiler_semAn compiler)  {
+		final WrAnnotationAt annot = this.getAnnotation();
 
 
 		final String methodName = "<1";
 		List<WrMethodSignature> mList;
 		WrMethodDec lessThanMethod = null;
 
-		mList = compiler.getEnv().getCurrentProgramUnit()
+		mList = compiler.getEnv().getCurrentPrototype()
 				.searchMethodPrivateProtectedPublic(methodName, compiler.getEnv());
 		lessThanMethod = mList.get(0).getMethod();
 		lessThanMethod.accept(new WrASTVisitor() {

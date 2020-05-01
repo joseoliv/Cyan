@@ -15,7 +15,7 @@ import ast.GenericParameter;
 import ast.JVMPackage;
 import ast.MethodDec;
 import ast.Program;
-import ast.ProgramUnit;
+import ast.Prototype;
 import ast.Type;
 import ast.TypeJavaRef;
 import error.CompileErrorException;
@@ -45,7 +45,7 @@ final public class CyanEnv {
 	 * use this constructor when generating code for inner prototypes (one for each function and method)
 	 */
 	public CyanEnv(boolean creatingInnerPrototypeFromFunction, boolean creatingContextObject) {
-		currentProgramUnit = null;
+		currentPrototype = null;
 		currentMethod = null;
 		this.exprGenericPrototypeInstantiation = null;
 		this.formalParamToRealParamTable = null;
@@ -58,16 +58,16 @@ final public class CyanEnv {
 
 	/**
 	 * use this constructor when generating code for instantiations of generic prototypes
-	   @param genericProgramUnit
+	   @param genericPrototype
 	   @param exprGenericPrototypeInstantiation
 	   @param env
 	 */
-	public CyanEnv(ProgramUnit genericProgramUnit, ExprGenericPrototypeInstantiation exprGenericType, Env env,
+	public CyanEnv(Prototype genericPrototype, ExprGenericPrototypeInstantiation exprGenericType, Env env,
 			String packageNameInstantiation, String prototypeNameInstantiation) {
 
 		creatingInstanceGenericPrototype = true;
 		creatingInnerPrototypesInsideEval = false;
-		currentProgramUnit = null;
+		currentPrototype = null;
 		realParamListList = new ArrayList<>();
 
 		this.packageNameInstantiation = packageNameInstantiation;
@@ -78,9 +78,9 @@ final public class CyanEnv {
 		 */
 		this.exprGenericPrototypeInstantiation = exprGenericType;
 		// does the generic program unit supports a varying number of parameters?
-		boolean isGPWithVaryingNumberParam = genericProgramUnit.getGenericParameterListList().get(0).get(0).getPlus();
+		boolean isGPWithVaryingNumberParam = genericPrototype.getGenericParameterListList().get(0).get(0).getPlus();
 
-		//this.genericProgramUnit = genericProgramUnit;
+		//this.genericPrototype = genericPrototype;
 		//this.exprGenericType = exprGenericPrototypeInstantiation;
 		formalParamToRealParamTable = new Hashtable<String, String>();
 		//formalParamToRealParamFileNameTable = new Hashtable<String, String>();
@@ -125,7 +125,7 @@ final public class CyanEnv {
 							Program program = env.getProject().getProgram();
 							if ( ! realParam.equals(NameServer.dynName) && ! program.isInPackageCyanLang(realParam) ) {
 
-								ProgramUnit pu = env.searchVisibleProgramUnit(realParam, e.getFirstSymbol(), false);
+								Prototype pu = env.searchVisiblePrototype(realParam, e.getFirstSymbol(), false);
 								if ( pu != null ) {
 										CompilationUnit cunit = pu.getCompilationUnit();
 										realParam = cunit.getPackageName() + "." + realParam;
@@ -175,7 +175,7 @@ final public class CyanEnv {
 
 			//usedGenericPrototypeSet = new HashSet<String>();
 			i = 0;
-			for ( List<GenericParameter> gpList : genericProgramUnit.getGenericParameterListList()  ) {
+			for ( List<GenericParameter> gpList : genericPrototype.getGenericParameterListList()  ) {
 				j = 0;
 				List<String> realParamList = new ArrayList<>();
 				if ( i < exprGenericType.getRealTypeListList().size() ) {
@@ -253,7 +253,7 @@ final public class CyanEnv {
 				if ( realParam.equals(MetaHelper.dynName) )
 					return realParam;
 				// a single prototype name without a package name
-				ProgramUnit pu = env.searchVisibleProgramUnit(realParam, e.getFirstSymbol(), false);
+				Prototype pu = env.searchVisiblePrototype(realParam, e.getFirstSymbol(), false);
 				if ( pu != null ) {
 					CompilationUnit cunit = pu.getCompilationUnit();
 					packageName = cunit.getPackageName();
@@ -291,7 +291,7 @@ final public class CyanEnv {
 					// not in cyan.lang package
 					fullName = packageName + "." + prototypeName;
 				}
-				ProgramUnit pu = env.searchVisibleProgramUnit(fullName, e.getFirstSymbol(), false);
+				Prototype pu = env.searchVisiblePrototype(fullName, e.getFirstSymbol(), false);
 				if ( pu != null ) {
 					return fullName;
 				}
@@ -371,16 +371,16 @@ final public class CyanEnv {
 
 
 
-	public void atBeginningOfProgramUnit(ProgramUnit currentObjectDec) {
-		this.currentProgramUnit = currentObjectDec;
+	public void atBeginningOfPrototype(Prototype currentObjectDec) {
+		this.currentPrototype = currentObjectDec;
 	}
 
-	public void atEndOfCurrentProgramUnit() {
-		currentProgramUnit = null;
+	public void atEndOfCurrentPrototype() {
+		currentPrototype = null;
 	}
 
-	public ProgramUnit getCurrentProgramUnit() {
-		return currentProgramUnit;
+	public Prototype getCurrentPrototype() {
+		return currentPrototype;
 	}
 
 	public boolean getCreatingInstanceGenericPrototype() {
@@ -460,7 +460,7 @@ final public class CyanEnv {
 	/**
 	 * the current Program unit
 	 */
-	private ProgramUnit	currentProgramUnit;
+	private Prototype	currentPrototype;
 
 
 	/**

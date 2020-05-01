@@ -60,12 +60,12 @@ public class WrEvalEnv {
 	}
 
 
-	public WrProgramUnit getCurrentProgramUnit() {
-		return currentProgramUnit;
+	public WrPrototype getCurrentPrototype() {
+		return currentPrototype;
 	}
 
-	public void setCurrentProgramUnit(WrProgramUnit currentProgramUnit) {
-		this.currentProgramUnit = currentProgramUnit;
+	public void setCurrentPrototype(WrPrototype currentPrototype) {
+		this.currentPrototype = currentPrototype;
 	}
 
 
@@ -85,7 +85,7 @@ public class WrEvalEnv {
 
 	EvalEnv hidden;
 	private WrMethodDec currentMethod = null;
-	private WrProgramUnit currentProgramUnit = null;
+	private WrPrototype currentPrototype = null;
 	private WrCompilationUnit compilationUnit = null;
 
 	private WrEnv wrEnvToBeUsedInVisitor = null;

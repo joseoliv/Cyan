@@ -5,7 +5,7 @@ package meta.cyanLang;
 
 import java.util.List;
 import meta.WrEnv;
-import meta.WrProgramUnit;
+import meta.WrPrototype;
 import meta.WrSymbol;
 import meta.Token;
 
@@ -102,7 +102,7 @@ abstract public class MessageKeywordGrammar extends IMessageKeyword {
 	 *      fun (add: (Int)*) :t [ ... ]
 	   @param env
 	 */
-	abstract public WrProgramUnit getParameterType(WrEnv env);
+	abstract public WrPrototype getParameterType(WrEnv env);
 	/**
 	 * the regular language operator that appear after the list of
 	 * keywords. In

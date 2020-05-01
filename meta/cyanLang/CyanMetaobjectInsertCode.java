@@ -2,16 +2,16 @@ package meta.cyanLang;
 
 import java.util.ArrayList;
 import java.util.List;
-import error.CompileErrorException;
 import meta.AnnotationArgumentsKind;
+import meta.AttachedDeclarationKind;
 import meta.CyanMetaobjectAtAnnot;
-import meta.IAction_afti;
-import meta.IAction_dsa;
-import meta.ICompiler_afti;
-import meta.ICompiler_dpa;
-import meta.ICompiler_dsa;
-import meta.IParseWithCyanCompiler_dpa;
-import meta.ISlotInterface;
+import meta.IAction_afterResTypes;
+import meta.IAction_semAn;
+import meta.ICompiler_afterResTypes;
+import meta.ICompiler_parsing;
+import meta.ICompiler_semAn;
+import meta.IParseWithCyanCompiler_parsing;
+import meta.ISlotSignature;
 import meta.InterpretationErrorException;
 import meta.Token;
 import meta.Tuple2;
@@ -73,10 +73,14 @@ end
    @author jose
  */
 public class CyanMetaobjectInsertCode extends CyanMetaobjectAtAnnot
-    implements IAction_afti, IAction_dsa, IParseWithCyanCompiler_dpa {
+    implements IAction_afterResTypes, IAction_semAn, IParseWithCyanCompiler_parsing {
 
 	public CyanMetaobjectInsertCode() {
-		super("insertCode", AnnotationArgumentsKind.ZeroParameters );
+		super("insertCode", AnnotationArgumentsKind.ZeroParameters,
+				new AttachedDeclarationKind [] { AttachedDeclarationKind.PROTOTYPE_DEC,
+						AttachedDeclarationKind.METHOD_DEC,
+						AttachedDeclarationKind.METHOD_SIGNATURE_DEC,
+						AttachedDeclarationKind.NONE_DEC});
 	}
 
 
@@ -84,24 +88,23 @@ public class CyanMetaobjectInsertCode extends CyanMetaobjectAtAnnot
 	public boolean shouldTakeText() { return true; }
 
 	@Override
-	public void dpa_parse(ICompiler_dpa compiler_dpa) {
-		compiler_dpa.next();
+	public void parsing_parse(ICompiler_parsing compiler_parsing) {
+		compiler_parsing.next();
 		statList = new ArrayList<>();
-		while ( compiler_dpa.getSymbol().token != Token.EOLO ) {
-			WrStatement lastStat = compiler_dpa.statement();
+		while ( compiler_parsing.getSymbol().token != Token.EOLO ) {
+			WrStatement lastStat = compiler_parsing.statement();
 			statList.add(lastStat);
-			compiler_dpa.removeLastExprStat();
+			compiler_parsing.removeLastExprStat();
 			if ( lastStat.demandSemicolon() ) {
-				if ( compiler_dpa.getSymbol().token == Token.SEMICOLON ) {
-					compiler_dpa.next();
+				if ( compiler_parsing.getSymbol().token == Token.SEMICOLON ) {
+					compiler_parsing.next();
 				}
 				else {
-					WrSymbol sym = compiler_dpa.getSymbol();
+					WrSymbol sym = compiler_parsing.getSymbol();
 					if ( sym.token == Token.EOF || sym.token == Token.EOLO ) {
 						sym = lastStat.getFirstSymbol();
 					}
-
-					throw new CompileErrorException("Error in line " + sym.getLineNumber()
+					this.addError(sym, "Error in line " + sym.getLineNumber()
 							+ "(" + sym.getColumnNumber() + "): ';' expected");
 				}
 			}
@@ -113,14 +116,15 @@ public class CyanMetaobjectInsertCode extends CyanMetaobjectAtAnnot
 	}
 
 	@Override
-	public Tuple2<StringBuffer, String> afti_codeToAdd(
-			ICompiler_afti compiler_afti, List<Tuple2<WrAnnotation, List<ISlotInterface>>> infoList) {
+	public Tuple2<StringBuffer, String> afterResTypes_codeToAdd(
+			ICompiler_afterResTypes compiler,
+			List<Tuple2<WrAnnotation, List<ISlotSignature>>> infoList) {
 
 		if ( statList.size() == 0 ) { return null; }
-		if ( this.getMetaobjectAnnotation().getInsideMethod() ) {
+		if ( this.getAnnotation().getInsideMethod() ) {
 			return null;
 		}
-		Tuple2<StringBuffer, String> t = evalCode( compiler_afti.getEnv());
+		Tuple2<StringBuffer, String> t = evalCode( compiler.getEnv(), compiler, infoList );
 		if ( t != null ) {
 			if ( t.f1 == null || t.f2 == null ) {
 				this.addError("Metaobject of annotation '" + this.getName() + "' was not able to evaluate the code");
@@ -132,10 +136,11 @@ public class CyanMetaobjectInsertCode extends CyanMetaobjectAtAnnot
 
 
 	/**
-	   @param compiler_afti
+	   @param compiler_afterResTypes
 	   @return
 	 */
-	private Tuple2<StringBuffer, String> evalCode(WrEnv env) {
+	private Tuple2<StringBuffer, String> evalCode(WrEnv env, ICompiler_afterResTypes compiler,
+			List<Tuple2<WrAnnotation, List<ISlotSignature>>> infoList ) {
 
 		if ( statList.size() == 0 ) { return null; }
 
@@ -167,6 +172,12 @@ public class CyanMetaobjectInsertCode extends CyanMetaobjectAtAnnot
 		ee = new WrEvalEnv( env, selfObject, fs.getFirstSymbol());
 		ee.addVariable("metaobject", this);
 		ee.addVariable("env", env);
+		if ( compiler != null ) {
+			ee.addVariable("compiler", compiler);
+		}
+		if ( infoList != null ) {
+			ee.addVariable("infoList", infoList);
+		}
 
 		for ( WrStatement is : statList ) {
 			try {
@@ -187,12 +198,12 @@ public class CyanMetaobjectInsertCode extends CyanMetaobjectAtAnnot
 
 
 	@Override
-	public StringBuffer dsa_codeToAdd(ICompiler_dsa compiler_dsa) {
+	public StringBuffer semAn_codeToAdd(ICompiler_semAn compiler_semAn) {
 
 		if ( statList.size() == 0 ) { return null; }
 
-		if ( this.getMetaobjectAnnotation().getInsideMethod() ) {
-			Tuple2<StringBuffer, String> t = evalCode(compiler_dsa.getEnv());
+		if ( this.getAnnotation().getInsideMethod() ) {
+			Tuple2<StringBuffer, String> t = evalCode(compiler_semAn.getEnv(), null, null );
 			if ( t != null ) {
 				return t.f1;
 			}

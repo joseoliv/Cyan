@@ -5,55 +5,56 @@ import cyan.lang._Tuple_LT_GP_CyString_GP_CyString_GP_CyString_GT;
 import meta.AnnotationArgumentsKind;
 import meta.AttachedDeclarationKind;
 import meta.CyanMetaobjectAtAnnot;
-import meta.IActionFieldMissing_dsa;
+import meta.IActionFieldMissing_semAn;
 import meta.InterpreterPrototype;
 import meta.MetaHelper;
+import meta.Token;
 import meta.Tuple3;
 import meta.WrEnv;
 import meta.WrExpr;
 import meta.WrExprSelfPeriodIdent;
 
 public class CyanMetaobjectOnFieldMissing extends CyanMetaobjectAtAnnot
-				implements IActionFieldMissing_dsa, IInterpreterMethods_afti
-//				IActionNewPrototypes_dsa, IActionNewPrototypes_afti,
-//				IAction_afti, IParseWithCyanCompiler_dpa, ICommunicateInPrototype_afti_dsa_afsa
+				implements IActionFieldMissing_semAn, IInterpreterMethods_afterResTypes
+//				IActionNewPrototypes_semAn, IActionNewPrototypes_afterResTypes,
+//				IAction_afterResTypes, IParseWithCyanCompiler_parsing, ICommunicateInPrototype_afterResTypes_semAn_afterSemAn
 				{
 
 	public CyanMetaobjectOnFieldMissing() {
 		super("onFieldMissing", AnnotationArgumentsKind.ZeroParameters,
 				new AttachedDeclarationKind[] { AttachedDeclarationKind.PROTOTYPE_DEC
-		});
+		}, Token.PUBLIC );
 
 	}
 
 
 //	@Override
-//	public void dpa_parse(ICompiler_dpa cp) {
+//	public void parsing_parse(ICompiler_parsing cp) {
 //
 //		cp.next();
 //		Tuple2<String, InterpreterPrototype> t = MetaHelper.parseCyanCode(cp);
 //		if ( t == null ) {
-//			cp.error(this.getMetaobjectAnnotation().getFirstSymbol(),
+//			cp.error(this.getAnnotation().getFirstSymbol(),
 //					"Internal error in metaobject '" + this.getClass().getName() + "'");
 //		}
 //		else {
 //			if ( t.f1 != null ) {
-//				cp.error(this.getMetaobjectAnnotation().getFirstSymbol(), t.f1);
+//				cp.error(this.getAnnotation().getFirstSymbol(), t.f1);
 //			}
 //			else {
 //				interpreterPrototype = t.f2;
 //				for ( String key : interpreterPrototype.mapMethodName_Body.keySet() ) {
 //					switch ( key ) {
-//					case "afti_codeToAdd":
+//					case "afterResTypes_codeToAdd":
 //					case "runUntilFixedPoint":
-//					case "afti_beforeMethodCodeList":
-//					case "afti_renameMethod":
-//					case "dsa_replaceGetMissingField":
-//					case "dsa_replaceSetMissingField":
-//					case "dsa_NewPrototypeList":
-//					case "afti_NewPrototypeList":
-//					case "afti_dsa_afsa_shareInfoPrototype":
-//					case "afti_dsa_afsa_receiveInfoPrototype":
+//					case "afterResTypes_beforeMethodCodeList":
+//					case "afterResTypes_renameMethod":
+//					case "semAn_replaceGetMissingField":
+//					case "semAn_replaceSetMissingField":
+//					case "semAn_NewPrototypeList":
+//					case "afterResTypes_NewPrototypeList":
+//					case "afterResTypes_semAn_afterSemAn_shareInfoPrototype":
+//					case "afterResTypes_semAn_afterSemAn_receiveInfoPrototype":
 //						break;
 //					default:
 //						this.addError("Unidentified method name: '" + key + "'");
@@ -70,28 +71,28 @@ public class CyanMetaobjectOnFieldMissing extends CyanMetaobjectAtAnnot
 //
 //
 //	@Override
-//	public Object afti_dsa_afsa_shareInfoPrototype(WrEnv env) {
+//	public Object afterResTypes_semAn_afterSemAn_shareInfoPrototype(WrEnv env) {
 //
 //		return MetaHelper.interpreterFor_MOPInterfaceMethod(
 //				null,
 //				env,
 //				interpreterPrototype,
 //				this,
-//				"afti_dsa_afsa_shareInfoPrototype",
+//				"afterResTypes_semAn_afterSemAn_shareInfoPrototype",
 //				   // "env" is added by the called method
 //				new String [] { }, new Object [] { },
 //				Object.class);
 //		}
 //
 //	@Override
-//	public void afti_dsa_afsa_receiveInfoPrototype(Set<Tuple4<String, Integer, Integer, Object>> annotationInfoSet, WrEnv env) {
+//	public void afterResTypes_semAn_afterSemAn_receiveInfoPrototype(Set<Tuple4<String, Integer, Integer, Object>> annotationInfoSet, WrEnv env) {
 //
 //		MetaHelper.interpreterFor_MOPInterfaceMethod(
 //				null,
 //				env,
 //				interpreterPrototype,
 //				this,
-//				"afti_dsa_afsa_receiveInfoPrototype",
+//				"afterResTypes_semAn_afterSemAn_receiveInfoPrototype",
 //				   // "env" is added by the called method
 //				new String [] { "annotationInfoSet" }, new Object [] { annotationInfoSet },
 //				null);
@@ -100,43 +101,43 @@ public class CyanMetaobjectOnFieldMissing extends CyanMetaobjectAtAnnot
 //
 //	@Override
 //	@SuppressWarnings("unchecked")
-//	public List<Tuple2<String, StringBuffer>> afti_NewPrototypeList(ICompiler_afti compiler_afti) {
+//	public List<Tuple2<String, StringBuffer>> afterResTypes_NewPrototypeList(ICompiler_afterResTypes compiler_afterResTypes) {
 //
 //		return (List<Tuple2<String, StringBuffer>> ) MetaHelper.interpreterFor_MOPInterfaceMethod(
-//				compiler_afti,
-//				compiler_afti.getEnv(),
+//				compiler_afterResTypes,
+//				compiler_afterResTypes.getEnv(),
 //				interpreterPrototype,
 //				this,
-//				"afti_NewPrototypeList",
+//				"afterResTypes_NewPrototypeList",
 //				   // "env" is added by the called method
-//				new String [] { "compiler" }, new Object [] { compiler_afti },
+//				new String [] { "compiler" }, new Object [] { compiler_afterResTypes },
 //				List.class);
 //
 //	}
 //
 //	@Override
 //	@SuppressWarnings("unchecked")
-//	public List<Tuple2<String, StringBuffer>> dsa_NewPrototypeList(ICompiler_dsa compiler_dsa) {
+//	public List<Tuple2<String, StringBuffer>> semAn_NewPrototypeList(ICompiler_semAn compiler_semAn) {
 //		return (List<Tuple2<String, StringBuffer>> ) MetaHelper.interpreterFor_MOPInterfaceMethod(
-//				compiler_dsa,
-//				compiler_dsa.getEnv(),
+//				compiler_semAn,
+//				compiler_semAn.getEnv(),
 //				interpreterPrototype,
 //				this,
-//				"dsa_NewPrototypeList",
+//				"semAn_NewPrototypeList",
 //				   // "env" is added by the called method
-//				new String [] { "compiler" }, new Object [] { compiler_dsa },
+//				new String [] { "compiler" }, new Object [] { compiler_semAn },
 //				List.class);
 //	}
 
 	@Override
-	public Tuple3<String, String, StringBuffer> dsa_replaceGetMissingField(
+	public Tuple3<String, String, StringBuffer> semAn_replaceGetMissingField(
 			WrExprSelfPeriodIdent fieldToGet, WrEnv env) {
 		Object r = MetaHelper.interpreterFor_MOPInterfaceMethod(
 				null,
 				env,
 				interpreterPrototype,
 				this,
-				"dsa_replaceGetMissingField",
+				"semAn_replaceGetMissingField",
 				   // "env" is added by the called method
 				new String [] { "fieldToGet" }, new Object [] { fieldToGet },
 				_Tuple_LT_GP_CyString_GP_CyString_GP_CyString_GT.class, "Tuple<String, String, String>");
@@ -160,14 +161,14 @@ public class CyanMetaobjectOnFieldMissing extends CyanMetaobjectAtAnnot
 
 	@Override
 	@SuppressWarnings({ })
-	public StringBuffer dsa_replaceSetMissingField(
+	public StringBuffer semAn_replaceSetMissingField(
 			WrExprSelfPeriodIdent fieldToSet, WrExpr rightHandSideAssignment, WrEnv env) {
 		Object r = MetaHelper.interpreterFor_MOPInterfaceMethod(
 				null,
 				env,
 				interpreterPrototype,
 				this,
-				"dsa_replaceSetMissingField",
+				"semAn_replaceSetMissingField",
 				   // "env" is added by the called method
 				new String [] { "fieldToSet", "rightHandSideAssignment" },
 				new Object [] { fieldToSet, rightHandSideAssignment },
@@ -191,9 +192,9 @@ public class CyanMetaobjectOnFieldMissing extends CyanMetaobjectAtAnnot
 //
 //	@SuppressWarnings("unchecked")
 //	@Override
-//	public Tuple2<StringBuffer, String> afti_codeToAdd(
-//			ICompiler_afti compiler, List<Tuple2<WrAnnotation,
-//			List<ISlotInterface>>> infoList) {
+//	public Tuple2<StringBuffer, String> afterResTypes_codeToAdd(
+//			ICompiler_afterResTypes compiler, List<Tuple2<WrAnnotation,
+//			List<ISlotSignature>>> infoList) {
 //
 //
 //		return (Tuple2<StringBuffer, String> ) MetaHelper.interpreterFor_MOPInterfaceMethod(
@@ -201,27 +202,27 @@ public class CyanMetaobjectOnFieldMissing extends CyanMetaobjectAtAnnot
 //				compiler.getEnv(),
 //				interpreterPrototype,
 //				this,
-//				"afti_codeToAdd",
+//				"afterResTypes_codeToAdd",
 //				new String [] { "compiler", "infoList" }, new Object [] { compiler, infoList },
 //				Tuple2.class);
 //
 //
-//		// return MetaHelper.interpreterFor_afti_codeToAdd(compiler, infoList, this.interpreterPrototype, this);
+//		// return MetaHelper.interpreterFor_afterResTypes_codeToAdd(compiler, infoList, this.interpreterPrototype, this);
 //
 //	}
 //
 //
 //	@SuppressWarnings("unchecked")
 //	@Override
-//	public List<Tuple2<String, StringBuffer>> afti_beforeMethodCodeList(
-//			ICompiler_afti compiler) {
+//	public List<Tuple2<String, StringBuffer>> afterResTypes_beforeMethodCodeList(
+//			ICompiler_afterResTypes compiler) {
 //
 //		return (List<Tuple2<String, StringBuffer>> ) MetaHelper.interpreterFor_MOPInterfaceMethod(
 //				compiler,
 //				compiler.getEnv(),
 //				interpreterPrototype,
 //				this,
-//				"afti_beforeMethodCodeList",
+//				"afterResTypes_beforeMethodCodeList",
 //				new String [] { "compiler" }, new Object [] { compiler },
 //				List.class);
 //
@@ -229,15 +230,15 @@ public class CyanMetaobjectOnFieldMissing extends CyanMetaobjectAtAnnot
 //
 //	@SuppressWarnings("unchecked")
 //	@Override
-//	public List<Tuple2<String, String []>> afti_renameMethod(
-//			ICompiler_afti compiler) {
+//	public List<Tuple2<String, String []>> afterResTypes_renameMethod(
+//			ICompiler_afterResTypes compiler) {
 //
 //		return (List<Tuple2<String, String []>> ) MetaHelper.interpreterFor_MOPInterfaceMethod(
 //				compiler,
 //				compiler.getEnv(),
 //				interpreterPrototype,
 //				this,
-//				"afti_renameMethod",
+//				"afterResTypes_renameMethod",
 //				   // "env" is added by the called method
 //				new String [] { "compiler" }, new Object [] { compiler },
 //				List.class);
@@ -276,10 +277,10 @@ public class CyanMetaobjectOnFieldMissing extends CyanMetaobjectAtAnnot
 
 	@Override
 	public String[] methodToInterpertList() {
-		return new String[] { "afti_codeToAdd", "dsa_NewPrototypeList",
-				"afti_NewPrototypeList", "runUntilFixedPoint", "afti_beforeMethodCodeList",
-				"afti_renameMethod", "afti_dsa_afsa_shareInfoPrototype", "afti_dsa_afsa_receiveInfoPrototype",
-				"dsa_replaceGetMissingField", "dsa_replaceSetMissingField" };
+		return new String[] { "afterResTypes_codeToAdd", "semAn_NewPrototypeList",
+				"afterResTypes_NewPrototypeList", "runUntilFixedPoint", "afterResTypes_beforeMethodCodeList",
+				"afterResTypes_renameMethod", "afterResTypes_semAn_afterSemAn_shareInfoPrototype", "afterResTypes_semAn_afterSemAn_receiveInfoPrototype",
+				"semAn_replaceGetMissingField", "semAn_replaceSetMissingField" };
 	}
 
 

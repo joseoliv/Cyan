@@ -34,8 +34,8 @@ abstract public class Type implements ASTNode {
 	public static Type String = null;
 	public static Type Nil = null;
 	public static Type Any = null;
-	public static ProgramUnit IMapName;
-	public static ProgramUnit ISetName;
+	public static Prototype IMapName;
+	public static Prototype ISetName;
 	/**
 	 * this is the type of an message send with backquote like
 	 *      person `str
@@ -192,10 +192,10 @@ abstract public class Type implements ASTNode {
 
 
 		if ( leftType.getInsideType() instanceof TypeJavaRef && rightType.getInsideType() instanceof TypeJavaRef ||
-			 leftType.getInsideType() instanceof ProgramUnit && rightType.getInsideType() instanceof ProgramUnit  ) {
+			 leftType.getInsideType() instanceof Prototype && rightType.getInsideType() instanceof Prototype  ) {
 			return rightTmpVar;
 		}
-		else if ( leftType.getInsideType() instanceof TypeJavaRef && rightType.getInsideType() instanceof ProgramUnit ) {
+		else if ( leftType.getInsideType() instanceof TypeJavaRef && rightType.getInsideType() instanceof Prototype ) {
 			/*
 			 * assignment of the type
 			 *     Java = Cyan
@@ -221,7 +221,7 @@ abstract public class Type implements ASTNode {
 						+ "Java, type '" + leftType.getFullName() + "'");
 			}
         }
-        else if ( rightType.getInsideType() instanceof TypeJavaRef && leftType.getInsideType() instanceof ProgramUnit ) {
+        else if ( rightType.getInsideType() instanceof TypeJavaRef && leftType.getInsideType() instanceof Prototype ) {
 			/*
 			 * assignment of the type
 			 *     Cyan = Java
@@ -265,7 +265,7 @@ abstract public class Type implements ASTNode {
        					"' to the Cyan type '" + leftType.getFullName() + "'");
 			}
         }
-        else if ( leftType.getInsideType() instanceof ProgramUnit && rightType.getInsideType() == Type.Dyn ) {
+        else if ( leftType.getInsideType() instanceof Prototype && rightType.getInsideType() == Type.Dyn ) {
         	return rightTmpVar;
         }
         else if ( leftType != Type.Dyn && rightType != Type.Dyn ){

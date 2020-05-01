@@ -5,10 +5,10 @@ package lexer;
    @author José
  */
 public enum CompilerPhase {
-	DPA("dpa"),
-	AFTI("afti"),
-	DSA("dsa"),
-	AFSA("afsa"),
+	PARSING("parsing"),
+	AF_RES_TYPES("afterResTypes"),
+	SEM_AN("semAn"),
+	AFTER_SEM_AN("afterSemAn"),
 	CGE("cge");
 
 	private CompilerPhase(String name) {

@@ -17,6 +17,11 @@ abstract public class ExprAnyLiteral extends Expr {
 
 
 
+	public ExprAnyLiteral(MethodDec method) {
+		super(method);
+	}
+
+
 	@Override
 	abstract public WrExprAnyLiteral getI();
 

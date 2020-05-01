@@ -2,15 +2,15 @@ package meta.cyanLang;
 
 import meta.AnnotationArgumentsKind;
 import meta.CyanMetaobjectAtAnnot;
-import meta.IAction_dpa;
-import meta.ICompilerAction_dpa;
+import meta.IAction_parsing;
+import meta.ICompilerAction_parsing;
 
 /**
  * This metaobject creates methods for prototype <code>Function{@literal<}Nil></code>.
    @author jose
  */
 public class CyanMetaobjectCreateCatchMethodsForFunctionNil extends CyanMetaobjectAtAnnot
-		implements IAction_dpa {
+		implements IAction_parsing {
 
 	public CyanMetaobjectCreateCatchMethodsForFunctionNil() {
 		super("createCatchMethodsForFunctionNil", AnnotationArgumentsKind.ZeroParameters);
@@ -18,12 +18,12 @@ public class CyanMetaobjectCreateCatchMethodsForFunctionNil extends CyanMetaobje
 
 
 	@Override
-	public StringBuffer dpa_codeToAdd(ICompilerAction_dpa compiler) {
+	public StringBuffer parsing_codeToAdd(ICompilerAction_parsing compiler) {
 
 		StringBuffer s = new StringBuffer();
 
 		if ( ! compiler.getCurrentPrototypeName().equals("Function<Nil>") ) {
-			compiler.error(this.getMetaobjectAnnotation().getFirstSymbol(), "Metaobject '" + getName() +
+			compiler.error(this.getAnnotation().getFirstSymbol(), "Metaobject '" + getName() +
 					"' should only be used in prototype Function<Nil>");
 			return null;
 		}

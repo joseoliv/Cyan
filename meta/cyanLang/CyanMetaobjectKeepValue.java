@@ -5,9 +5,9 @@ import meta.AnnotationArgumentsKind;
 import meta.CyanMetaobject;
 import meta.CyanMetaobjectAtAnnot;
 import meta.DirectoryKindPPP;
-import meta.IAction_dsa;
-import meta.ICommunicateInPrototype_afti_dsa_afsa;
-import meta.ICompiler_dsa;
+import meta.IAction_semAn;
+import meta.ICommunicateInPrototype_afterResTypes_semAn_afterSemAn;
+import meta.ICompiler_semAn;
 import meta.IVariableDecInterface;
 import meta.MetaHelper;
 import meta.Tuple4;
@@ -23,21 +23,21 @@ import meta.WrEnv;
    @author jose
  */
 public class CyanMetaobjectKeepValue extends CyanMetaobjectAtAnnot
-implements IAction_dsa,
-ICommunicateInPrototype_afti_dsa_afsa {
+implements IAction_semAn,
+ICommunicateInPrototype_afterResTypes_semAn_afterSemAn {
 
 	public CyanMetaobjectKeepValue() {
 		super("keepValue", AnnotationArgumentsKind.OneParameter);
 	}
 
 	@Override
-	public StringBuffer dsa_codeToAdd(ICompiler_dsa compiler_dsa) {
+	public StringBuffer semAn_codeToAdd(ICompiler_semAn compiler_semAn) {
 
-		checkIfPackageWasImported(compiler_dsa, "cyan.io");
+		checkIfPackageWasImported(compiler_semAn, "cyan.io");
 		final StringBuffer s = new StringBuffer();
 
 		// AnnotationAt annotation = (ast.AnnotationAt ) this.metaobjectAnnotation;
-		final WrAnnotationAt annotation = this.getMetaobjectAnnotation();
+		final WrAnnotationAt annotation = this.getAnnotation();
 		final Object first = annotation.getJavaParameterList().get(0);
 		boolean ok = true;
 		if ( !(first instanceof String) ) {
@@ -45,15 +45,15 @@ ICommunicateInPrototype_afti_dsa_afsa {
 		}
 		else {
 			final String p = MetaHelper.removeQuotes((String ) first);
-			IVariableDecInterface v = compiler_dsa.searchLocalVariableParameter(p);
+			IVariableDecInterface v = compiler_semAn.searchLocalVariableParameter(p);
 			if ( v == null ) {
-				v = compiler_dsa.searchField(p);
+				v = compiler_semAn.searchField(p);
 			}
 			if ( v == null ) {
 				ok = false;
 			}
 			else {
-				final String filename = CyanMetaobject.escapeString(compiler_dsa.getPathFileHiddenDirectory(
+				final String filename = CyanMetaobject.escapeString(compiler_semAn.getPathFileHiddenDirectory(
 						annotation.getPrototypeOfAnnotation(),
 						annotation.getPackageOfAnnotation(),
 						DirectoryKindPPP.TMP) +  "keepValue_" + v.getName() + ".txt");
@@ -72,15 +72,15 @@ ICommunicateInPrototype_afti_dsa_afsa {
 	}
 
 	@Override
-	public Object afti_dsa_afsa_shareInfoPrototype(WrEnv env)  {
-		final WrAnnotationAt annotation = this.getMetaobjectAnnotation();
+	public Object afterResTypes_semAn_afterSemAn_shareInfoPrototype(WrEnv env)  {
+		final WrAnnotationAt annotation = this.getAnnotation();
 		final Object first = annotation.getJavaParameterList().get(0);
 		return first;
 	}
 
 	@Override
-	public void afti_dsa_afsa_receiveInfoPrototype(Set<Tuple4<String, Integer, Integer, Object>> moInfoSet, WrEnv env)  {
-		final WrAnnotationAt annotation = this.getMetaobjectAnnotation();
+	public void afterResTypes_semAn_afterSemAn_receiveInfoPrototype(Set<Tuple4<String, Integer, Integer, Object>> moInfoSet, WrEnv env)  {
+		final WrAnnotationAt annotation = this.getAnnotation();
 		if ( annotation.getJavaParameterList() == null || annotation.getJavaParameterList().size() == 0 )
 			return ;
 		final Object first = annotation.getJavaParameterList().get(0);
@@ -91,7 +91,7 @@ ICommunicateInPrototype_afti_dsa_afsa {
 			}
 		}
 
-		if ( count > 1 && annotation.getMetaobjectAnnotationNumberByKind() == 1 ) {
+		if ( count > 1 && annotation.getAnnotationNumberByKind() == 1 ) {
 			this.addError("There is more than one annotation of metaobject keepValue with the same parameters");
 		}
 	}

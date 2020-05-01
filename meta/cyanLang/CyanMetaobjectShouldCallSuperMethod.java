@@ -58,7 +58,7 @@ public class CyanMetaobjectShouldCallSuperMethod extends CyanMetaobject implemen
 			}
 			else {
 				mo.addError(firstSymbol, "The superprototype of '" +
-				          wrEnv.getCurrentProgramUnit().getFullName() +
+				          wrEnv.getCurrentPrototype().getFullName() +
 				          "' uses an annotation '" + mo.getName() +
 				          "' that should be attached to a method or method interface. It is attached to something else");
 				return null;
@@ -104,7 +104,7 @@ public class CyanMetaobjectShouldCallSuperMethod extends CyanMetaobject implemen
 //			    }, wrEnv);
 			if ( !ok.elem ) {
 				mo.addError(currentMethod.getFirstSymbol(wrEnv), "Method '" + currentMethod.getName() + "' of prototype '" +
-			          wrEnv.getCurrentProgramUnit().getFullName() +
+			          wrEnv.getCurrentPrototype().getFullName() +
 			          "' should extend the superprototype method. That is, its first statement should be a call "
 			          + "to the method '" + currentMethod.getName() + "' of the superprototype");
 			}

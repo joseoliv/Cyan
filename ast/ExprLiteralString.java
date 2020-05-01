@@ -31,9 +31,9 @@ public class ExprLiteralString extends ExprLiteral {
 	/**
 	 * @param symbol
 	 */
-	public ExprLiteralString(Symbol symbol) {
+	public ExprLiteralString(Symbol symbol, MethodDec currentMethod) {
 
-		super(symbol);
+		super(symbol, currentMethod);
 		subStringList = new ArrayList<>();
 		varNameList = null;
 		StringBuffer s = new StringBuffer();
@@ -177,6 +177,7 @@ public class ExprLiteralString extends ExprLiteral {
 						env.error(symbol, "Field '" + id + "' was not found");
 					}
 					varList.add(field);
+					//TODO replace currentMethod by this.currentMethod and remove local variable declaration
 					MethodDec currentMethod = env.getCurrentMethod();
 					if ( currentMethod != null ) {
 						currentMethod.addToAccessedFieldSet( (FieldDec ) field);
@@ -192,6 +193,7 @@ public class ExprLiteralString extends ExprLiteral {
 					if ( aVar == null ) {
 						aVar = env.searchField(id);
 						if ( aVar != null ) {
+							//TODO replace currentMethod by this.currentMethod and remove local variable declaration
 							MethodDec currentMethod = env.getCurrentMethod();
 							if ( currentMethod != null ) {
 								currentMethod.addToAccessedFieldSet( (FieldDec ) aVar);

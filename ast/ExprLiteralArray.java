@@ -37,7 +37,8 @@ public class ExprLiteralArray extends ExprAnyLiteral {
 	 *
 	 */
 	public ExprLiteralArray( Symbol startSymbol, Symbol endSymbol,
-			                 List<Expr> exprList ) {
+			                 List<Expr> exprList, MethodDec method) {
+		super(method);
 		this.startSymbol = startSymbol;
 		this.endSymbol = endSymbol;
 		this.exprList = exprList;
@@ -170,13 +171,13 @@ public class ExprLiteralArray extends ExprAnyLiteral {
 						}
 						catch ( final NoClassDefFoundError e1 ) {
 							env.error(
-									meta.GetHiddenItem.getHiddenSymbol(((CyanMetaobjectAtAnnot) changeCyanMetaobject).getMetaobjectAnnotation().getFirstSymbol()),
+									meta.GetHiddenItem.getHiddenSymbol(((CyanMetaobjectAtAnnot) changeCyanMetaobject).getAnnotation().getFirstSymbol()),
 									e1.getMessage() + " " + NameServer.messageClassNotFoundException);
 						}
 						catch ( final RuntimeException er ) {
-							final WrAnnotation annotation = ((CyanMetaobjectAtAnnot) changeCyanMetaobject).getMetaobjectAnnotation();
+							final WrAnnotation annotation = ((CyanMetaobjectAtAnnot) changeCyanMetaobject).getAnnotation();
 							env.thrownException(
-									meta.GetHiddenItem.getHiddenCyanMetaobjectAnnotation(annotation),
+									meta.GetHiddenItem.getHiddenCyanAnnotation(annotation),
 									meta.GetHiddenItem.getHiddenSymbol(annotation.getFirstSymbol()), er);
 						}
 						finally {
@@ -218,7 +219,7 @@ public class ExprLiteralArray extends ExprAnyLiteral {
 
 
 
-		if ( arrayElementType.getInsideType() instanceof ProgramUnit || arrayElementType == Type.Dyn ) {
+		if ( arrayElementType.getInsideType() instanceof Prototype || arrayElementType == Type.Dyn ) {
 
 			for ( final Expr expr : exprList ) {
 				if ( ! arrayElementType.isSupertypeOf(expr.getType(), env) ) {
@@ -241,7 +242,7 @@ public class ExprLiteralArray extends ExprAnyLiteral {
 
 			final SymbolIdent symbolIdent = new SymbolIdent(Token.IDENT, "Array", sym.getStartLine(),
 					sym.getLineNumber(), sym.getColumnNumber(), sym.getOffset(), sym.getCompilationUnit() );
-			final ExprIdentStar typeIdent = new ExprIdentStar(symbolIdent);
+			final ExprIdentStar typeIdent = new ExprIdentStar(null, symbolIdent);
 
 			final List<List<Expr>> realTypeListList = new ArrayList<List<Expr>>();
 			final List<Expr> realTypeList = new ArrayList<Expr>();
@@ -253,11 +254,11 @@ public class ExprLiteralArray extends ExprAnyLiteral {
 			realTypeListList.add(realTypeList);
 
 			final ExprGenericPrototypeInstantiation gpi = new ExprGenericPrototypeInstantiation( typeIdent,
-					realTypeListList, env.getCurrentProgramUnit(), null);
+					realTypeListList, env.getCurrentPrototype(), null, null);
 			type = CompilerManager.createGenericPrototype(gpi, env);
 
 			/* String typeName = "Array<" + p.getName() + ">";
-			type = env.searchVisibleProgramUnit(typeName, exprList.get(0).getFirstSymbol(), true); */
+			type = env.searchVisiblePrototype(typeName, exprList.get(0).getFirstSymbol(), true); */
 			assert type != null;
 		}
 		else //if ( arrayElementType instanceof TypeJava )

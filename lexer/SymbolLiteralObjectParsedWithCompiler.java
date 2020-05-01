@@ -64,7 +64,7 @@ public class SymbolLiteralObjectParsedWithCompiler extends Symbol implements IWi
 	}
 
 	@Override
-	public Annotation getCyanMetaobjectAnnotation() {
+	public Annotation getCyanAnnotation() {
 		return this.cyanMetaobjectLiteralObjectAnnotation;
 	}
 
@@ -75,7 +75,7 @@ public class SymbolLiteralObjectParsedWithCompiler extends Symbol implements IWi
 	 */
 	private final AnnotationLiteralObject cyanMetaobjectLiteralObjectAnnotation;
 	/**
-	 * the metaobject name may be postfixed by postfix.getName() which is "dpa", "afti", "dsa", "afsa", or "cge".
+	 * the metaobject name may be postfixed by postfix.getName() which is "parsing", "AF_RES_TYPES", "SEM_AN", "AFTER_SEM_AN", or "cge".
 	 */
 	private final CompilerPhase postfix;
 }

@@ -52,12 +52,12 @@ public class WrAnnotation extends WrExpr {
 	}
 
 
-	public int getMetaobjectAnnotationNumber() {
-		return ((Annotation ) hidden).getMetaobjectAnnotationNumber();
+	public int getAnnotationNumber() {
+		return ((Annotation ) hidden).getAnnotationNumber();
 	}
 	
-	public int getMetaobjectAnnotationNumberByKind() {
-		return ((Annotation ) hidden).getMetaobjectAnnotationNumberByKind();
+	public int getAnnotationNumberByKind() {
+		return ((Annotation ) hidden).getAnnotationNumberByKind();
 	}
 
 

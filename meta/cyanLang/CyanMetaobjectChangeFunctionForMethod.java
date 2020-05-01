@@ -5,7 +5,7 @@ import java.util.List;
 import meta.AnnotationArgumentsKind;
 import meta.AttachedDeclarationKind;
 import meta.CyanMetaobjectAtAnnot;
-import meta.IActionMessageSend_dsa;
+import meta.IActionMessageSend_semAn;
 import meta.MetaHelper;
 import meta.Tuple3;
 import meta.WrAnnotationAt;
@@ -21,7 +21,7 @@ import meta.WrMethodSignatureOperator;
 import meta.WrMethodSignatureUnary;
 import meta.WrMethodSignatureWithKeywords;
 import meta.WrParameterDec;
-import meta.WrProgramUnit;
+import meta.WrPrototype;
 import meta.WrType;
 
 /**
@@ -32,7 +32,7 @@ import meta.WrType;
  *    T is the type of the parameter of method 'm:1'.
    @author jose
  */
-public class CyanMetaobjectChangeFunctionForMethod extends CyanMetaobjectAtAnnot implements IActionMessageSend_dsa {
+public class CyanMetaobjectChangeFunctionForMethod extends CyanMetaobjectAtAnnot implements IActionMessageSend_semAn {
 
 	public CyanMetaobjectChangeFunctionForMethod() {
 		super("changeFunctionForMethod", AnnotationArgumentsKind.ZeroParameters,
@@ -41,10 +41,10 @@ public class CyanMetaobjectChangeFunctionForMethod extends CyanMetaobjectAtAnnot
 
 
 	@Override
-	public Tuple3<StringBuffer, String, String> dsa_analyzeReplaceKeywordMessage(
+	public Tuple3<StringBuffer, String, String> semAn_analyzeReplaceKeywordMessage(
 			WrExprMessageSendWithKeywordsToExpr messageSendExpr, WrEnv env) {
 
-		final WrAnnotationAt annotation = this.getMetaobjectAnnotation();
+		final WrAnnotationAt annotation = this.getAnnotation();
 		boolean ok = true;
 		boolean withSelf = false;
 		if ( !(annotation.getDeclaration() instanceof WrMethodDec) ) { ok = false; }
@@ -77,25 +77,25 @@ public class CyanMetaobjectChangeFunctionForMethod extends CyanMetaobjectAtAnnot
 
 			return null;
 		}
-		if ( env.getCurrentProgramUnit().isInterface() ) { return null; }
+		if ( env.getCurrentPrototype().isInterface() ) { return null; }
 
 		methodName = MetaHelper.removeQuotes(methodName);
 
 		String receiverAsString;
 
 		final WrExpr receiverExpr = messageSendExpr.getReceiverExpr();
-		WrProgramUnit receiverType = null;
+		WrPrototype receiverType = null;
 		if ( receiverExpr == null ) {
-			receiverType = env.getCurrentProgramUnit();
+			receiverType = env.getCurrentPrototype();
 			receiverAsString = "self";
 		}
 		else {
-			if ( !(receiverExpr.getType().getInsideType() instanceof WrProgramUnit) ) {
+			if ( !(receiverExpr.getType().getInsideType() instanceof WrPrototype) ) {
 				this.addError(receiverExpr.getFirstSymbol(), "Methods 'functionForMethod:' and 'functionForMethodWithSelf:' "
 						+ "can only be applied to methods of Cyan prototypes. This is an internal error");
 				return null;
 			}
-			receiverType = (WrProgramUnit ) receiverExpr.getType().getInsideType();
+			receiverType = (WrPrototype ) receiverExpr.getType().getInsideType();
 			receiverAsString = receiverExpr.asString();
 		}
 
@@ -216,9 +216,9 @@ public class CyanMetaobjectChangeFunctionForMethod extends CyanMetaobjectAtAnnot
 		final String functionName = withSelf ? ms.getFunctionNameWithSelf(receiverType.getFullName()) : ms.getFunctionName();
 
 		final WrType type = env.createNewGenericPrototype(annotation.getFirstSymbol(), env.getCurrentCompilationUnit(),
-				env.getCurrentProgramUnit(),
+				env.getCurrentPrototype(),
 				MetaHelper.cyanLanguagePackageName + "." + functionName,
-		            "Error caused by method dsa_codeToAddAtMetaobjectAnnotation of metaobject '" +
+		            "Error caused by method semAn_codeToAddAtAnnotation of metaobject '" +
 		            annotation.getCyanMetaobject().getName() + "' "
 		            );
 

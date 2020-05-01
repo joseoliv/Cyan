@@ -17,13 +17,13 @@ public class CyanMetaobjectTestCompilerCHS extends CyanMetaobjectAtAnnot
 		super("chs", AnnotationArgumentsKind.TwoParameters );
 	}
 
-	/* @see ast.CyanMetaobject#dsa_javaCodeThatReplacesMetaobjectAnnotation()()
+	/* @see ast.CyanMetaobject#semAn_javaCodeThatReplacesAnnotation()()
 	 */
 	@Override
 	public StringBuffer cge_codeToAdd() {
 
 		final StringBuffer sb = new StringBuffer();
-		final WrAnnotationAt annotation = (WrAnnotationAt ) this.metaobjectAnnotation;
+		final WrAnnotationAt annotation = (WrAnnotationAt ) this.annotation;
 		final List<Object> paramList = annotation.getJavaParameterList();
 
 		final String s1 = (String ) paramList.get(0);
@@ -38,7 +38,7 @@ public class CyanMetaobjectTestCompilerCHS extends CyanMetaobjectAtAnnot
 
 	@Override
 	public void check() {
-		final WrAnnotationAt annotation = (WrAnnotationAt ) this.metaobjectAnnotation;
+		final WrAnnotationAt annotation = (WrAnnotationAt ) this.annotation;
 		final List<Object> paramList = annotation.getJavaParameterList();
 		if ( paramList.size() != 2 || ! ( paramList.get(0) instanceof String ) || ! ( paramList.get(1) instanceof String )) {
 			addError("This metaobject takes exactly two parameters of type String");

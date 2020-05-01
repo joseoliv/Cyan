@@ -31,7 +31,7 @@ public class CyanMetaobjectSetVariable extends CyanMetaobjectAtAnnot
 
 	@Override
 	public void check() {
-		final WrAnnotationAt annotation = this.getMetaobjectAnnotation();
+		final WrAnnotationAt annotation = this.getAnnotation();
 		final List<Object> paramList = annotation.getJavaParameterList();
 		if ( ! (paramList.get(0) instanceof String) ) {
 			addError("A variable name was expected as the first parameter to this metaobject annotation");
@@ -57,7 +57,7 @@ public class CyanMetaobjectSetVariable extends CyanMetaobjectAtAnnot
 //			WrProgram program = (WrProgram ) this.getAttachedDeclaration();
 //			program.get
 //		}
-		final WrAnnotationAt annotation = this.getMetaobjectAnnotation();
+		final WrAnnotationAt annotation = this.getAnnotation();
 		final List<Object> paramList = annotation.getJavaParameterList();
 		final String key = MetaHelper.removeQuotes((String ) paramList.get(0));
 		final Object value = paramList.get(1);

@@ -1,7 +1,7 @@
 package meta.cyanLang;
 
 import meta.CyanMetaobjectNumber;
-import meta.ICompiler_dsa;
+import meta.ICompiler_semAn;
 
 public class CyanMetaobjectNumberHex extends CyanMetaobjectNumber {
 
@@ -10,7 +10,7 @@ public class CyanMetaobjectNumberHex extends CyanMetaobjectNumber {
 	}
 
 
-	public void dpa_parse(String code) {
+	public void parsing_parse(String code) {
 
 		number = 0;
 		String numberStr = code.substring(0,  code.length() - 3);
@@ -28,8 +28,8 @@ public class CyanMetaobjectNumberHex extends CyanMetaobjectNumber {
 	}
 
 	@Override
-	public StringBuffer dsa_codeToAdd(ICompiler_dsa compiler_dsa) {
-		dpa_parse(this.getUsefulString());
+	public StringBuffer semAn_codeToAdd(ICompiler_semAn compiler_semAn) {
+		parsing_parse(this.getUsefulString());
 		// // return (StringBuffer ) getInfo();
 		return new StringBuffer("" + number);
 	}

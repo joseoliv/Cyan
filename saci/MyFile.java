@@ -20,7 +20,7 @@ import ast.CompilationUnitSuper;
 import ast.CyanPackage;
 import ast.ExprGenericPrototypeInstantiation;
 import ast.IReceiverCompileTimeMessageSend;
-import ast.ProgramUnit;
+import ast.Prototype;
 import meta.Tuple2;
 
 public class MyFile {
@@ -407,10 +407,10 @@ public class MyFile {
 
 					String prototypeName = exprGPI.getPrototypeName();
 					String packageName = exprGPI.getPackageName();
-					ProgramUnit pu = null;
+					Prototype pu = null;
 					if ( packageName == null ) {
 						for ( CyanPackage cp : env.getProject().getPackageList() ) {
-							ProgramUnit pu2 = cp.searchPublicNonGenericProgramUnit(prototypeName);
+							Prototype pu2 = cp.searchPublicNonGenericPrototype(prototypeName);
 							if ( pu2 != null ) {
 								pu = pu2;
 								break;

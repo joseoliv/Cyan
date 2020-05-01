@@ -15,7 +15,7 @@ public class WrASTVisitor {
 	// public void visit(WrCyanPackage node, WrEnv env) { }
 	public void visit(WrJVMPackage node, WrEnv env) { }
 	public void visit(WrCompilationUnit node, WrEnv env) { }
-	public void visit(WrProgramUnit node, WrEnv env) {	}
+	public void visit(WrPrototype node, WrEnv env) {	}
 	public void visit(WrMethodDec node, WrEnv env) { }
 	public void visit(WrMethodSignature node, WrEnv env) {
 		if ( node instanceof WrMethodSignatureWithKeywords ) {
@@ -39,7 +39,7 @@ public class WrASTVisitor {
 	// public void preVisit(WrProgram node, WrEnv env) { }
 	// public void preVisit(WrCyanPackage node, WrEnv env) { }
 	public void preVisit(WrCompilationUnit node, WrEnv env) { }
-	public void preVisit(WrProgramUnit node, WrEnv env) { }
+	public void preVisit(WrPrototype node, WrEnv env) { }
 
 	public void preVisit(WrMethodDec node, WrEnv env) { }
 	public void preVisit(WrMethodSignature node, WrEnv env) {
@@ -327,8 +327,8 @@ public class WrASTVisitor {
 		else if ( node instanceof WrStatementBreak ) {
 			this.visit( (WrStatementBreak ) node, env );
 		}
-		else if ( node instanceof WrStatementMetaobjectAnnotation ) {
-			this.visit( (WrStatementMetaobjectAnnotation ) node, env );
+		else if ( node instanceof WrStatementAnnotation ) {
+			this.visit( (WrStatementAnnotation ) node, env );
 		}
 		else if ( node instanceof WrStatementFor ) {
 			this.visit( (WrStatementFor ) node, env );
@@ -379,7 +379,7 @@ public class WrASTVisitor {
 	public void visit(WrStatementList node, WrEnv env) { }
 	public void visit(WrStatementAssignmentList node, WrEnv env) { }
 	public void visit(WrStatementBreak node, WrEnv env) { }
-	public void visit(WrStatementMetaobjectAnnotation node, WrEnv env) { }
+	public void visit(WrStatementAnnotation node, WrEnv env) { }
 
 	public void visit(WrStatementFor node, WrEnv env) { }
 	public void visit(WrStatementIf node, WrEnv env) { }

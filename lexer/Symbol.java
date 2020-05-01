@@ -118,7 +118,7 @@ public class Symbol implements Cloneable {
 	 *  this symbol may represent a metaobject annotation. If it does, return the metaobject annotation object associated to it.
 	 *  Otherwise return null.
 	 */
-	public Annotation getCyanMetaobjectAnnotation() {
+	public Annotation getCyanAnnotation() {
 		return null;
 	}
 

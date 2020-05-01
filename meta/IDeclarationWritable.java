@@ -29,4 +29,19 @@ public interface IDeclarationWritable extends IDeclaration {
 	 */
 	void addDocumentExample(String example, String exampleKind, WrEnv env);
 	void addFeature(Tuple2<String, WrExprAnyLiteral> feature, WrEnv env);
+
+    /**
+     * information should not be got during parsing
+     */
+	default void checkGetInfo(WrEnv env) {
+		CompilationStep step = env.getCompilationStep();
+    	if ( step == CompilationStep.step_1 ||
+          		 step == CompilationStep.step_4 ||
+          		 step == CompilationStep.step_7
+       		) {
+    		throw new MetaSecurityException();
+    	}
+	}
+
+
 }

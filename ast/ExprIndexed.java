@@ -26,7 +26,8 @@ import saci.NameServer;
  */
 public class ExprIndexed extends Expr {
 
-	public ExprIndexed(Expr indexedExpr, Expr indexOfExpr, Symbol firstIndexOperator) {
+	public ExprIndexed(Expr indexedExpr, Expr indexOfExpr, Symbol firstIndexOperator, MethodDec method) {
+		super(method);
 		this.indexedExpr = indexedExpr;
 		this.indexOfExpr = indexOfExpr;
 		this.firstIndexOperator = firstIndexOperator;
@@ -181,14 +182,14 @@ public class ExprIndexed extends Expr {
     		Type indexOfExprType = indexOfExpr.getType();
 
     		/*
-                if ( indexOfExpr.getType() instanceof TypeJavaClass && mustBeTypeIndex.getInsideType() instanceof ProgramUnit ) {
+                if ( indexOfExpr.getType() instanceof TypeJavaClass && mustBeTypeIndex.getInsideType() instanceof Prototype ) {
                 	// v[java] = expr,   convert java to cyan
     				String javaClass = indexOfExpr.getType().getName();
     				indexOfExprTmpVar = "new " + NameServer.cyanNameFromJavaBasicType(javaClass) + "(" + indexOfExprTmpVar + ")";
 
                 }
 
-                if ( mustBeRightExprType.getInsideType() instanceof ProgramUnit && rightType instanceof TypeJavaClass ) {
+                if ( mustBeRightExprType.getInsideType() instanceof Prototype && rightType instanceof TypeJavaClass ) {
                 	// v[expr] = java; // convert java to cyan
     				String javaClass = rightType.getName();
     				s = "new " + NameServer.cyanNameFromJavaBasicType(javaClass) + "(" + s + ")";
@@ -198,7 +199,7 @@ public class ExprIndexed extends Expr {
     		 */
 
     		/*
-            if ( indexOfExprType instanceof TypeJavaRef && this.declaredType_at_Parameter.getInsideType() instanceof ProgramUnit ) {  // && rightType instanceof ProgramUnit
+            if ( indexOfExprType instanceof TypeJavaRef && this.declaredType_at_Parameter.getInsideType() instanceof Prototype ) {  // && rightType instanceof Prototype
             	// java = cyan
     			String puName = indexOfExprType.getName();
     			String cyanName = NameServer.cyanNameFromJavaBasicType(puName);

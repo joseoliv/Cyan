@@ -5,9 +5,9 @@ package ast;
 
 import lexer.Symbol;
 import lexer.SymbolShortLiteral;
-import meta.WrExprLiteralShort;
 import meta.MetaHelper;
 import meta.Token;
+import meta.WrExprLiteralShort;
 import saci.Env;
 
 /** Represents a short literal such as
@@ -20,13 +20,13 @@ public class ExprLiteralShort extends ExprLiteralNumber {
 	/**
 	 * @param symbol
 	 */
-	public ExprLiteralShort(Symbol symbol) {
-		super(symbol);
+	public ExprLiteralShort(Symbol symbol, MethodDec currentMethod) {
+		super(symbol, currentMethod);
 	}
 
 
-	public ExprLiteralShort(Symbol symbol, Symbol prefix) {
-		super(symbol);
+	public ExprLiteralShort(Symbol symbol, Symbol prefix, MethodDec currentMethod) {
+		super(symbol, currentMethod);
 		this.prefix = prefix;
 	}
 

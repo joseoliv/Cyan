@@ -23,7 +23,8 @@ abstract public class ExprLiteral extends ExprAnyLiteral {
 	/**
 	 *
 	 */
-	public ExprLiteral(Symbol symbol) {
+	public ExprLiteral(Symbol symbol, MethodDec method) {
+		super(method);
 		this.symbol = symbol;
 	}
 

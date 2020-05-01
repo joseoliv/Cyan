@@ -5,7 +5,7 @@ package meta;
  * That is, something that starts with a digit but ends with letters.
    @author José
  */
-abstract public class CyanMetaobjectNumber extends CyanMetaobjectLiteralObject {
+public class CyanMetaobjectNumber extends CyanMetaobjectLiteralObject {
 
 
 	public CyanMetaobjectNumber myClone() {
@@ -48,11 +48,11 @@ abstract public class CyanMetaobjectNumber extends CyanMetaobjectLiteralObject {
 	}
 
 	public int getStartOffset() {
-		return this.getMetaobjectAnnotation().getFirstSymbol().getOffset();
+		return this.getAnnotation().getFirstSymbol().getOffset();
 	}
 
 	public int getEndOffset() {
-		WrSymbol sym = this.getMetaobjectAnnotation().getLastSymbol();
+		WrSymbol sym = this.getAnnotation().getLastSymbol();
 		return sym.getOffset() + sym.getSymbolString().length() - 1 ;
 	}
 	/**

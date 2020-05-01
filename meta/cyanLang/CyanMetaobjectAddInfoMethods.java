@@ -6,12 +6,12 @@ import meta.CyanMetaobject;
 import meta.CyanMetaobjectAtAnnot;
 import meta.IAbstractCyanCompiler;
 import meta.IActionFunction;
-import meta.ICompiler_dsa;
+import meta.ICompiler_semAn;
 import meta.Tuple4;
 import meta.WrASTVisitor;
 import meta.WrEnv;
 import meta.WrMethodDec;
-import meta.WrProgramUnit;
+import meta.WrPrototype;
 import meta.WrStatementAssignmentList;
 
 /**
@@ -40,12 +40,12 @@ public class CyanMetaobjectAddInfoMethods extends CyanMetaobject implements IAct
 					!(t.f3 instanceof CyanMetaobjectAtAnnot) || !(t.f4 instanceof List<?>) ) {
 				return null;
 			}
-			if ( t.f1.equals("dsa_codeToAdd") ) {
+			if ( t.f1.equals("semAn_codeToAdd") ) {
 				s.append("\"\"\"");
-				ICompiler_dsa compiler = (ICompiler_dsa ) t.f2;
+				ICompiler_semAn compiler = (ICompiler_semAn ) t.f2;
 				CyanMetaobjectAtAnnot mo = (CyanMetaobjectAtAnnot ) t.f3;
 				List<String> paramNameList = (List<String> ) t.f4;
-				WrProgramUnit pu = mo.getCurrentProgramUnit();
+				WrPrototype pu = mo.getCurrentPrototype();
 				final Ref<Integer> count = new Ref<Integer>();
 				count.elem = 0;
 				pu.accept(new WrASTVisitor() {

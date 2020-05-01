@@ -7,15 +7,15 @@ import java.util.Hashtable;
 import java.util.List;
 import ast.GenericParameter.GenericParameterKind;
 import cyan.reflect._CyanMetaobjectAtAnnot;
-import cyan.reflect._IActionMethodMissing__dsa;
+import cyan.reflect._IActionMethodMissing__semAn;
 import error.CompileErrorException;
 import error.ErrorKind;
 import lexer.Lexer;
 import meta.CompilationStep;
 import meta.CyanMetaobjectAtAnnot;
 import meta.IActionAssignment_cge;
-import meta.IActionMethodMissing_dsa;
-import meta.ICompiler_dsa;
+import meta.IActionMethodMissing_semAn;
+import meta.ICompiler_semAn;
 import meta.MetaHelper;
 import meta.Token;
 import meta.Tuple2;
@@ -25,20 +25,20 @@ import saci.CyanEnv;
 import saci.Env;
 import saci.NameServer;
 
-public class ObjectDec extends ProgramUnit {
+public class ObjectDec extends Prototype {
 
 
 	public ObjectDec() {
 	}
 
 	public static void initObjectDec(ObjectDec newObjectDec, ObjectDec outerObject, Token visibility,
-			List<AnnotationAt> nonAttachedMetaobjectAnnotationList,
-			List<AnnotationAt> attachedMetaobjectAnnotationList,
+			List<AnnotationAt> nonAttachedAnnotationList,
+			List<AnnotationAt> attachedAnnotationList,
 			Lexer lexer ) {
 
-        ProgramUnit.initProgramUnit(newObjectDec, visibility,
-            nonAttachedMetaobjectAnnotationList, attachedMetaobjectAnnotationList, outerObject);
-        lexer.setProgramUnit(newObjectDec);
+        Prototype.initPrototype(newObjectDec, visibility,
+            nonAttachedAnnotationList, attachedAnnotationList, outerObject);
+        lexer.setPrototype(newObjectDec);
 
         newObjectDec.isAbstract = false;
         newObjectDec.isFinal = true;
@@ -52,8 +52,8 @@ public class ObjectDec extends ProgramUnit {
         newObjectDec.functionList = new ArrayList<ExprFunction>();
         newObjectDec.superobjectExpr = null;
         newObjectDec.slotList = new ArrayList<>();
-        newObjectDec.beforeInnerObjectNonAttachedMetaobjectAnnotationList = null;
-        newObjectDec.beforeInnerObjectAttachedMetaobjectAnnotationList = null;
+        newObjectDec.beforeInnerObjectNonAttachedAnnotationList = null;
+        newObjectDec.beforeInnerObjectAttachedAnnotationList = null;
         newObjectDec.exprFunctionForThisPrototype = null;
         newObjectDec.abstractMethodList = new ArrayList<>();
         newObjectDec.javaInterfaceList = null;
@@ -62,11 +62,11 @@ public class ObjectDec extends ProgramUnit {
 
 	}
 	public ObjectDec( ObjectDec outerObject, Token visibility,
-			List<AnnotationAt> nonAttachedMetaobjectAnnotationList,
-			List<AnnotationAt> attachedMetaobjectAnnotationList,
+			List<AnnotationAt> nonAttachedAnnotationList,
+			List<AnnotationAt> attachedAnnotationList,
 			Lexer lexer) {
-		super(visibility, nonAttachedMetaobjectAnnotationList, attachedMetaobjectAnnotationList, outerObject);
-		lexer.setProgramUnit(this);
+		super(visibility, nonAttachedAnnotationList, attachedAnnotationList, outerObject);
+		lexer.setPrototype(this);
 
 		this.isAbstract = false;
 		this.isFinal = true;
@@ -80,8 +80,8 @@ public class ObjectDec extends ProgramUnit {
 		this.functionList = new ArrayList<ExprFunction>();
 		this.superobjectExpr = null;
 		this.slotList = new ArrayList<>();
-		this.beforeInnerObjectNonAttachedMetaobjectAnnotationList = null;
-		this.beforeInnerObjectAttachedMetaobjectAnnotationList = null;
+		this.beforeInnerObjectNonAttachedAnnotationList = null;
+		this.beforeInnerObjectAttachedAnnotationList = null;
 		this.exprFunctionForThisPrototype = null;
 		this.abstractMethodList = new ArrayList<>();
 		this.javaInterfaceList = null;
@@ -203,17 +203,20 @@ public class ObjectDec extends ProgramUnit {
 	@Override
 	public void genCyan(PWInterface pw, CyanEnv cyanEnv, boolean genFunctions) {
 
-		cyanEnv.atBeginningOfProgramUnit(this);
+		cyanEnv.atBeginningOfPrototype(this);
 
 
 		final ExprGenericPrototypeInstantiation exprGPI = cyanEnv.getExprGenericPrototypeInstantiation();
 
 		super.genCyan(pw, cyanEnv, genFunctions);
-		if ( cyanEnv.getCreatingInstanceGenericPrototype() ) {
-			pw.println("@genericPrototypeInstantiationInfo(\"" +
-		         cyanEnv.getPackageNameInstantiation() + "\", \"" + cyanEnv.getPrototypeNameInstantiation()
-			  + "\", " + exprGPI.getFirstSymbol().getLineNumber() + ", " + exprGPI.getFirstSymbol().getColumnNumber() + ")");
-		}
+		//#$ {
+
+//		if ( cyanEnv.getCreatingInstanceGenericPrototype() ) {
+//			pw.println("@genericPrototypeInstantiationInfo(\"" +
+//		         cyanEnv.getPackageNameInstantiation() + "\", \"" + cyanEnv.getPrototypeNameInstantiation()
+//			  + "\", " + exprGPI.getFirstSymbol().getLineNumber() + ", " + exprGPI.getFirstSymbol().getColumnNumber() + ")");
+//		}
+		//#$ }
 
 
 		pw.println("");
@@ -225,7 +228,7 @@ public class ObjectDec extends ProgramUnit {
 		if ( !isFinal )
 			pw.print("open ");
 		pw.print("object ");
-		this.genCyanProgramUnitName(pw, cyanEnv);
+		this.genCyanPrototypeName(pw, cyanEnv);
 
 		if ( contextParameterArray != null ) {
 			pw.print("(");
@@ -286,8 +289,8 @@ public class ObjectDec extends ProgramUnit {
 				}
 			}
 
-			if ( beforeEndNonAttachedMetaobjectAnnotationList != null ) {
-				for ( final AnnotationAt c : this.beforeEndNonAttachedMetaobjectAnnotationList )
+			if ( beforeEndNonAttachedAnnotationList != null ) {
+				for ( final AnnotationAt c : this.beforeEndNonAttachedAnnotationList )
 					c.genCyan(pw, true, cyanEnv, genFunctions);
 			}
 		}
@@ -296,7 +299,7 @@ public class ObjectDec extends ProgramUnit {
 		pw.println("");
 		pw.println("end");
 		pw.println("");
-		cyanEnv.atEndOfCurrentProgramUnit();
+		cyanEnv.atEndOfCurrentPrototype();
 
 	}
 
@@ -352,41 +355,41 @@ public class ObjectDec extends ProgramUnit {
 
 	}
 
-	public static String saveSerializedToFile(ProgramUnit programUnit, String filename) {
+	public static String saveSerializedToFile(Prototype prototype, String filename) {
 		try(java.io.FileOutputStream file = new java.io.FileOutputStream(filename);
 				java.io.ObjectOutputStream out = new java.io.ObjectOutputStream(file)) {
-	        out.writeObject(programUnit);
+	        out.writeObject(prototype);
 		}
 		catch (IOException e) {
-			return "Error when saving serialized object '" + programUnit.getFullName() + "' to file '" + filename + "'";
+			return "Error when saving serialized object '" + prototype.getFullName() + "' to file '" + filename + "'";
 		}
 		return null;
 	}
 
-	public static Tuple2<ProgramUnit, String> loadSerializedFromFile(String filename) {
+	public static Tuple2<Prototype, String> loadSerializedFromFile(String filename) {
 		try (   java.io.FileInputStream file = new java.io.FileInputStream(filename);
 				java.io.ObjectInputStream in = new java.io.ObjectInputStream(file) ) {
 			 Object obj = in.readObject();
-			 if ( obj instanceof ProgramUnit ) {
-				 ProgramUnit programUnit = (ProgramUnit ) obj;
-				 return new Tuple2<ProgramUnit, String>(programUnit, null);
+			 if ( obj instanceof Prototype ) {
+				 Prototype prototype = (Prototype ) obj;
+				 return new Tuple2<Prototype, String>(prototype, null);
 			 }
 			 else {
-					return new Tuple2<ProgramUnit, String>(null,
+					return new Tuple2<Prototype, String>(null,
 							"Error when loading serialized object from file '" + filename +
-							"'. The object type is not 'ProgramUnit'. Probably it is 'ProgramUnit' but from a wrong version");
+							"'. The object type is not 'Prototype'. Probably it is 'Prototype' but from a wrong version");
 			 }
 		}
 		catch (FileNotFoundException e) {
-			return new Tuple2<ProgramUnit, String>(null, "Error when loading serialized object from file '" + filename +
+			return new Tuple2<Prototype, String>(null, "Error when loading serialized object from file '" + filename +
 					"'. File was not found");
 		}
 		catch (IOException e) {
-			return new Tuple2<ProgramUnit, String>(null, "Error when loading serialized object from file '" + filename +
+			return new Tuple2<Prototype, String>(null, "Error when loading serialized object from file '" + filename +
 					"'. There was an IO exception");
 		}
 		catch (ClassNotFoundException e) {
-			return new Tuple2<ProgramUnit, String>(null, "Error when loading serialized object from file '" + filename +
+			return new Tuple2<Prototype, String>(null, "Error when loading serialized object from file '" + filename +
 					"'. The class was not found");
 		}
 	}
@@ -411,7 +414,7 @@ public class ObjectDec extends ProgramUnit {
 		env.atBeginningOfObjectDec(this);
 
 
-		genJavaCodeBeforeClassMetaobjectAnnotations(pw, env);
+		genJavaCodeBeforeClassAnnotations(pw, env);
 
 
 
@@ -622,12 +625,12 @@ public class ObjectDec extends ProgramUnit {
 							catch ( final error.CompileErrorException e ) {
 							}
 							catch ( final NoClassDefFoundError e ) {
-								final WrAnnotation annotation = ((CyanMetaobjectAtAnnot) changeCyanMetaobject).getMetaobjectAnnotation();
+								final WrAnnotation annotation = ((CyanMetaobjectAtAnnot) changeCyanMetaobject).getAnnotation();
 								env.error(meta.GetHiddenItem.getHiddenSymbol(annotation.getFirstSymbol()), e.getMessage() + " " + NameServer.messageClassNotFoundException);
 							}
 							catch ( final RuntimeException e ) {
-								final WrAnnotation annotation = ((CyanMetaobjectAtAnnot) changeCyanMetaobject).getMetaobjectAnnotation();
-								env.thrownException(meta.GetHiddenItem.getHiddenCyanMetaobjectAnnotation(annotation),
+								final WrAnnotation annotation = ((CyanMetaobjectAtAnnot) changeCyanMetaobject).getAnnotation();
+								env.thrownException(meta.GetHiddenItem.getHiddenCyanAnnotation(annotation),
 										meta.GetHiddenItem.getHiddenSymbol(annotation.getFirstSymbol()), e);
 							}
 							finally {
@@ -695,14 +698,14 @@ public class ObjectDec extends ProgramUnit {
 						catch ( final error.CompileErrorException e ) {
 						}
 						catch ( final NoClassDefFoundError e ) {
-							final WrAnnotation annotation = ((CyanMetaobjectAtAnnot) changeCyanMetaobject).getMetaobjectAnnotation();
+							final WrAnnotation annotation = ((CyanMetaobjectAtAnnot) changeCyanMetaobject).getAnnotation();
 							env.error(meta.GetHiddenItem.getHiddenSymbol(
 									annotation.getFirstSymbol()), e.getMessage() + " " + NameServer.messageClassNotFoundException);
 						}
 						catch ( final RuntimeException e ) {
-							final WrAnnotation annotation = ((CyanMetaobjectAtAnnot) changeCyanMetaobject).getMetaobjectAnnotation();
+							final WrAnnotation annotation = ((CyanMetaobjectAtAnnot) changeCyanMetaobject).getAnnotation();
 							env.thrownException(
-									meta.GetHiddenItem.getHiddenCyanMetaobjectAnnotation(annotation),
+									meta.GetHiddenItem.getHiddenCyanAnnotation(annotation),
 									meta.GetHiddenItem.getHiddenSymbol(annotation.getFirstSymbol()), e);
 						}
 						finally {
@@ -836,8 +839,8 @@ public class ObjectDec extends ProgramUnit {
 			createInitPrototypeMethod(pw, refVarInitStrForInitPrototype);
 
 
-		if ( attachedMetaobjectAnnotationList != null ) {
-			for ( final AnnotationAt c : attachedMetaobjectAnnotationList )
+		if ( attachedAnnotationList != null ) {
+			for ( final AnnotationAt c : attachedAnnotationList )
 				c.genJava(pw, env);
 		}
 
@@ -972,8 +975,8 @@ public class ObjectDec extends ProgramUnit {
 		}
 
 
-		if ( beforeEndNonAttachedMetaobjectAnnotationList != null ) {
-			for ( final AnnotationAt c : this.beforeEndNonAttachedMetaobjectAnnotationList )
+		if ( beforeEndNonAttachedAnnotationList != null ) {
+			for ( final AnnotationAt c : this.beforeEndNonAttachedAnnotationList )
 				c.genJava(pw, env);
 		}
 		/**
@@ -1101,11 +1104,11 @@ public class ObjectDec extends ProgramUnit {
 			/*
 			 * inner Java classes cannot have static sections
 			 */
-			genJavaCodeStaticSectionMetaobjectAnnotations(pw, env);
+			genJavaCodeStaticSectionAnnotations(pw, env);
 		}
 
 
-		genJavaClassBodyDemandedByMetaobjectAnnotations(pw, env);
+		genJavaClassBodyDemandedByAnnotations(pw, env);
 
 
 		pw.sub();
@@ -1282,7 +1285,7 @@ public class ObjectDec extends ProgramUnit {
 			    + iv.getName() + ": \" + " + ivJavaName);
 			if ( iv.getRefType() ) pw.print(".elem");
 			Type type = iv.getType();
-			if ( type instanceof ProgramUnit || type instanceof TypeWithAnnotations ) {
+			if ( type instanceof Prototype || type instanceof TypeWithAnnotations ) {
 				pw.print("._asString().s ");
 			}
 			/*
@@ -1361,7 +1364,7 @@ public class ObjectDec extends ProgramUnit {
 		pw.print("    public String getPrototypeName() { return prototypeName; }\n");
 
 		// pw.print(" static final boolean isInterfaceVar = " +
-		// ((currentProgramUnit instanceof InterfaceDec) ? "true" : "false") +
+		// ((currentPrototype instanceof InterfaceDec) ? "true" : "false") +
 		// ";\n");
 		pw.print("    protected boolean isInterface() { return "
 				+ (getCompilationUnit().getIsPrototypeInterface() ? "true" : "false") + "; }\n\n");
@@ -1389,7 +1392,7 @@ public class ObjectDec extends ProgramUnit {
 
 	}
 
-	protected void genJavaVariables(PWInterface pw, Env env, boolean isInnerProto, String innerProtoName, ObjectDec programUnit) {
+	protected void genJavaVariables(PWInterface pw, Env env, boolean isInnerProto, String innerProtoName, ObjectDec prototype) {
 		pw.print("\n    static final String []fieldList");
 		if ( isInnerProto )
 			pw.print(innerProtoName);
@@ -1441,8 +1444,8 @@ public class ObjectDec extends ProgramUnit {
 			pw.print(innerProtoName);
 		pw.println(" = { ");
 		pw.add();
-		int sizeML = programUnit.getMethodDecList().size();
-		for ( final MethodDec m : programUnit.getMethodDecList() ) {
+		int sizeML = prototype.getMethodDecList().size();
+		for ( final MethodDec m : prototype.getMethodDecList() ) {
 			pw.printIdent("new CyString(\"" + m.getMethodInterface(env) + "\")");
 			if ( --sizeML > 0 )
 				pw.print(",");
@@ -1962,7 +1965,7 @@ public class ObjectDec extends ProgramUnit {
 
 	@SuppressWarnings("null")
 	@Override
-	public void calcInternalTypes(ICompiler_dsa compiler_dsa, Env env) {
+	public void calcInternalTypes(ICompiler_semAn compiler_semAn, Env env) {
 
 		env.atBeginningOfObjectDec(this);
 
@@ -1973,24 +1976,24 @@ public class ObjectDec extends ProgramUnit {
 		if ( this.outerObject == null ) {
 
 			List<Annotation> metaobjectAnnotationList = new ArrayList<>();
-			metaobjectAnnotationList.addAll(completeMetaobjectAnnotationList);
+			metaobjectAnnotationList.addAll(completeAnnotationList);
 
 			metaobjectAnnotationList.addAll(
-					this.getCompilationUnit().getCyanPackage().getAttachedMetaobjectAnnotationList());
+					this.getCompilationUnit().getCyanPackage().getAttachedAnnotationList());
 
 			metaobjectAnnotationList.addAll(
-					this.getCompilationUnit().getCyanPackage().getProgram().getAttachedMetaobjectAnnotationList());
+					this.getCompilationUnit().getCyanPackage().getProgram().getAttachedAnnotationList());
 
-			makeMetaobjectAnnotationsCommunicateInPrototype(metaobjectAnnotationList, env);
+			makeAnnotationsCommunicateInPrototype(metaobjectAnnotationList, env);
 
 
-			super.calcInternalTypes(compiler_dsa, env);
+			super.calcInternalTypes(compiler_semAn, env);
 		}
 
 		if ( env.isThereWasError() || this.compilationUnit.getErrorList() != null && this.compilationUnit.getErrorList().size() > 0 ) {
 			  /*
 			   * there was some error signalled by attached metaobjects (probably
-			   * implementing interface ICheckProgramUnit_bsa such as
+			   * implementing interface ICheckPrototype_bsa such as
 			   * CyanMetaobjectConcept
 			   */
 			return ;
@@ -2183,7 +2186,7 @@ public class ObjectDec extends ProgramUnit {
 							boolean foundError = true;
 							if ( NameServer.isPrototypeFromInterface(getName()) ) {
 								final String interfaceName = NameServer.interfaceNameFromPrototypeName(getName());
-								final ProgramUnit interfaceProto = this.getCompilationUnit().getCyanPackage().searchPublicNonGenericProgramUnit(interfaceName);
+								final Prototype interfaceProto = this.getCompilationUnit().getCyanPackage().searchPublicNonGenericPrototype(interfaceName);
 								if ( methodDec.getMethodSignature().getReturnType(env) == interfaceProto )
 									foundError = false;
 							}
@@ -2346,13 +2349,13 @@ public class ObjectDec extends ProgramUnit {
 				env.error(this.getSymbol(), "Internal error at MethodDec::calcInternalTypes: unknown slot class", true, true);
 			}
 			if ( s.getLastSlot() ) {
-				if ( beforeInnerObjectNonAttachedMetaobjectAnnotationList != null ) {
-					for ( final AnnotationAt annotation : beforeInnerObjectNonAttachedMetaobjectAnnotationList )
+				if ( beforeInnerObjectNonAttachedAnnotationList != null ) {
+					for ( final AnnotationAt annotation : beforeInnerObjectNonAttachedAnnotationList )
 						annotation.calcInternalTypes(env);
 				}
 
-				if ( beforeInnerObjectAttachedMetaobjectAnnotationList != null ) {
-					for ( final AnnotationAt annotation : beforeInnerObjectAttachedMetaobjectAnnotationList )
+				if ( beforeInnerObjectAttachedAnnotationList != null ) {
+					for ( final AnnotationAt annotation : beforeInnerObjectAttachedAnnotationList )
 						annotation.calcInternalTypes(env);
 				}
 			}
@@ -2361,12 +2364,12 @@ public class ObjectDec extends ProgramUnit {
 
 		if ( this.innerPrototypeList != null ) {
 			if ( this.compilationUnit.getErrorList() == null || this.compilationUnit.getErrorList().size() == 0 ) {
-				calcInternalTypesInnerPrototypes(compiler_dsa, env);
+				calcInternalTypesInnerPrototypes(compiler_semAn, env);
 			}
 		}
 
-		if ( beforeEndNonAttachedMetaobjectAnnotationList != null ) {
-			for ( final AnnotationAt annotation : beforeEndNonAttachedMetaobjectAnnotationList )
+		if ( beforeEndNonAttachedAnnotationList != null ) {
+			for ( final AnnotationAt annotation : beforeEndNonAttachedAnnotationList )
 				annotation.calcInternalTypes(env);
 		}
 
@@ -2374,7 +2377,7 @@ public class ObjectDec extends ProgramUnit {
 			env.checkIfContextStackEmpty(this.getFirstSymbol());
 		}
 
-		//super.calcInternalTypes(compiler_dsa, env);
+		//super.calcInternalTypes(compiler_semAn, env);
 
 		final int envLineShift = env.getLineShift();
 		env.setLineShift(0);
@@ -2530,7 +2533,7 @@ public class ObjectDec extends ProgramUnit {
 	 * the 'init:', 'new:', and fields (context parameters) with their correct types.
 	   @param env
 	 */
-	private void calcInternalTypesInnerPrototypes(ICompiler_dsa compiler_dsa, Env env) {
+	private void calcInternalTypesInnerPrototypes(ICompiler_semAn compiler_semAn, Env env) {
 		//List<Tuple6<String, VariableDecInterface, Type, Type, String, String>> infoFunList;
 		int funIndex = 0;
 		/* set the return type of 'eval' or 'eval:' methods  */
@@ -2723,7 +2726,7 @@ public class ObjectDec extends ProgramUnit {
 		 */
 		funIndex = 0;
 		for ( final ObjectDec innerProto : this.innerPrototypeList ) {
-			innerProto.calcInternalTypes(compiler_dsa, env);
+			innerProto.calcInternalTypes(compiler_semAn, env);
 
 			/*
 			if ( NameServer.isNameInnerProtoForFunction(innerProto.getName()) ) {
@@ -2872,6 +2875,9 @@ public class ObjectDec extends ProgramUnit {
 			}
 			//superObjectName = superobjectExpr.ifPrototypeReturnsItsName();
 			superobject = superobjectExpr.getType();
+			if ( !(superobject instanceof ObjectDec) ) {
+				env.error(superobjectExpr.getFirstSymbol(), "Superprototype should be a Cyan prototype");
+			}
 			superObjectName = superobject.getFullName();
 
 			if ( superobject instanceof InterfaceDec ) {
@@ -3026,10 +3032,10 @@ public class ObjectDec extends ProgramUnit {
 		return true;
 	}
 
-	public List<AnnotationAt> getMetaobjectAnnotationThisAndSuperCTDNUList() {
+	public List<AnnotationAt> getAnnotationThisAndSuperCTDNUList() {
 		if ( metaobjectAnnotationListThisAndSuperCTDNU == null ) {
 			metaobjectAnnotationListThisAndSuperCTDNU = new ArrayList<>();
-			List<AnnotationAt> metaobjectAnnotationList = this.getAttachedMetaobjectAnnotationList();
+			List<AnnotationAt> metaobjectAnnotationList = this.getAttachedAnnotationList();
 			if ( metaobjectAnnotationList != null ) {
 				for ( final AnnotationAt annotation : metaobjectAnnotationList ) {
 
@@ -3037,23 +3043,27 @@ public class ObjectDec extends ProgramUnit {
 
 					_CyanMetaobjectAtAnnot other = (_CyanMetaobjectAtAnnot ) cyanMetaobject.getMetaobjectInCyan();
 
-					boolean actionMissing = cyanMetaobject instanceof IActionMethodMissing_dsa ||
-					        (other != null && other instanceof _IActionMethodMissing__dsa);
+					boolean actionMissing = cyanMetaobject instanceof IActionMethodMissing_semAn
+							||
+					        (other != null && other instanceof _IActionMethodMissing__semAn)
+					        ;
 					if ( actionMissing ) {
 						metaobjectAnnotationListThisAndSuperCTDNU.add(annotation);
 					}
 				}
 			}
 			for ( final MethodDec aMethod : this.methodDecList ) {
-				metaobjectAnnotationList = aMethod.getAttachedMetaobjectAnnotationList();
+				metaobjectAnnotationList = aMethod.getAttachedAnnotationList();
 				if ( metaobjectAnnotationList != null ) {
 					for ( final AnnotationAt annotation : metaobjectAnnotationList ) {
 						final CyanMetaobjectAtAnnot cyanMetaobject = annotation.getCyanMetaobject();
 
 						_CyanMetaobjectAtAnnot other = (_CyanMetaobjectAtAnnot ) cyanMetaobject.getMetaobjectInCyan();
 
-						boolean actionMissing = cyanMetaobject instanceof IActionMethodMissing_dsa ||
-						        (other != null && other instanceof _IActionMethodMissing__dsa);
+						boolean actionMissing = cyanMetaobject instanceof IActionMethodMissing_semAn
+								||
+						        (other != null && other instanceof _IActionMethodMissing__semAn)
+						        ;
 						if ( actionMissing ) {
 							metaobjectAnnotationListThisAndSuperCTDNU.add(annotation);
 						}
@@ -3063,7 +3073,7 @@ public class ObjectDec extends ProgramUnit {
 
 			if ( this.superobject != null && superobject instanceof ObjectDec ) {
 				final ObjectDec superObj = (ObjectDec ) superobject;
-				metaobjectAnnotationListThisAndSuperCTDNU.addAll(superObj.getMetaobjectAnnotationThisAndSuperCTDNUList());
+				metaobjectAnnotationListThisAndSuperCTDNU.addAll(superObj.getAnnotationThisAndSuperCTDNUList());
 			}
 		}
 		return metaobjectAnnotationListThisAndSuperCTDNU;
@@ -3145,7 +3155,7 @@ public class ObjectDec extends ProgramUnit {
 					final String ivTypeName = iv.getType().getName();
 					if ( ! MetaHelper.isBasicType(ivTypeName) ) {
 						final Type ivType = iv.getType();
-						if (  !(ivType instanceof ProgramUnit) || ! ((ProgramUnit) ivType).getImmutable() ) {
+						if (  !(ivType instanceof Prototype) || ! ((Prototype) ivType).getImmutable() ) {
 							env.error(iv.getFirstSymbol(), "This prototype is declared with annotation '"
 									+ this.getName() +
 									"'. Therefore all fields should have types that are basic types or immutable types"
@@ -3172,7 +3182,7 @@ public class ObjectDec extends ProgramUnit {
 
 	/**
 	 * list of metaobject annotations attached to this prototype and
-	 * super-prototypes that implement interface {@link meta#IActionMethodMissing_dsa}
+	 * super-prototypes that implement interface {@link meta#IActionMethodMissing_semAn}
 	 */
 	private List<AnnotationAt> metaobjectAnnotationListThisAndSuperCTDNU;
 

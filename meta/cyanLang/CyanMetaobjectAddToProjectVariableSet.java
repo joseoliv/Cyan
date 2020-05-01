@@ -32,7 +32,7 @@ public class CyanMetaobjectAddToProjectVariableSet extends CyanMetaobjectAtAnnot
 
 	@Override
 	public void check() {
-		final WrAnnotationAt annotation = this.getMetaobjectAnnotation();
+		final WrAnnotationAt annotation = this.getAnnotation();
 		final List<Object> paramList = annotation.getJavaParameterList();
 		if ( paramList.size() < 2 ) {
 			this.addError("This annotation should have at least two parameters. "
@@ -59,7 +59,7 @@ public class CyanMetaobjectAddToProjectVariableSet extends CyanMetaobjectAtAnnot
 
 	@Override
 	public void dpp_action(ICompiler_dpp compiler_dpp) {
-		final WrAnnotationAt annotation = this.getMetaobjectAnnotation();
+		final WrAnnotationAt annotation = this.getAnnotation();
 		final List<Object> paramList = annotation.getJavaParameterList();
 		final String key = CyanMetaobject.removeQuotes( (String ) paramList.get(0) );
 		final String value = CyanMetaobject.removeQuotes( (String ) paramList.get(1) );

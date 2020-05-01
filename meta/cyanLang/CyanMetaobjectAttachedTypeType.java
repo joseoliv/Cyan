@@ -4,9 +4,10 @@ import java.util.ArrayList;
 import java.util.List;
 import ast.AnnotationAt;
 import meta.AnnotationArgumentsKind;
+import meta.AttachedDeclarationKind;
 import meta.CyanMetaobjectAtAnnot;
-import meta.IActionAttachedType_dsa;
-import meta.ICompiler_dsa;
+import meta.IActionAttachedType_semAn;
+import meta.ICompiler_semAn;
 import meta.IVariableDecInterface;
 import meta.IdentStarKind;
 import meta.LeftHandSideKind;
@@ -34,16 +35,16 @@ import meta.WrTypeWithAnnotations;
  * </code><br>
    @author jose
  */
-public class CyanMetaobjectAttachedTypeType extends CyanMetaobjectAtAnnot implements IActionAttachedType_dsa {
+public class CyanMetaobjectAttachedTypeType extends CyanMetaobjectAtAnnot implements IActionAttachedType_semAn {
 
 	public CyanMetaobjectAttachedTypeType() {
-		super("type", AnnotationArgumentsKind.OneParameter);
+		super("type", AnnotationArgumentsKind.OneParameter, new AttachedDeclarationKind[] { AttachedDeclarationKind.TYPE });
 	}
 
 
 	@Override
 	public void check() {
-		List<Object> paramList = this.getMetaobjectAnnotation().getJavaParameterList();
+		List<Object> paramList = this.getAnnotation().getJavaParameterList();
 		Object first = paramList.get(0);
 		if ( !(first instanceof String)) {
 			this.addError("The argument to attached type '" + this.getName() + "' should be an identifier or string");
@@ -56,7 +57,7 @@ public class CyanMetaobjectAttachedTypeType extends CyanMetaobjectAtAnnot implem
 
 
 	@Override
-	public StringBuffer dsa_checkLeftTypeChangeRightExpr(ICompiler_dsa compiler_dsa, WrType leftType, Object leftASTNode,
+	public StringBuffer semAn_checkLeftTypeChangeRightExpr(ICompiler_semAn compiler_semAn, WrType leftType, Object leftASTNode,
 			LeftHandSideKind leftKind,
 			WrType rightType, WrExpr rightExpr) {
 
@@ -66,7 +67,7 @@ public class CyanMetaobjectAttachedTypeType extends CyanMetaobjectAtAnnot implem
 			if ( eis.getIdentStarKind() == IdentStarKind.variable_t ) {
 				IVariableDecInterface aVar = eis.getVarDeclaration();
 				WrStatementLocalVariableDec varDec = (WrStatementLocalVariableDec ) aVar;
-				WrLocalVarInfo varInfo = compiler_dsa.getEnv().getLocalVariableInfo(varDec);
+				WrLocalVarInfo varInfo = compiler_semAn.getEnv().getLocalVariableInfo(varDec);
 				if ( ! varInfo.getInitializedWithNonLiteral() ) {
 					return null;
 				}

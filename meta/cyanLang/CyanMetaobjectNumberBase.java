@@ -1,7 +1,7 @@
 package meta.cyanLang;
 
 import meta.CyanMetaobjectNumber;
-import meta.ICompiler_dsa;
+import meta.ICompiler_semAn;
 
 public class CyanMetaobjectNumberBase extends CyanMetaobjectNumber {
 
@@ -10,7 +10,7 @@ public class CyanMetaobjectNumberBase extends CyanMetaobjectNumber {
 		super(new String[] { "base", "BASE", "Base" });
 	}
 
-	public void dpa_parse(String code) {
+	public void parsing_parse(String code) {
 
 		int len = code.length();
 		int i = len - 1;
@@ -61,11 +61,11 @@ public class CyanMetaobjectNumberBase extends CyanMetaobjectNumber {
 	}
 
 	@Override
-	public StringBuffer dsa_codeToAdd(ICompiler_dsa compiler_dsa) {
+	public StringBuffer semAn_codeToAdd(ICompiler_semAn compiler_semAn) {
 		// return (StringBuffer ) getInfo();
 		//String code = new String(((WrAnnotationAt ) this.metaobjectAnnotation).getTextAttachedDSL());
 
-		dpa_parse(this.getUsefulString());
+		parsing_parse(this.getUsefulString());
 		return new StringBuffer("" + number);
 	}
 

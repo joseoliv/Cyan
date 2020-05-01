@@ -40,13 +40,13 @@ public class MethodDec extends SlotDec {
 
 
 	public MethodDec(ObjectDec currentObject, Token visibility, boolean isFinal,
-			List<AnnotationAt> nonAttachedSlotMetaobjectAnnotationList,
-			List<AnnotationAt> attachedSlotMetaobjectAnnotationList,
+			List<AnnotationAt> nonAttachedSlotAnnotationList,
+			List<AnnotationAt> attachedSlotAnnotationList,
 			int methodNumber,
 			boolean compilerCreatedMethod,
 			Stack<Tuple5<String, String, String, String, Integer>> annotContextStack) {
 
-		super(currentObject, visibility, attachedSlotMetaobjectAnnotationList, nonAttachedSlotMetaobjectAnnotationList);
+		super(currentObject, visibility, attachedSlotAnnotationList, nonAttachedSlotAnnotationList);
 		// this.declaringObject = currentObject;
 		this.isFinal = isFinal;
 		hasOverride = false;
@@ -275,15 +275,15 @@ public class MethodDec extends SlotDec {
 						catch ( final error.CompileErrorException e ) {
 						}
 						catch ( final NoClassDefFoundError e ) {
-							final WrAnnotation annotation = ((CyanMetaobjectAtAnnot ) changeCyanMetaobject).getMetaobjectAnnotation();
+							final WrAnnotation annotation = ((CyanMetaobjectAtAnnot ) changeCyanMetaobject).getAnnotation();
 							env.error(
 									meta.GetHiddenItem.getHiddenSymbol(
 											annotation.getFirstSymbol()), e.getMessage() + " " + NameServer.messageClassNotFoundException);
 						}
 						catch ( final RuntimeException e ) {
-							final WrAnnotation annotation = ((CyanMetaobjectAtAnnot )  changeCyanMetaobject).getMetaobjectAnnotation();
+							final WrAnnotation annotation = ((CyanMetaobjectAtAnnot )  changeCyanMetaobject).getAnnotation();
 							env.thrownException(
-									meta.GetHiddenItem.getHiddenCyanMetaobjectAnnotation(annotation),
+									meta.GetHiddenItem.getHiddenCyanAnnotation(annotation),
 									meta.GetHiddenItem.getHiddenSymbol(annotation.getFirstSymbol()), e);
 						}
 						finally {
@@ -322,14 +322,14 @@ public class MethodDec extends SlotDec {
 					tmpVar = Type.genJavaExpr_CastJavaCyan(env, tmpVar, expr.getType(), returnType, expr.getFirstSymbol());
 					/*
 					if ( expr.getType() instanceof TypeJavaRef ) {
-						if ( returnType.getInsideType() instanceof ProgramUnit ) {
+						if ( returnType.getInsideType() instanceof Prototype ) {
 							// cast Java to Cyan
 							String javaClass = expr.getType().getName();
 							tmpVar = "new " + NameServer.cyanNameFromJavaBasicType(javaClass) + "(" + tmpVar + ")";
 						}
 					}
 					else if ( returnType instanceof TypeJavaRef ) {
-						if ( expr.getType().getInsideType() instanceof ProgramUnit ) {
+						if ( expr.getType().getInsideType() instanceof Prototype ) {
 							// cast Cyan to Java
 							tmpVar = tmpVar + "." + NameServer.getFieldBasicType( expr.getType().getName() );
 						}
@@ -1419,6 +1419,9 @@ public class MethodDec extends SlotDec {
 		return annotContextStack != null && ! this.annotContextStack.isEmpty() ;
 	}
 
+	public boolean isUnary() {
+		return this.methodSignature instanceof MethodSignatureUnary;
+	}
 
 	/**
 	 * list of fields accessed by this method

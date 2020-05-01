@@ -4,8 +4,8 @@ package meta.cyanLang;
 import meta.AnnotationArgumentsKind;
 import meta.CyanMetaobjectLiteralObject;
 import meta.CyanMetaobjectAtAnnot;
-import meta.IAction_dpa;
-import meta.ICompilerAction_dpa;
+import meta.IAction_parsing;
+import meta.ICompilerAction_parsing;
 import meta.WrAnnotationAt;
 
 /**
@@ -15,7 +15,7 @@ import meta.WrAnnotationAt;
    @author José
  */
 public class CyanMetaobjectColumnNumber extends CyanMetaobjectAtAnnot
-       implements IAction_dpa {
+       implements IAction_parsing {
 
 	public CyanMetaobjectColumnNumber() {
 		super("columnNumber", AnnotationArgumentsKind.ZeroParameters);
@@ -24,11 +24,11 @@ public class CyanMetaobjectColumnNumber extends CyanMetaobjectAtAnnot
 
 
 	@Override
-	public StringBuffer dpa_codeToAdd( ICompilerAction_dpa compiler ) {
-		final WrAnnotationAt cyanMetaobjectAnnotation = this.getMetaobjectAnnotation();
+	public StringBuffer parsing_codeToAdd( ICompilerAction_parsing compiler ) {
+		final WrAnnotationAt cyanAnnotation = this.getAnnotation();
 
 		return new StringBuffer("\"" +  "" +
-		cyanMetaobjectAnnotation.getSymbolMetaobjectAnnotation().getColumnNumber() + "\"");
+		cyanAnnotation.getSymbolAnnotation().getColumnNumber() + "\"");
 
 	}
 

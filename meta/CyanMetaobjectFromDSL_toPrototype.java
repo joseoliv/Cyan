@@ -10,7 +10,7 @@ import java.util.List;
  * of the program, it reads all files of directory "--dsl" of all packages. If a file has extension
  * "ext", the compiler searches for a metaobject class, subclass of  {@link CyanMetaobjectFromDSL_toPrototype},
  * whose method {@link CyanMetaobjectFromDSL_toPrototype#getName()} returns "ext". If none is found,
- * an error occurs. If one is found, method {@link CyanMetaobjectFromDSL_toPrototype#dpa_NewPrototype(char[])}
+ * an error occurs. If one is found, method {@link CyanMetaobjectFromDSL_toPrototype#parsing_NewPrototype(char[])}
  * is called. It returns a prototype name (first tuple element) and a code (second tuple element).
  * The compiler then creates in the directory in which the DSL is a prototype with that name and code.
    @author jose
@@ -105,7 +105,7 @@ abstract public class CyanMetaobjectFromDSL_toPrototype extends CyanMetaobject {
 	 *
 	 *
 	 */
-	public abstract List<Tuple3<String, String, char []>> dpa_NewPrototype(ICompiler_dsl compiler_dsl);
+	public abstract List<Tuple3<String, String, char []>> parsing_NewPrototype(ICompiler_dsl compiler_dsl);
 
 	/**
 	 * the name of the metaobject and the name of the extension of the file with the DSL source code.

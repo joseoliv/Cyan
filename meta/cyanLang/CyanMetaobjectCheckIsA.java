@@ -7,12 +7,12 @@ import meta.AnnotationArgumentsKind;
 import meta.AttachedDeclarationKind;
 import meta.CyanMetaobjectAtAnnot;
 import meta.ExprReceiverKind;
-import meta.ICheckMessageSend_afsa;
+import meta.ICheckMessageSend_afterSemAn;
 import meta.WrEnv;
 import meta.WrExpr;
 import meta.WrMessageWithKeywords;
 import meta.WrMethodSignature;
-import meta.WrProgramUnit;
+import meta.WrPrototype;
 import meta.WrType;
 import saci.TupleTwo;
 
@@ -22,7 +22,7 @@ import saci.TupleTwo;
    @author José
  */
 public class CyanMetaobjectCheckIsA extends CyanMetaobjectAtAnnot
-    implements ICheckMessageSend_afsa {
+    implements ICheckMessageSend_afterSemAn {
 
 	public CyanMetaobjectCheckIsA() {
 		super("checkIsA", AnnotationArgumentsKind.ZeroParameters,
@@ -32,7 +32,7 @@ public class CyanMetaobjectCheckIsA extends CyanMetaobjectAtAnnot
 
 
 	@Override
-	public void afsa_checkKeywordMessageSend(WrExpr receiverExpr, WrProgramUnit receiverType,
+	public void afterSemAn_checkKeywordMessageSend(WrExpr receiverExpr, WrPrototype receiverType,
 			ExprReceiverKind receiverKind, WrMessageWithKeywords message, WrMethodSignature ms, WrEnv env) {
 
 		WrExpr paramExpr = message.getkeywordParameterList().get(0).getExprList().get(0);

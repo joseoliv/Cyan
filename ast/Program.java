@@ -25,7 +25,7 @@ import java.util.Set;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import cyan.reflect._CyanMetaobject;
-import cyan.reflect._IListAfter__afti;
+import cyan.reflect._IListAfter__afterResTypes;
 import error.CompileErrorException;
 import error.ErrorInMetaobjectException;
 import error.UnitError;
@@ -35,15 +35,16 @@ import meta.CompilationInstruction;
 import meta.CompilationStep;
 import meta.CyanMetaobject;
 import meta.GetHiddenItem;
-import meta.IActionNewPrototypes_afti;
-import meta.IAction_afti;
-import meta.ICompiler_afti;
-import meta.ICompiler_dsa;
-import meta.IListAfter_afti;
+import meta.IActionNewPrototypes_afterResTypes;
+import meta.IAction_afterResTypes;
+import meta.ICompiler_afterResTypes;
+import meta.ICompiler_semAn;
+import meta.IListAfter_afterResTypes;
 import meta.MetaHelper;
 import meta.Token;
 import meta.Tuple2;
 import meta.Tuple3;
+import meta.Tuple4;
 import meta.Tuple5;
 import meta.WrCompilationUnit;
 import meta.WrExprAnyLiteral;
@@ -51,10 +52,10 @@ import meta.WrExprLiteralBoolean;
 import meta.WrExprLiteralString;
 import meta.WrProgram;
 import meta.WrProgram_dpp;
-import metaRealClasses.Compiler_afti;
-import metaRealClasses.Compiler_dsa;
+import metaRealClasses.Compiler_afterResTypes;
+import metaRealClasses.Compiler_semAn;
 import saci.Compiler;
-import saci.CompilerManager_afti;
+import saci.CompilerManager_afterResTypes;
 import saci.Env;
 import saci.MyFile;
 import saci.NameServer;
@@ -78,7 +79,7 @@ public class Program implements ASTNode, Declaration {
 		receiverToWriteList = new HashSet<>();
 		programKeyValueMap = new HashMap<>();
 		programKeyValueSet = new HashMap<>();
-		attachedMetaobjectAnnotationList = null;
+		attachedAnnotationList = null;
 	}
 
 	@Override
@@ -158,7 +159,7 @@ public class Program implements ASTNode, Declaration {
 
 	/** Types appear in the AST as objects of ExprIdentStar or ExprGenericPrototypeInstantiation.
 	 *  This method sets the "type" field of several AST objects to the
-	 *  real ProgramUnit (prototype, interface, or Java class) that is being represented.
+	 *  real Prototype (prototype, interface, or Java class) that is being represented.
 	 *  That is, if the ExprIdentStar object is "Person", this method sets the "type"
 	 *  field of this object to the program unit that is "Person".
 	 *  But not all AST objects are changed. This method only sets the "type" variable
@@ -232,13 +233,13 @@ public class Program implements ASTNode, Declaration {
 					else {
 
 						//						if ( inCompilationStep5 ) {
-						//							if ( ! compilationUnit.getSourceCodeChanged_inPhaseAfti() ) {
+						//							if ( ! compilationUnit.getSourceCodeChanged_inPhaseafterResTypes() ) {
 						//								++i;  // not ideal solution, of course
 						//								continue;
 						//							}
 						//						}
 						//						else if ( inCompilationStep8 ) {
-						//							if ( ! compilationUnit.getSourceCodeChanged_inPhaseDsa() ) {
+						//							if ( ! compilationUnit.getSourceCodeChanged_inPhasesemAn() ) {
 						//								++i; // not ideal solution, of course
 						//								continue;
 						//							}
@@ -276,9 +277,9 @@ public class Program implements ASTNode, Declaration {
 		//		if ( env.getCompInstSet().contains(CompilationInstruction.ati2_check) ) {
 		//
 		//
-		//			final ICompiler_afti compiler_afti = new Compiler_afti(env);
-		//			//WrEnv newEnv = compiler_afti.getEnv();
-		//			final Env newEnv = meta.GetHiddenItem.getHiddenEnv(compiler_afti.getEnv());
+		//			final ICompiler_afterResTypes compiler_afterResTypes = new Compiler_afterResTypes(env);
+		//			//WrEnv newEnv = compiler_afterResTypes.getEnv();
+		//			final Env newEnv = meta.GetHiddenItem.getHiddenEnv(compiler_afterResTypes.getEnv());
 		//
 		//
 		//			for ( final CompilationUnit cunit : compilationUnitList ) {
@@ -286,12 +287,12 @@ public class Program implements ASTNode, Declaration {
 		//					continue;
 		//				}
 		//				newEnv.atBeginningOfCurrentCompilationUnit(cunit);
-		//				for ( final ProgramUnit pu : cunit.getProgramUnitList() ) {
+		//				for ( final Prototype pu : cunit.getPrototypeList() ) {
 		//					newEnv.atBeginningOfObjectDec(pu);
 		//					List<Annotation> annotList = pu.getPrototypePackageProgramAnnotationList();
 		//					pu.setDeclarationImportedFromPackageProgram();
 		//
-		//					// pu.ati2_checkDeclaration(compiler_afti, env);
+		//					// pu.ati2_checkDeclaration(compiler_afterResTypes, env);
 		//					newEnv.atEndOfObjectDec();
 		//				}
 		//				newEnv.atEndOfCurrentCompilationUnit();
@@ -304,19 +305,19 @@ public class Program implements ASTNode, Declaration {
 		} */
 		if ( afterATImetaobjectAnnotationList != null && env.getProject().getCompilerManager().getCompilationStep() == CompilationStep.step_8 ) {
 
-			final ICompiler_afti compiler_afti = new Compiler_afti(env);
+			final ICompiler_afterResTypes compiler_afterResTypes = new Compiler_afterResTypes(env);
 
 			for ( final CyanMetaobject metaobject : afterATImetaobjectAnnotationList ) {
-				final Env newEnv = meta.GetHiddenItem.getHiddenEnv(compiler_afti.getEnv());
+				final Env newEnv = meta.GetHiddenItem.getHiddenEnv(compiler_afterResTypes.getEnv());
 
 				_CyanMetaobject other = metaobject.getMetaobjectInCyan();
 
-				WrCompilationUnit compUnit;
+				WrCompilationUnit compUnit = null;
 				if ( other == null ) {
-					compUnit = ((IListAfter_afti ) metaobject).getCompilationUnit();
+					compUnit = ((IListAfter_afterResTypes ) metaobject).getCompilationUnit();
 				}
 				else {
-					compUnit = ((_IListAfter__afti) other)._getCompilationUnit();
+					compUnit = ((_IListAfter__afterResTypes) other)._getCompilationUnit();
 				}
 				final CompilationUnit cunit = GetHiddenItem.getHiddenCompilationUnit(compUnit);
 				newEnv.atBeginningOfCurrentCompilationUnit(cunit);
@@ -326,10 +327,10 @@ public class Program implements ASTNode, Declaration {
 					cunit.prepareGenericCompilationUnit(newEnv);
 
 					if ( other == null ) {
-						((IListAfter_afti ) metaobject).after_afti_action(compiler_afti);
+						((IListAfter_afterResTypes ) metaobject).after_afterResTypes_action(compiler_afterResTypes);
 					}
 					else {
-						((_IListAfter__afti) other)._after__afti__action_1( compiler_afti);
+						((_IListAfter__afterResTypes) other)._after__afterResTypes__action_1( compiler_afterResTypes);
 					}
 
 					newEnv.atEndOfCurrentCompilationUnit();
@@ -339,19 +340,19 @@ public class Program implements ASTNode, Declaration {
 				}
 				catch ( final NoClassDefFoundError e ) {
 					env.error(
-							meta.GetHiddenItem.getHiddenSymbol(metaobject.getMetaobjectAnnotation().getFirstSymbol()),
+							meta.GetHiddenItem.getHiddenSymbol(metaobject.getAnnotation().getFirstSymbol()),
 							e.getMessage() + " " + NameServer.messageClassNotFoundException);
 				}
 				catch ( final RuntimeException e ) {
 					e.printStackTrace();
 					env.thrownException(
-							meta.GetHiddenItem.getHiddenCyanMetaobjectAnnotation(metaobject.getMetaobjectAnnotation()),
-							meta.GetHiddenItem.getHiddenSymbol(metaobject.getMetaobjectAnnotation().getFirstSymbol()),
+							meta.GetHiddenItem.getHiddenCyanAnnotation(metaobject.getAnnotation()),
+							meta.GetHiddenItem.getHiddenSymbol(metaobject.getAnnotation().getFirstSymbol()),
 							e);
 				}
 				finally {
 					env.errorInMetaobjectCatchExceptions(metaobject);
-					newEnv.setProgramUnitForGenericPrototypeList(null);
+					newEnv.setPrototypeForGenericPrototypeList(null);
 				}
 
 
@@ -367,7 +368,7 @@ public class Program implements ASTNode, Declaration {
 	private void calcAnnotationsArgumentTypes_of_ProjectFile(Env env) {
 		int i;
 		final int oldSizeList = compilationUnitList.size();
-		final CompilationUnit anyCompilationUnit = ((ProgramUnit ) Type.Any).getCompilationUnit();
+		final CompilationUnit anyCompilationUnit = ((Prototype ) Type.Any).getCompilationUnit();
 		/*
 		 * do all the typing in the context of Any. It does not matter which
 		 * prototype of cyan.lang is chosen. This is just to avoid a NPE.
@@ -376,12 +377,12 @@ public class Program implements ASTNode, Declaration {
 		CyanPackage cyanLangPackage = this.project.getCyanLangPackage();
 		anyCompilationUnit.getImportedCyanPackageSet().add(cyanLangPackage);
 		env.atBeginningOfCurrentCompilationUnit(anyCompilationUnit);
-		for ( final AnnotationAt annotation : this.attachedMetaobjectAnnotationList ) {
+		for ( final AnnotationAt annotation : this.attachedAnnotationList ) {
 			annotation.calcInternalTypes(env);
 		}
 		for ( final CyanPackage cp : this.packageList ) {
-			if ( cp.getAttachedMetaobjectAnnotationList() != null ) {
-				for ( final AnnotationAt annotation : cp.getAttachedMetaobjectAnnotationList() ) {
+			if ( cp.getAttachedAnnotationList() != null ) {
+				for ( final AnnotationAt annotation : cp.getAttachedAnnotationList() ) {
 					cp.addPackageMetaToClassPath_and_Run( () -> {
 						annotation.calcInternalTypes(env);
 					} );
@@ -437,7 +438,7 @@ public class Program implements ASTNode, Declaration {
 	/*
 	@SuppressWarnings("static-method")
 	private void checkAbstractMethodsWereDeclared(Env env, CompilationUnit cunit) {
-		for ( ProgramUnit pu : cunit.getProgramUnitList() )  {
+		for ( Prototype pu : cunit.getPrototypeList() )  {
 			if ( pu instanceof ObjectDec ) {
 				ObjectDec proto = (ObjectDec ) pu;
 
@@ -566,7 +567,7 @@ public class Program implements ASTNode, Declaration {
 			env.atBeginningOfCurrentCompilationUnit(cunit);
 
 			final HashSet<Integer> alreadCheckedList = new HashSet<>();
-			for ( final ProgramUnit pu : cunit.getProgramUnitList() ) {
+			for ( final Prototype pu : cunit.getPrototypeList() ) {
 				if ( pu instanceof ObjectDec ) {
 					final ObjectDec proto = (ObjectDec ) pu;
 					final ObjectDec superProto = proto.getSuperobject();
@@ -1192,7 +1193,7 @@ public class Program implements ASTNode, Declaration {
 	 *
 	 * make the metaobject annotations of packages communicate with each other
 	 */
-	protected void makeMetaobjectAnnotationsCommunicateInPackage(Env env) {
+	protected void makeAnnotationsCommunicateInPackage(Env env) {
 
 
 		/*
@@ -1213,28 +1214,28 @@ public class Program implements ASTNode, Declaration {
 			for ( final CompilationUnit compUnit :  cp.getCompilationUnitList() ) {
 
 				if ( ! compUnit.getHasGenericPrototype() ) {
-					for ( final ProgramUnit pu : compUnit.getProgramUnitList() ) {
+					for ( final Prototype pu : compUnit.getPrototypeList() ) {
 
 						/*
 						 * only prototypes that do not have a '<' in its name can communicate. For
 						 * example, <code>Set{@literal <}Int></code> cannot communicate with anyone.
 						 */
-						final List<Annotation> allMetaobjectAnnotationList = new ArrayList<>();
-						final List<Annotation> metaobjectAnnotationList = pu.getCompleteMetaobjectAnnotationList();
+						final List<Annotation> allAnnotationList = new ArrayList<>();
+						final List<Annotation> metaobjectAnnotationList = pu.getCompleteAnnotationList();
 						if ( metaobjectAnnotationList != null )
-							allMetaobjectAnnotationList.addAll(metaobjectAnnotationList);
-						final List<AnnotationAt> metaobjectWithAtAnnotationList = pu.getNonAttachedMetaobjectAnnotationList();
+							allAnnotationList.addAll(metaobjectAnnotationList);
+						final List<AnnotationAt> metaobjectWithAtAnnotationList = pu.getNonAttachedAnnotationList();
 						if ( metaobjectWithAtAnnotationList != null )
-							allMetaobjectAnnotationList.addAll(metaobjectWithAtAnnotationList);
-						for ( final Annotation annotation : allMetaobjectAnnotationList ) {
+							allAnnotationList.addAll(metaobjectWithAtAnnotationList);
+						for ( final Annotation annotation : allAnnotationList ) {
 							final CyanMetaobject cyanMetaobject = annotation.getCyanMetaobject();
-							// // cyanMetaobject.setMetaobjectAnnotation(annotation, 0);
+							// // cyanMetaobject.setAnnotation(annotation, 0);
 							/*
 							 * there is not communication in packages anymore
 							 */
 							/*
-							if ( cyanMetaobject instanceof ICommunicateInPackage_afti_dsa ) {
-								final Object sharedInfo = ((ICommunicateInPackage_afti_dsa) cyanMetaobject).afti_dsa_shareInfoPackage();
+							if ( cyanMetaobject instanceof ICommunicateInPackage_afterResTypes_semAn ) {
+								final Object sharedInfo = ((ICommunicateInPackage_afterResTypes_semAn) cyanMetaobject).afterResTypes_semAn_shareInfoPackage();
 								   //annotation.shareInfoPackage();
 								if (  sharedInfo != null ) {
 									if ( !cp.getCommunicateInPackage() ) {
@@ -1248,8 +1249,8 @@ public class Program implements ASTNode, Declaration {
 									if ( pu.getGenericParameterListList().size() == 0 )  {
 										final Tuple5<String, Integer, Integer, String, Object> t = new Tuple5<String, Integer, Integer, String, Object>(
 												annotation.getCyanMetaobject().getName(),
-												annotation.getMetaobjectAnnotationNumber(),
-												annotation.getMetaobjectAnnotationNumberByKind(),
+												annotation.getAnnotationNumber(),
+												annotation.getAnnotationNumberByKind(),
 												annotation.getPrototypeOfAnnotation(),
 												sharedInfo);
 										moInfoSet.add(t);
@@ -1275,26 +1276,26 @@ public class Program implements ASTNode, Declaration {
 			if ( moInfoSet.size() > 0 ) {
 				for ( final CompilationUnit compUnit : cp.getCompilationUnitList() ) {
 					if ( ! compUnit.getHasGenericPrototype() ) {
-						for ( final ProgramUnit pu : compUnit.getProgramUnitList() ) {
-							final List<Annotation> allMetaobjectAnnotationList = new ArrayList<>();
-							final List<Annotation> metaobjectAnnotationList = pu.getCompleteMetaobjectAnnotationList();
+						for ( final Prototype pu : compUnit.getPrototypeList() ) {
+							final List<Annotation> allAnnotationList = new ArrayList<>();
+							final List<Annotation> metaobjectAnnotationList = pu.getCompleteAnnotationList();
 							if ( metaobjectAnnotationList != null )
-								allMetaobjectAnnotationList.addAll(metaobjectAnnotationList);
-							final List<AnnotationAt> metaobjectWithAtAnnotationList = pu.getNonAttachedMetaobjectAnnotationList();
+								allAnnotationList.addAll(metaobjectAnnotationList);
+							final List<AnnotationAt> metaobjectWithAtAnnotationList = pu.getNonAttachedAnnotationList();
 							if ( metaobjectWithAtAnnotationList != null )
-								allMetaobjectAnnotationList.addAll(metaobjectWithAtAnnotationList);
+								allAnnotationList.addAll(metaobjectWithAtAnnotationList);
 
 							/*
 							 * there is not communication in packages anymore
 							 */
 							/*
 
-							for ( final Annotation annotation : allMetaobjectAnnotationList) {
+							for ( final Annotation annotation : allAnnotationList) {
 								final CyanMetaobject cyanMetaobject = annotation.getCyanMetaobject();
-								// // cyanMetaobject.setMetaobjectAnnotation(annotation, 0);
+								// // cyanMetaobject.setAnnotation(annotation, 0);
 
-								if ( cyanMetaobject instanceof ICommunicateInPackage_afti_dsa ) {
-									((ICommunicateInPackage_afti_dsa ) cyanMetaobject).afti_dsa_receiveInfoPackage(moInfoSet);
+								if ( cyanMetaobject instanceof ICommunicateInPackage_afterResTypes_semAn ) {
+									((ICommunicateInPackage_afterResTypes_semAn ) cyanMetaobject).afterResTypes_semAn_receiveInfoPackage(moInfoSet);
 								}
 							}
 							 */
@@ -1312,25 +1313,25 @@ public class Program implements ASTNode, Declaration {
 	//	 */
 	//	public boolean ati3_check(Env env) {
 	//
-	//		final ICompiler_afti compiler_afti = new Compiler_afti(env);
-	//		// makeMetaobjectAnnotationsCommunicateInPackage(env);
+	//		final ICompiler_afterResTypes compiler_afterResTypes = new Compiler_afterResTypes(env);
+	//		// makeAnnotationsCommunicateInPackage(env);
 	//		for ( final CompilationUnit compilationUnit : compilationUnitList ) {
 	//			compilationUnit.getCyanPackage().addPackageMetaToClassPath_and_Run( () -> {
-	//				compilationUnit.ati3_check(compiler_afti);
+	//				compilationUnit.ati3_check(compiler_afterResTypes);
 	//			} );
 	//		}
 	//		return true;
 	//	}
 
 
-	public boolean afsa_check(Env env) {
+	public boolean afterSemAn_check(Env env) {
 
-		final ICompiler_dsa compiler_dsa = new Compiler_dsa(env);
+		final ICompiler_semAn compiler_semAn = new Compiler_semAn(env);
 		for ( final CompilationUnit compilationUnit : compilationUnitList ) {
 			try {
 
 				compilationUnit.getCyanPackage().addPackageMetaToClassPath_and_Run( () -> {
-					compilationUnit.afsa_checkDeclaration(compiler_dsa);
+					compilationUnit.afterSemAn_checkDeclaration(compiler_semAn);
 				} );
 			}
 			catch ( final error.CompileErrorException e ) {
@@ -1346,16 +1347,16 @@ public class Program implements ASTNode, Declaration {
 	/**
 	 * call a method of all metaobjects. This method should be called after typing the prototype interfaces
 	 */
-	public boolean afti_actions(Env env) {
+	public boolean afterResTypes_actions(Env env) {
 		boolean ret = true;
 		try {
 
 
-			final ICompiler_afti compiler_afti = new Compiler_afti(env);
-			final CompilerManager_afti compilerManager = new CompilerManager_afti(env);
+			final ICompiler_afterResTypes compiler_afterResTypes = new Compiler_afterResTypes(env);
+			final CompilerManager_afterResTypes compilerManager = new CompilerManager_afterResTypes(env);
 
 			// no more communication in packages
-			// makeMetaobjectAnnotationsCommunicateInPackage(env);
+			// makeAnnotationsCommunicateInPackage(env);
 
 
 
@@ -1369,7 +1370,7 @@ public class Program implements ASTNode, Declaration {
 				try {
 
 					compilationUnit.getCyanPackage().addPackageMetaToClassPath_and_Run( () -> {
-						compilationUnit.afti_actions(compiler_afti, compilerManager);
+						compilationUnit.afterResTypes_actions(compiler_afterResTypes, compilerManager);
 					} );
 
 
@@ -1388,7 +1389,7 @@ public class Program implements ASTNode, Declaration {
 
 			/*
 			 * all changes demanded by metaobject annotations collected above are made in the call
-			 * to CompilerManager_afti#changeCheckProgram.
+			 * to CompilerManager_afterResTypes#changeCheckProgram.
 			 */
 			if ( ! ret ) { return ret; }
 			compilerManager.changeCheckProgram();
@@ -1410,7 +1411,7 @@ public class Program implements ASTNode, Declaration {
 	 */
 	public void genJava(Env env) {
 
-		//ProgramUnit mainPrototype = env.searchPackagePrototype("main", "Program");
+		//Prototype mainPrototype = env.searchPackagePrototype("main", "Program");
 		// before generating code,
 
 		final String mainPackageName = project.getMainPackage();
@@ -1425,7 +1426,7 @@ public class Program implements ASTNode, Declaration {
 			return ;
 		}
 		final String mainPrototypeName = project.getMainObject();
-		final ProgramUnit mainPrototype = mainPackage.searchPublicNonGenericProgramUnit(mainPrototypeName);
+		final Prototype mainPrototype = mainPackage.searchPublicNonGenericPrototype(mainPrototypeName);
 		if ( mainPrototype == null ) {
 			try {
 				env.error(null,  "According to the project file (.pyan) for this program, the main prototype is '"
@@ -2129,38 +2130,38 @@ public class Program implements ASTNode, Declaration {
 	}
 
 
-	private List<String> topologicalSortingProgramUnitList(Env env) {
+	private List<String> topologicalSortingPrototypeList(Env env) {
 		/*
 		 * program unit, super-prototype list, sub-prototype list
 		 */
-		final HashMap<ProgramUnit, Tuple2<List<ProgramUnit>, List<ProgramUnit>> > protoNameAdjList = new HashMap<>();
-		List<ProgramUnit> noSuperList = new ArrayList<>();
-		final List<ProgramUnit> programUnitList = new ArrayList<>();
+		final HashMap<Prototype, Tuple2<List<Prototype>, List<Prototype>> > protoNameAdjList = new HashMap<>();
+		List<Prototype> noSuperList = new ArrayList<>();
+		final List<Prototype> prototypeList = new ArrayList<>();
 		/**
 		 * collect the program units
 		 */
 		for ( final CompilationUnit cunit : compilationUnitList ) {
 			if ( !cunit.hasGenericPrototype() ) {
-				for ( final ProgramUnit pu : cunit.getProgramUnitList() ) {
-					programUnitList.add(pu);
-					final List<ProgramUnit> superList = new ArrayList<>();
-					final List<ProgramUnit> subList = new ArrayList<>();
+				for ( final Prototype pu : cunit.getPrototypeList() ) {
+					prototypeList.add(pu);
+					final List<Prototype> superList = new ArrayList<>();
+					final List<Prototype> subList = new ArrayList<>();
 					protoNameAdjList.put(pu,  new Tuple2<>(superList, subList));
 				}
 			}
 		}
 		final ObjectDec anyPrototype = (ObjectDec ) Type.Any;
-		final Tuple2<List<ProgramUnit>, List<ProgramUnit>> anySuperSub = protoNameAdjList.get(anyPrototype);
+		final Tuple2<List<Prototype>, List<Prototype>> anySuperSub = protoNameAdjList.get(anyPrototype);
 		/**
 		 * build the graph of sub-type and super-type relationships
 		 */
-		for ( final ProgramUnit pu : programUnitList ) {
-			final Tuple2<List<ProgramUnit>, List<ProgramUnit>> t = protoNameAdjList.get(pu);
+		for ( final Prototype pu : prototypeList ) {
+			final Tuple2<List<Prototype>, List<Prototype>> t = protoNameAdjList.get(pu);
 			if ( t == null ) {
 				env.error(null,  "Internal error: program unit '" + pu.getFullName() + "' was not found in topological sorting (Program.java)");
 				return null;
 			}
-			final List<ProgramUnit> superList = t.f1;
+			final List<Prototype> superList = t.f1;
 			if ( pu instanceof InterfaceDec ) {
 				/*
 				 * add Any in the list of super-prototypes of the interface
@@ -2180,7 +2181,7 @@ public class Program implements ASTNode, Declaration {
 				if ( superInterList != null && superInterList.size() > 0 )  {
 					superList.addAll(superInterList);
 					for ( final InterfaceDec superInter : superInterList ) {
-						final Tuple2<List<ProgramUnit>, List<ProgramUnit>> superT = protoNameAdjList.get(superInter);
+						final Tuple2<List<Prototype>, List<Prototype>> superT = protoNameAdjList.get(superInter);
 						/*
 						 * add pu as a sub-type of superInter, one of the super-interfaces of pu
 						 */
@@ -2197,7 +2198,7 @@ public class Program implements ASTNode, Declaration {
 				final ObjectDec superProto = proto.getSuperobject();
 				if ( superProto != null ) {
 					superList.add(superProto);
-					final Tuple2<List<ProgramUnit>, List<ProgramUnit>> superT = protoNameAdjList.get(superProto);
+					final Tuple2<List<Prototype>, List<Prototype>> superT = protoNameAdjList.get(superProto);
 					/*
 					 * add pu as a sub-type of superProto, the super-prototype of pu
 					 */
@@ -2217,7 +2218,7 @@ public class Program implements ASTNode, Declaration {
 					for ( final Expr implInterExpr : implInterExprList ) {
 						final InterfaceDec superInter = (InterfaceDec ) implInterExpr.getType();
 						superList.add( superInter );
-						final Tuple2<List<ProgramUnit>, List<ProgramUnit>> superT = protoNameAdjList.get(superInter);
+						final Tuple2<List<Prototype>, List<Prototype>> superT = protoNameAdjList.get(superInter);
 						/*
 						 * add pu as a sub-type of superInter, one of the super-interfaces of pu
 						 */
@@ -2234,22 +2235,22 @@ public class Program implements ASTNode, Declaration {
 		/**
 		 * make sure the basic types and Any and Nil are put first in the list
 		 */
-		final List<ProgramUnit> noSuperListBasicCyanLangFirst = new ArrayList<>();
-		noSuperListBasicCyanLangFirst.add( (ProgramUnit ) Type.Any );
-		noSuperListBasicCyanLangFirst.add( (ProgramUnit ) Type.Nil );
-		noSuperListBasicCyanLangFirst.add( (ProgramUnit ) Type.Byte );
-		noSuperListBasicCyanLangFirst.add( (ProgramUnit ) Type.Int );
-		noSuperListBasicCyanLangFirst.add( (ProgramUnit ) Type.Long );
-		noSuperListBasicCyanLangFirst.add( (ProgramUnit ) Type.Float );
-		noSuperListBasicCyanLangFirst.add( (ProgramUnit ) Type.Double );
-		noSuperListBasicCyanLangFirst.add( (ProgramUnit ) Type.Char );
-		noSuperListBasicCyanLangFirst.add( (ProgramUnit ) Type.Boolean );
-		// noSuperListBasicCyanLangFirst.add( (ProgramUnit ) Type.CySymbol );
-		noSuperListBasicCyanLangFirst.add( (ProgramUnit ) Type.String );
+		final List<Prototype> noSuperListBasicCyanLangFirst = new ArrayList<>();
+		noSuperListBasicCyanLangFirst.add( (Prototype ) Type.Any );
+		noSuperListBasicCyanLangFirst.add( (Prototype ) Type.Nil );
+		noSuperListBasicCyanLangFirst.add( (Prototype ) Type.Byte );
+		noSuperListBasicCyanLangFirst.add( (Prototype ) Type.Int );
+		noSuperListBasicCyanLangFirst.add( (Prototype ) Type.Long );
+		noSuperListBasicCyanLangFirst.add( (Prototype ) Type.Float );
+		noSuperListBasicCyanLangFirst.add( (Prototype ) Type.Double );
+		noSuperListBasicCyanLangFirst.add( (Prototype ) Type.Char );
+		noSuperListBasicCyanLangFirst.add( (Prototype ) Type.Boolean );
+		// noSuperListBasicCyanLangFirst.add( (Prototype ) Type.CySymbol );
+		noSuperListBasicCyanLangFirst.add( (Prototype ) Type.String );
 		/*
 		 * prototypes of package cyan.lang are put next in the list
 		 */
-		for ( final ProgramUnit pu : noSuperList ) {
+		for ( final Prototype pu : noSuperList ) {
 			if ( MetaHelper.cyanLanguagePackageName.equals(pu.getCompilationUnit().getPackageName()) &&
 					! MetaHelper.isBasicType(pu.getName()) ) {
 				noSuperListBasicCyanLangFirst.add(pu);
@@ -2258,7 +2259,7 @@ public class Program implements ASTNode, Declaration {
 		/*
 		 * then all other prototypes
 		 */
-		for ( final ProgramUnit pu : noSuperList ) {
+		for ( final Prototype pu : noSuperList ) {
 			if ( ! MetaHelper.cyanLanguagePackageName.equals(pu.getCompilationUnit().getPackageName()) ) {
 				noSuperListBasicCyanLangFirst.add(pu);
 			}
@@ -2267,24 +2268,24 @@ public class Program implements ASTNode, Declaration {
 		/**
 		 * do the topological sorting
 		 */
-		final List<ProgramUnit> sortedProgramUnit = new ArrayList<>();
+		final List<Prototype> sortedPrototype = new ArrayList<>();
 		while ( noSuperList.size() > 0 ) {
-			final ProgramUnit pu = noSuperList.get(0);
+			final Prototype pu = noSuperList.get(0);
 			noSuperList.remove(0);
-			sortedProgramUnit.add(pu);
+			sortedPrototype.add(pu);
 
-			final Tuple2<List<ProgramUnit>, List<ProgramUnit>> t = protoNameAdjList.get(pu);
-			final List<ProgramUnit> subPUList = t.f2;
+			final Tuple2<List<Prototype>, List<Prototype>> t = protoNameAdjList.get(pu);
+			final List<Prototype> subPUList = t.f2;
 			/*
 			 * remove all edges from sub-types to the super-type pu
 			 */
-			for ( final ProgramUnit subProto : subPUList ) {
-				final Tuple2<List<ProgramUnit>, List<ProgramUnit>> subT = protoNameAdjList.get(subProto);
+			for ( final Prototype subProto : subPUList ) {
+				final Tuple2<List<Prototype>, List<Prototype>> subT = protoNameAdjList.get(subProto);
 				/*
 				 * remove pu from the list of super-types of subT
 				 */
 				int i = 0;
-				for ( final ProgramUnit superSubProto : subT.f1 ) {
+				for ( final Prototype superSubProto : subT.f1 ) {
 					if ( superSubProto == pu ) {
 						subT.f1.remove(i);
 						break;
@@ -2308,13 +2309,13 @@ public class Program implements ASTNode, Declaration {
 			t.f2.clear();
 		}
 
-		for ( final ProgramUnit pu : programUnitList ) {
-			final Tuple2<List<ProgramUnit>, List<ProgramUnit>> t = protoNameAdjList.get(pu);
-			final List<ProgramUnit> superList = t.f1;
+		for ( final Prototype pu : prototypeList ) {
+			final Tuple2<List<Prototype>, List<Prototype>> t = protoNameAdjList.get(pu);
+			final List<Prototype> superList = t.f1;
 			if ( superList.size() > 0 ) {
 				final String puName = pu.getFullName();
 				String s = puName;
-				for ( final ProgramUnit superPU : superList ) {
+				for ( final Prototype superPU : superList ) {
 					final String superFullName = superPU.getFullName();
 					if ( superFullName.equals(puName) ) {
 						break;
@@ -2326,8 +2327,8 @@ public class Program implements ASTNode, Declaration {
 			}
 
 		}
-		final List<String> sortedStrProgramUnitList = new ArrayList<>();
-		for ( final ProgramUnit pu : sortedProgramUnit ) {
+		final List<String> sortedStrPrototypeList = new ArrayList<>();
+		for ( final Prototype pu : sortedPrototype ) {
 			String protoJavaName;
 			if ( pu instanceof InterfaceDec ) {
 				protoJavaName = MetaHelper.getJavaName(
@@ -2335,10 +2336,10 @@ public class Program implements ASTNode, Declaration {
 			}
 			else
 				protoJavaName = pu.getJavaName();
-			sortedStrProgramUnitList.add(protoJavaName);
+			sortedStrPrototypeList.add(protoJavaName);
 
 		}
-		return sortedStrProgramUnitList;
+		return sortedStrPrototypeList;
 	}
 
 
@@ -2647,9 +2648,9 @@ public class Program implements ASTNode, Declaration {
 		Type.ISetName = env.searchPackagePrototype(MetaHelper.cyanLanguagePackageName, NameServer.ISetName);
 
 		// no more communication in packages
-		// makeMetaobjectAnnotationsCommunicateInPackage(env);
+		// makeAnnotationsCommunicateInPackage(env);
 
-		final ICompiler_dsa compiler_dsa = new Compiler_dsa(env);
+		final ICompiler_semAn compiler_semAn = new Compiler_semAn(env);
 
 		boolean inCompilationStep9 = env.getCompilationStep() == CompilationStep.step_9;
 
@@ -2665,20 +2666,20 @@ public class Program implements ASTNode, Declaration {
 
 					//					if ( inCompilationStep9 ) {
 					//						/*
-					//						 * ICheckSubprototype_afsa
-					//							ICheckOverride_afsa
-					//							ICheckMessageSend_afsa
+					//						 * ICheckSubprototype_afterSemAn
+					//							ICheckOverride_afterSemAn
+					//							ICheckMessageSend_afterSemAn
 					//						 */
-					//						ProgramUnit pu = compilationUnit.getPublicPrototype();
-					//						List<Annotation> annotList = pu.getCompleteMetaobjectAnnotationList();
-					//						boolean found_afsa = false;
+					//						Prototype pu = compilationUnit.getPublicPrototype();
+					//						List<Annotation> annotList = pu.getCompleteAnnotationList();
+					//						boolean found_afterSemAn = false;
 					//						if ( annotList != null ) {
 					//							for ( Annotation annot : annotList ) {
 					//								CyanMetaobject mo = annot.getCyanMetaobject();
-					//								if ( mo instanceof ICheckSubprototype_afsa ||
-					//									 mo instanceof ICheckOverride_afsa ||
-					//								     mo instanceof ICheckMessageSend_afsa ) {
-					//									found_afsa = true;
+					//								if ( mo instanceof ICheckSubprototype_afterSemAn ||
+					//									 mo instanceof ICheckOverride_afterSemAn ||
+					//								     mo instanceof ICheckMessageSend_afterSemAn ) {
+					//									found_afterSemAn = true;
 					//									break;
 					//								}
 					//							}
@@ -2687,28 +2688,28 @@ public class Program implements ASTNode, Declaration {
 					//						 * this phase is only necessary if there is a metaobject
 					//						 * that implements checks in it. These metaobject implement
 					//						 * one of the following interfaces:
-					//						 *   ICheckSubprototype_afsa
-					//							 ICheckOverride_afsa
-					//							 ICheckMessageSend_afsa
-					//							 ICheckDeclaration_afsa
+					//						 *   ICheckSubprototype_afterSemAn
+					//							 ICheckOverride_afterSemAn
+					//							 ICheckMessageSend_afterSemAn
+					//							 ICheckDeclaration_afterSemAn
 					//
-					//							The last interface, ICheckDeclaration_afsa, is not
+					//							The last interface, ICheckDeclaration_afterSemAn, is not
 					//							activated in this method. It is in a separate method,
-					//							afsa_check of this same class. See that Saci::run
-					//							calls afsa_check.
+					//							afterSemAn_check of this same class. See that Saci::run
+					//							calls afterSemAn_check.
 					//
-					//							ICommunicateInPrototype_afti_dsa_afsa does not need
+					//							ICommunicateInPrototype_afterResTypes_semAn_afterSemAn does not need
 					//							to be considered because it is only used in this
 					//							phase 9 if one of the previous interfaces is used
 					//						 */
-					//						if ( ! found_afsa ) {
+					//						if ( ! found_afterSemAn ) {
 					//							++i;
 					//							continue;
 					//						}
 					//					}
 
 					compilationUnit.getCyanPackage().addPackageMetaToClassPath_and_Run( () -> {
-						compilationUnit.calcInternalTypes(compiler_dsa, env);
+						compilationUnit.calcInternalTypes(compiler_semAn, env);
 					} );
 
 
@@ -2924,36 +2925,36 @@ public class Program implements ASTNode, Declaration {
 	}
 
 
-	public List<AnnotationAt> getAttachedMetaobjectAnnotationList() {
-		return attachedMetaobjectAnnotationList;
+	public List<AnnotationAt> getAttachedAnnotationList() {
+		return attachedAnnotationList;
 	}
 
-	public void setAttachedMetaobjectAnnotationList(List<AnnotationAt> attachedMetaobjectAnnotationList) {
-		if ( attachedMetaobjectAnnotationList == null ) {
-			attachedMetaobjectAnnotationList = new ArrayList<>();
+	public void setAttachedAnnotationList(List<AnnotationAt> attachedAnnotationList) {
+		if ( attachedAnnotationList == null ) {
+			attachedAnnotationList = new ArrayList<>();
 		}
-		this.attachedMetaobjectAnnotationList = attachedMetaobjectAnnotationList;
+		this.attachedAnnotationList = attachedAnnotationList;
 	}
 
-	public List<AnnotationAt> getAttachedMetaobjectAnnotationList_IActionProgramUnit_afti_IActionNewPrototypes_afti() {
-		if ( attachedMetaobjectAnnotationList_IActionProgramUnit_afti_IActionNewPrototypes_afti == null ) {
-			attachedMetaobjectAnnotationList_IActionProgramUnit_afti_IActionNewPrototypes_afti = new ArrayList<>();
+	public List<AnnotationAt> getAttachedAnnotationList_IActionPrototype_afterResTypes_IActionNewPrototypes_afterResTypes() {
+		if ( attachedAnnotationList_IActionPrototype_afterResTypes_IActionNewPrototypes_afterResTypes == null ) {
+			attachedAnnotationList_IActionPrototype_afterResTypes_IActionNewPrototypes_afterResTypes = new ArrayList<>();
 
-			for ( AnnotationAt withAtAnnot : attachedMetaobjectAnnotationList ) {
+			for ( AnnotationAt withAtAnnot : attachedAnnotationList ) {
 				CyanMetaobject cyanMetaobject = withAtAnnot.getCyanMetaobject();
-				if ( cyanMetaobject instanceof IAction_afti ||
-						cyanMetaobject instanceof IActionNewPrototypes_afti ) {
-					attachedMetaobjectAnnotationList_IActionProgramUnit_afti_IActionNewPrototypes_afti.add(withAtAnnot);
+				if ( cyanMetaobject instanceof IAction_afterResTypes ||
+						cyanMetaobject instanceof IActionNewPrototypes_afterResTypes ) {
+					attachedAnnotationList_IActionPrototype_afterResTypes_IActionNewPrototypes_afterResTypes.add(withAtAnnot);
 				}
 			}
 		}
-		return attachedMetaobjectAnnotationList_IActionProgramUnit_afti_IActionNewPrototypes_afti;
+		return attachedAnnotationList_IActionPrototype_afterResTypes_IActionNewPrototypes_afterResTypes;
 	}
 	/**
-	 * the annotations of attachedMetaobjectAnnotationList that implement interfaces
-	 * IAction_afti or IActionNewPrototypes_afti
+	 * the annotations of attachedAnnotationList that implement interfaces
+	 * IAction_afterResTypes or IActionNewPrototypes_afterResTypes
 	 */
-	List<AnnotationAt>  attachedMetaobjectAnnotationList_IActionProgramUnit_afti_IActionNewPrototypes_afti = null;
+	List<AnnotationAt>  attachedAnnotationList_IActionPrototype_afterResTypes_IActionNewPrototypes_afterResTypes = null;
 
 
 	/*
@@ -2985,7 +2986,7 @@ public class Program implements ASTNode, Declaration {
 		return this.cyanLangDir;
 	}
 
-	public void addToListAfter_afti(CyanMetaobject annotation) {
+	public void addToListAfter_afterResTypes(CyanMetaobject annotation) {
 		if ( this.afterATImetaobjectAnnotationList == null ) {
 			this.afterATImetaobjectAnnotationList = new ArrayList<>();
 		}
@@ -3531,14 +3532,14 @@ public class Program implements ASTNode, Declaration {
 		}
 		cyanPackage.setCompilationUnitList(newCompUnitList);
 		ExprIdentStar packageIdent = interfaceSourceCompilationUnit.getPackageIdent();
-		for ( ProgramUnit pu : interfaceSourceCompilationUnit.getProgramUnitList() ) {
+		for ( Prototype pu : interfaceSourceCompilationUnit.getPrototypeList() ) {
 			CompilationUnit cUnit = new CompilationUnit(
 					pu.getName(), path, null, cyanPackage);
 			//			if ( cyanPackage.getName().contains("reflect")) {
 			//				System.out.println("reflect::" + pu.getName());
 			//			}
 			cUnit.setText(input);
-			cUnit.addProgramUnit(pu);
+			cUnit.addPrototype(pu);
 			pu.setCompilationUnit(cUnit);
 			cUnit.setAlreadPreviouslyCompiled(true);
 			cUnit.setPackageIdent(packageIdent);
@@ -3563,6 +3564,29 @@ public class Program implements ASTNode, Declaration {
 		return iProgram_dpp;
 	}
 
+	public void addInstantiatedPrototypeName_to_WhereInfo(
+			String fullInstantiatedPrototypeName, String packageName, String prototypeName,
+			int lineNumber, int columnNumber) {
+		// Map<String, Tuple4<String, String, Integer, Integer>> mapOriginProtoInstantiation;
+		if ( mapOriginProtoInstantiation == null ) {
+			mapOriginProtoInstantiation = new HashMap<>();
+		}
+		mapOriginProtoInstantiation.put(fullInstantiatedPrototypeName,
+				new Tuple4<String, String, Integer, Integer>(
+						packageName, prototypeName,
+						lineNumber, columnNumber
+						));
+	}
+
+	public Tuple4<String, String, Integer, Integer> searchAnnotationCreatedPrototype(
+			String fullInstantiatedPrototypeName) {
+		if ( mapOriginProtoInstantiation == null ) {
+			return null;
+		}
+		else {
+			return mapOriginProtoInstantiation.get(fullInstantiatedPrototypeName);
+		}
+	}
 
 
 	private WrProgram iProgram = null;
@@ -3627,7 +3651,7 @@ public class Program implements ASTNode, Declaration {
 
 	private String mainJavaClassWithoutExtensionName;
 
-	private List<AnnotationAt> attachedMetaobjectAnnotationList;
+	private List<AnnotationAt> attachedAnnotationList;
 
 	private List<CyanMetaobject> afterATImetaobjectAnnotationList = null;
 
@@ -3642,6 +3666,14 @@ public class Program implements ASTNode, Declaration {
 
 	private JVMPackage java_lang_Package = null;
 
+	/**
+
+		A map from a generic prototype instantiation name (package + "." + name) to
+		a tuple containing:
+		    a) the package and prototype name of the instantiation
+		    b) the line and column of the instantiation
+	 */
+	private Map<String, Tuple4<String, String, Integer, Integer>> mapOriginProtoInstantiation;
 
 }
 

@@ -7,8 +7,8 @@ package meta.cyanLang;
 import meta.AnnotationArgumentsKind;
 import meta.CyanMetaobjectAtAnnot;
 import meta.IAction_cge;
-import meta.IAction_dsa;
-import meta.ICompiler_dsa;
+import meta.IAction_semAn;
+import meta.ICompiler_semAn;
 import meta.ReplacementPolicyInGenericInstantiation;
 import meta.WrAnnotationAt;
 
@@ -26,7 +26,7 @@ import meta.WrAnnotationAt;
 
  */
 public class CyanMetaobjectJavaCode extends CyanMetaobjectAtAnnot
-             implements IAction_cge, IAction_dsa {
+             implements IAction_cge, IAction_semAn {
 
 	public CyanMetaobjectJavaCode() {
 		super("javacode", AnnotationArgumentsKind.ZeroParameters, null);
@@ -36,17 +36,17 @@ public class CyanMetaobjectJavaCode extends CyanMetaobjectAtAnnot
 	public boolean shouldTakeText() { return true; }
 
 
-	/* @see ast.CyanMetaobject#dsa_javaCodeThatReplacesMetaobjectAnnotation()()
+	/* @see ast.CyanMetaobject#semAn_javaCodeThatReplacesAnnotation()()
 	 */
 	@Override
 	public StringBuffer cge_codeToAdd() {
 
-		final WrAnnotationAt annot = (WrAnnotationAt ) metaobjectAnnotation;
+		final WrAnnotationAt annot = (WrAnnotationAt ) annotation;
 		final StringBuffer sb = new StringBuffer();
 
 		//char []text = ;
 		String text = new String(annot.getTextAttachedDSL());
-		text = text.replace("THISPROTOTYPE999", this.getCurrentProgramUnit().getJavaName());
+		text = text.replace("THISPROTOTYPE999", this.getCurrentPrototype().getJavaName());
 
 		sb.append(text);
 		return sb;
@@ -58,8 +58,8 @@ public class CyanMetaobjectJavaCode extends CyanMetaobjectAtAnnot
 	}
 
 	@Override
-	public StringBuffer dsa_codeToAdd(ICompiler_dsa compiler_dsa) {
-		final WrAnnotationAt annot = (WrAnnotationAt ) metaobjectAnnotation;
+	public StringBuffer semAn_codeToAdd(ICompiler_semAn compiler_semAn) {
+		final WrAnnotationAt annot = (WrAnnotationAt ) annotation;
 		char []charArray = annot.getTextAttachedDSL();
 		if ( charArray == null ) {
 			addError("Metaobject 'javacode' should take Java code between two sequences of symbols");

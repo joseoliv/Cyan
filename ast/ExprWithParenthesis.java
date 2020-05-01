@@ -22,8 +22,8 @@ public class ExprWithParenthesis extends Expr {
 	 *
 	 */
 	public ExprWithParenthesis( Symbol leftParSymbol, Expr expr,
-			                    Symbol rightParSymbol
-			                    ) {
+			                    Symbol rightParSymbol, MethodDec method) {
+		super(method);
 		this.leftParSymbol = leftParSymbol;
 		this.expr = expr;
 		this.rightParSymbol = rightParSymbol;
@@ -31,7 +31,6 @@ public class ExprWithParenthesis extends Expr {
 
 	@Override
 	public WrExprWithParenthesis getI() {
-		// TODO Auto-generated method stub
 		return new WrExprWithParenthesis(this);
 	}
 

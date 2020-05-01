@@ -25,8 +25,8 @@ import saci.NameServer;
 
 public class ExprFunctionRegular extends ExprFunction {
 
-	public ExprFunctionRegular(Symbol startSymbol) {
-		super(startSymbol);
+	public ExprFunctionRegular(Symbol startSymbol, MethodDec method) {
+		super(startSymbol, method);
 		parameterList = new ArrayList<ParameterDec>();
 	}
 
@@ -96,7 +96,7 @@ public class ExprFunctionRegular extends ExprFunction {
 
 		StringBuffer s = new StringBuffer();
 
-		if ( !(currentProgramUnit instanceof ObjectDec) ) {
+		if ( !(currentPrototype instanceof ObjectDec) ) {
 			return s;
 		}
 
@@ -104,7 +104,7 @@ public class ExprFunctionRegular extends ExprFunction {
 		accessedVariableParameters.addAll(accessedParameterList);
 		accessedVariableParameters.addAll(accessedLocalVariables);
 		int size = accessedVariableParameters.size();
-		ObjectDec currentObjectDec = (ObjectDec) currentProgramUnit;
+		ObjectDec currentObjectDec = (ObjectDec) currentPrototype;
 		boolean contextFunction = this.isContextFunction();
 
 		s.append("    object " + this.functionPrototypeName);
@@ -318,10 +318,10 @@ public class ExprFunctionRegular extends ExprFunction {
 
 		if ( isContextFunction() ) {
 			// a context function
-			ProgramUnit currentProgramUnit2 = env.getCurrentProgramUnit();
-			env.setCurrentProgramUnit((ProgramUnit) parameterList.get(0).getType());
+			Prototype currentPrototype2 = env.getCurrentPrototype();
+			env.setCurrentPrototype((Prototype) parameterList.get(0).getType());
 			statementList.calcInternalTypes(env);
-			env.setCurrentProgramUnit(currentProgramUnit2);
+			env.setCurrentPrototype(currentPrototype2);
 		}
 		else
 			statementList.calcInternalTypes(env);
@@ -360,10 +360,10 @@ public class ExprFunctionRegular extends ExprFunction {
 		if ( parameterList != null && parameterList.size() > 0 ) {
 			for (ParameterDec p : parameterList) {
 				Type paramType = p.getType();
-				if ( paramType.getInsideType() instanceof ProgramUnit ) {
-					Expr typeAsExpr = ((ProgramUnit) paramType).asExpr(this.getFirstSymbol());
+				if ( paramType.getInsideType() instanceof Prototype ) {
+					Expr typeAsExpr = ((Prototype) paramType).asExpr(this.getFirstSymbol());
 					if ( typeAsExpr instanceof ExprGenericPrototypeInstantiation ) {
-						((ExprGenericPrototypeInstantiation) typeAsExpr).setProgramUnit(env.getCurrentProgramUnit());
+						((ExprGenericPrototypeInstantiation) typeAsExpr).setPrototype(env.getCurrentPrototype());
 					}
 					realTypeList.add(typeAsExpr);
 				}
@@ -375,9 +375,10 @@ public class ExprFunctionRegular extends ExprFunction {
 					 *
 					 */
 					Symbol first = p.getFirstSymbol();
-					realTypeList.add(new ExprIdentStar(new SymbolIdent(Token.IDENT, MetaHelper.dynName,
-							first.getStartLine(), first.getLineNumber(), first.getColumnNumber(), first.getOffset(),
-							first.getCompilationUnit())));
+					realTypeList.add(new ExprIdentStar( null,
+							new SymbolIdent(Token.IDENT, MetaHelper.dynName,
+							    first.getStartLine(), first.getLineNumber(), first.getColumnNumber(), first.getOffset(),
+							    first.getCompilationUnit())) );
 				}
 				else {
 
@@ -393,10 +394,10 @@ public class ExprFunctionRegular extends ExprFunction {
 				}
 			}
 		}
-		if ( returnType.getInsideType() instanceof ProgramUnit ) {
-			Expr typeAsExpr = ((ProgramUnit) returnType).asExpr(this.getFirstSymbol());
+		if ( returnType.getInsideType() instanceof Prototype ) {
+			Expr typeAsExpr = ((Prototype) returnType).asExpr(this.getFirstSymbol());
 			if ( typeAsExpr instanceof ExprGenericPrototypeInstantiation ) {
-				((ExprGenericPrototypeInstantiation) typeAsExpr).setProgramUnit(env.getCurrentProgramUnit());
+				((ExprGenericPrototypeInstantiation) typeAsExpr).setPrototype(env.getCurrentPrototype());
 			}
 			// add the return type
 			realTypeList.add(typeAsExpr);
@@ -404,7 +405,9 @@ public class ExprFunctionRegular extends ExprFunction {
 		else if ( returnType instanceof TypeDynamic ) {
 			// add the return type
 			Symbol first = this.getFirstSymbol();
-			realTypeList.add(new ExprIdentStar(new SymbolIdent(Token.IDENT, MetaHelper.dynName, first.getStartLine(),
+			realTypeList.add(
+					new ExprIdentStar(null,
+							new SymbolIdent(Token.IDENT, MetaHelper.dynName, first.getStartLine(),
 					first.getLineNumber(), first.getColumnNumber(), first.getOffset(), first.getCompilationUnit())));
 		}
 		else {

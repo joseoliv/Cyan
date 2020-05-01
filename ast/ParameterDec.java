@@ -233,12 +233,12 @@ public class ParameterDec implements VariableDecInterface, GenCyan, ASTNode {
 			env.error(typeInDec.getFirstSymbol(), "Type expected in parameter declaration");
 		}
 		else {
-			List<ProgramUnit> programUnitList = env.searchVisibleProgramUnit(typeName);
-			if ( programUnitList.size() == 1 ) {
+			List<Prototype> prototypeList = env.searchVisiblePrototype(typeName);
+			if ( prototypeList.size() == 1 ) {
 				// found exactly one prototype
-				type = programUnitList.get(0);
+				type = prototypeList.get(0);
 			}
-			else if ( programUnitList.size() == 0 )
+			else if ( prototypeList.size() == 0 )
 				env.error(typeInDec.getFirstSymbol(), "Type " + typeName + " was not found");
 			else
 				env.error(typeInDec.getFirstSymbol(), "Type " + typeName + " can be imported from more than one package");

@@ -2,8 +2,8 @@ package meta.cyanLang;
 
 import meta.AnnotationArgumentsKind;
 import meta.CyanMetaobjectAtAnnot;
-import meta.IAction_dsa;
-import meta.ICompiler_dsa;
+import meta.IAction_semAn;
+import meta.ICompiler_semAn;
 
 /**
  * The name of this metaobject is 'callTestMethods'.
@@ -13,18 +13,18 @@ import meta.ICompiler_dsa;
  *
    @author jose
  */
-public class CyanMetaobjectCallTestMethods extends CyanMetaobjectAtAnnot implements IAction_dsa {
+public class CyanMetaobjectCallTestMethods extends CyanMetaobjectAtAnnot implements IAction_semAn {
 
 	public CyanMetaobjectCallTestMethods() {
 		super("callTestMethods", AnnotationArgumentsKind.ZeroParameters);
 	}
 
 	@Override
-	public StringBuffer dsa_codeToAdd(ICompiler_dsa compiler_dsa) {
+	public StringBuffer semAn_codeToAdd(ICompiler_semAn compiler_semAn) {
 
 		StringBuffer s = new StringBuffer();
 
-		for ( String methodName : compiler_dsa.getUnaryMethodNameList() ) {
+		for ( String methodName : compiler_semAn.getUnaryMethodNameList() ) {
 			if ( methodName.endsWith("Test") ) {
 				s.append("    " + methodName + ";\n");
 			}

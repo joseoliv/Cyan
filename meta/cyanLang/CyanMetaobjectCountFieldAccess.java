@@ -4,22 +4,22 @@ import java.util.List;
 import meta.AnnotationArgumentsKind;
 import meta.AttachedDeclarationKind;
 import meta.CyanMetaobjectAtAnnot;
-import meta.IActionFieldAccess_dsa;
-import meta.IAction_afti;
-import meta.IAction_dsa;
-import meta.ICompiler_afti;
-import meta.ICompiler_dsa;
-import meta.ISlotInterface;
+import meta.IActionFieldAccess_semAn;
+import meta.IAction_afterResTypes;
+import meta.IAction_semAn;
+import meta.ICompiler_afterResTypes;
+import meta.ICompiler_semAn;
+import meta.ISlotSignature;
 import meta.MetaHelper;
 import meta.Tuple2;
 import meta.WrAnnotation;
 import meta.WrEnv;
 import meta.WrExpr;
 import meta.WrFieldDec;
-import meta.WrProgramUnit;
+import meta.WrPrototype;
 
 public class CyanMetaobjectCountFieldAccess extends CyanMetaobjectAtAnnot
-     implements IActionFieldAccess_dsa, IAction_afti, IAction_dsa {
+     implements IActionFieldAccess_semAn, IAction_afterResTypes, IAction_semAn {
 
 	public CyanMetaobjectCountFieldAccess() {
 		super("countFieldAccess", AnnotationArgumentsKind.ZeroParameters,
@@ -28,7 +28,7 @@ public class CyanMetaobjectCountFieldAccess extends CyanMetaobjectAtAnnot
 
 	@Override
 	public
-	StringBuffer dsa_replaceGetField(WrExpr fieldToGet, WrEnv env) {
+	StringBuffer semAn_replaceGetField(WrExpr fieldToGet, WrEnv env) {
 		String id = fieldToGet.asString();
 		if ( id.startsWith("self.") ) {
 			id = id.substring(5);
@@ -38,7 +38,7 @@ public class CyanMetaobjectCountFieldAccess extends CyanMetaobjectAtAnnot
 
 	@Override
 	public
-	StringBuffer dsa_replaceSetField(WrExpr fieldToSet, WrExpr rightHandSideAssignment, WrEnv env) {
+	StringBuffer semAn_replaceSetField(WrExpr fieldToSet, WrExpr rightHandSideAssignment, WrEnv env) {
 		String id = fieldToSet.asString();
 		String id2 = id;
 		if ( id.startsWith("self.") ) {
@@ -49,17 +49,17 @@ public class CyanMetaobjectCountFieldAccess extends CyanMetaobjectAtAnnot
 	}
 
 	@Override
-	public StringBuffer dsa_codeToAdd(ICompiler_dsa compiler) {
+	public StringBuffer semAn_codeToAdd(ICompiler_semAn compiler) {
 
 
-		WrProgramUnit proto = compiler.getEnv().getCurrentProgramUnit();
+		WrPrototype proto = compiler.getEnv().getCurrentPrototype();
 		for ( WrFieldDec iv : proto.getFieldList(compiler.getEnv()) ) {
 			String protoName = iv.getType().getFullName();
-			compiler.createNewGenericPrototype(this.getMetaobjectAnnotation().getFirstSymbol(),
+			compiler.createNewGenericPrototype(this.getAnnotation().getFirstSymbol(),
 					compiler.getEnv().getCurrentCompilationUnit(), proto,
 					MetaHelper.cyanLanguagePackageName + ".Function<" + protoName + ">",
-			            "Error caused by method dsa_codeToAdd of metaobject '" +
-			            		this.getMetaobjectAnnotation().getCyanMetaobject().getName() + "'. "
+			            "Error caused by method semAn_codeToAdd of metaobject '" +
+			            		this.getAnnotation().getCyanMetaobject().getName() + "'. "
 			            );
 
 		}
@@ -68,8 +68,8 @@ public class CyanMetaobjectCountFieldAccess extends CyanMetaobjectAtAnnot
 
 
 	@Override
-	public Tuple2<StringBuffer, String> afti_codeToAdd(
-			ICompiler_afti compiler, List<Tuple2<WrAnnotation, List<ISlotInterface>>> infoList)  {
+	public Tuple2<StringBuffer, String> afterResTypes_codeToAdd(
+			ICompiler_afterResTypes compiler, List<Tuple2<WrAnnotation, List<ISlotSignature>>> infoList)  {
 		String countField = "ountFieldAccess_" + this.getAttachedDeclaration().getName();
 		return new Tuple2<StringBuffer, String>(new
 				StringBuffer("    var Int c" + countField + " = 0;\n    func getC" + countField +

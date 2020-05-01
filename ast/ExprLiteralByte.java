@@ -5,9 +5,9 @@ package ast;
 
 import lexer.Symbol;
 import lexer.SymbolByteLiteral;
-import meta.WrExprLiteralByte;
 import meta.MetaHelper;
 import meta.Token;
+import meta.WrExprLiteralByte;
 import saci.Env;
 
 /** Represents a byte literal such as 1B
@@ -19,12 +19,12 @@ public class ExprLiteralByte extends ExprLiteralNumber {
 	/**
 	 * @param symbol
 	 */
-	public ExprLiteralByte(Symbol symbol) {
-		super(symbol);
+	public ExprLiteralByte(Symbol symbol, MethodDec currentMethod) {
+		super(symbol, currentMethod);
 		prefix = null;
 	}
-	public ExprLiteralByte(Symbol symbol, Symbol prefix) {
-		super(symbol);
+	public ExprLiteralByte(Symbol symbol, Symbol prefix, MethodDec currentMethod) {
+		super(symbol, currentMethod);
 		this.prefix = prefix;
 	}
 

@@ -17,12 +17,12 @@ import saci.Env;
  */
 abstract public class SlotDec implements Declaration, ASTNode {
 
-	public SlotDec(ObjectDec currentObj, Token visibility, List<AnnotationAt> attachedSlotMetaobjectAnnotationList,
-			List<AnnotationAt> nonAttachedSlotMetaobjectAnnotationList) {
+	public SlotDec(ObjectDec currentObj, Token visibility, List<AnnotationAt> attachedSlotAnnotationList,
+			List<AnnotationAt> nonAttachedSlotAnnotationList) {
 		this.declaringObject = currentObj;
 		this.visibility = visibility;
-		this.attachedMetaobjectAnnotationList = attachedSlotMetaobjectAnnotationList;
-		this.nonAttachedMetaobjectAnnotationList = nonAttachedSlotMetaobjectAnnotationList;
+		this.attachedAnnotationList = attachedSlotAnnotationList;
+		this.nonAttachedAnnotationList = nonAttachedSlotAnnotationList;
 		this.lastSlot = false;
 	}
 	public void setVisibility(Token visibility) {
@@ -57,8 +57,8 @@ abstract public class SlotDec implements Declaration, ASTNode {
 	   @param env
 	 */
 	public void calcInternalTypesNONAttachedAnnotations(Env env) {
-		if ( nonAttachedMetaobjectAnnotationList != null ) {
-			for ( AnnotationAt annotation : nonAttachedMetaobjectAnnotationList )
+		if ( nonAttachedAnnotationList != null ) {
+			for ( AnnotationAt annotation : nonAttachedAnnotationList )
 				annotation.calcInternalTypes(env);
 		}
 	}
@@ -68,8 +68,8 @@ abstract public class SlotDec implements Declaration, ASTNode {
 	   @param env
 	 */
 	public void calcInternalTypesAttachedAnnotations(Env env) {
-		if ( attachedMetaobjectAnnotationList != null ) {
-			for ( AnnotationAt annotation : attachedMetaobjectAnnotationList )
+		if ( attachedAnnotationList != null ) {
+			for ( AnnotationAt annotation : attachedAnnotationList )
 				annotation.calcInternalTypes(env);
 		}
 	}
@@ -78,13 +78,13 @@ abstract public class SlotDec implements Declaration, ASTNode {
 	public void genCyan(PWInterface pw, boolean printInMoreThanOneLine, CyanEnv cyanEnv, boolean genFunctions) {
 		cyanEnv.setPrintNewLineAfterAnnotation(true);
 		try {
-			if ( nonAttachedMetaobjectAnnotationList != null ) {
-				for ( AnnotationAt annotation : nonAttachedMetaobjectAnnotationList ) {
+			if ( nonAttachedAnnotationList != null ) {
+				for ( AnnotationAt annotation : nonAttachedAnnotationList ) {
 					annotation.genCyan(pw, printInMoreThanOneLine, cyanEnv, genFunctions);
 				}
 			}
-			if ( attachedMetaobjectAnnotationList != null ) {
-				for ( AnnotationAt annotation : attachedMetaobjectAnnotationList ) {
+			if ( attachedAnnotationList != null ) {
+				for ( AnnotationAt annotation : attachedAnnotationList ) {
 					annotation.genCyan(pw, printInMoreThanOneLine, cyanEnv, genFunctions);
 				}
 			}
@@ -97,28 +97,28 @@ abstract public class SlotDec implements Declaration, ASTNode {
 
 	public void genJava(PWInterface pw, Env env) {
 
-		if ( this.attachedMetaobjectAnnotationList != null ) {
-			for ( AnnotationAt annotation : attachedMetaobjectAnnotationList ) {
+		if ( this.attachedAnnotationList != null ) {
+			for ( AnnotationAt annotation : attachedAnnotationList ) {
 				annotation.genJava(pw, env);
 				/* if ( annotation instanceof meta.IAction_cge )
-					pw.print( ((IAction_cge) annotation).cge_codeToAddAtMetaobjectAnnotation() ); */
+					pw.print( ((IAction_cge) annotation).cge_codeToAddAtAnnotation() ); */
 			}
 		}
-		if ( this.nonAttachedMetaobjectAnnotationList != null ) {
-			for ( AnnotationAt annotation : nonAttachedMetaobjectAnnotationList ) {
+		if ( this.nonAttachedAnnotationList != null ) {
+			for ( AnnotationAt annotation : nonAttachedAnnotationList ) {
 				annotation.genJava(pw, env);
 				/* if ( annotation instanceof meta.IAction_cge )
-					pw.print( ((IAction_cge) annotation).cge_codeToAddAtMetaobjectAnnotation() ); */
+					pw.print( ((IAction_cge) annotation).cge_codeToAddAtAnnotation() ); */
 			}
 		}
 
 	}
 
-	public List<AnnotationAt> getAttachedMetaobjectAnnotationList() {
-		return attachedMetaobjectAnnotationList;
+	public List<AnnotationAt> getAttachedAnnotationList() {
+		return attachedAnnotationList;
 	}
-	public void setMetaobjectAnnotationList(List<AnnotationAt> ctmetaobjectAnnotationList) {
-		this.attachedMetaobjectAnnotationList = ctmetaobjectAnnotationList;
+	public void setAnnotationList(List<AnnotationAt> ctmetaobjectAnnotationList) {
+		this.attachedAnnotationList = ctmetaobjectAnnotationList;
 	}
 
 
@@ -231,7 +231,7 @@ abstract public class SlotDec implements Declaration, ASTNode {
 	 * </code><br>
 	 * These annotations are attached to the slot declaration.
 	 */
-	protected List<AnnotationAt> attachedMetaobjectAnnotationList;
+	protected List<AnnotationAt> attachedAnnotationList;
 
 	/**
 	 * metaobject annotations before this program unit such as <br>
@@ -241,7 +241,7 @@ abstract public class SlotDec implements Declaration, ASTNode {
 	 * </code><br>
 	 * These annotations are NOT attached to the slot declaration.
 	 */
-	protected List<AnnotationAt> nonAttachedMetaobjectAnnotationList;
+	protected List<AnnotationAt> nonAttachedAnnotationList;
 
 	protected Token visibility;
 

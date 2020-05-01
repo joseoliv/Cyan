@@ -39,7 +39,7 @@ abstract public class MethodSignature implements GenCyan, ASTNode, GetNameAsInSo
 
 	public MethodSignature(MethodDec method) {
 		this.method = method;
-		attachedMetaobjectAnnotationList = null;
+		attachedAnnotationList = null;
 		hasCalculatedInterfaceTypes = false;
 		fullName = null;
 	}
@@ -124,14 +124,14 @@ abstract public class MethodSignature implements GenCyan, ASTNode, GetNameAsInSo
 
 	}
 
-	final public void genCyanMetaobjectAnnotations(PWInterface pw, boolean printInMoreThanOneLine, CyanEnv cyanEnv, boolean genFunctions) {
-		if ( nonAttachedMetaobjectAnnotationList != null ) {
-			for ( AnnotationAt annotation : this.nonAttachedMetaobjectAnnotationList ) {
+	final public void genCyanAnnotations(PWInterface pw, boolean printInMoreThanOneLine, CyanEnv cyanEnv, boolean genFunctions) {
+		if ( nonAttachedAnnotationList != null ) {
+			for ( AnnotationAt annotation : this.nonAttachedAnnotationList ) {
 				annotation.genCyan(pw, printInMoreThanOneLine, cyanEnv, genFunctions);
 			}
 		}
-		if ( attachedMetaobjectAnnotationList != null ) {
-			for ( AnnotationAt annotation : this.attachedMetaobjectAnnotationList ) {
+		if ( attachedAnnotationList != null ) {
+			for ( AnnotationAt annotation : this.attachedAnnotationList ) {
 				annotation.genCyan(pw, printInMoreThanOneLine, cyanEnv, genFunctions);
 			}
 		}
@@ -173,12 +173,12 @@ abstract public class MethodSignature implements GenCyan, ASTNode, GetNameAsInSo
 	abstract public Symbol getFirstSymbol();
 
 	public void calcInterfaceTypes(Env env) {
-		if ( nonAttachedMetaobjectAnnotationList != null ) {
-			for ( AnnotationAt annotation : nonAttachedMetaobjectAnnotationList )
+		if ( nonAttachedAnnotationList != null ) {
+			for ( AnnotationAt annotation : nonAttachedAnnotationList )
 				annotation.calcInternalTypes(env);
 		}
-		if ( attachedMetaobjectAnnotationList != null ) {
-			for ( AnnotationAt annotation : attachedMetaobjectAnnotationList )
+		if ( attachedAnnotationList != null ) {
+			for ( AnnotationAt annotation : attachedAnnotationList )
 				annotation.calcInternalTypes(env);
 		}
 
@@ -331,14 +331,14 @@ abstract public class MethodSignature implements GenCyan, ASTNode, GetNameAsInSo
 	 */
 	abstract public List<ParameterDec> getParameterList();
 
-	public List<AnnotationAt> getAttachedMetaobjectAnnotationList() {
-		return attachedMetaobjectAnnotationList;
+	public List<AnnotationAt> getAttachedAnnotationList() {
+		return attachedAnnotationList;
 	}
 
-	public void setMetaobjectAnnotationNonAttachedAttached(List<AnnotationAt> nonAttachedMetaobjectAnnotationList,
-			List<AnnotationAt> attachedMetaobjectAnnotationList) {
-		this.nonAttachedMetaobjectAnnotationList = nonAttachedMetaobjectAnnotationList;
-		this.attachedMetaobjectAnnotationList = attachedMetaobjectAnnotationList;
+	public void setAnnotationNonAttachedAttached(List<AnnotationAt> nonAttachedAnnotationList,
+			List<AnnotationAt> attachedAnnotationList) {
+		this.nonAttachedAnnotationList = nonAttachedAnnotationList;
+		this.attachedAnnotationList = attachedAnnotationList;
 	}
 
 	public String asString(CyanEnv cyanEnv) {
@@ -502,9 +502,9 @@ abstract public class MethodSignature implements GenCyan, ASTNode, GetNameAsInSo
 	/**
 	 * list of metaobject annotations attached to this signature. It is only used with method signatures of interfaces
 	 */
-	private List<AnnotationAt> attachedMetaobjectAnnotationList;
+	private List<AnnotationAt> attachedAnnotationList;
 
-	private List<AnnotationAt> nonAttachedMetaobjectAnnotationList;
+	private List<AnnotationAt> nonAttachedAnnotationList;
 
 	/**
 	 * the interface in which this method signature is. null if this method signature is in a prototype

@@ -12,8 +12,8 @@ import java.util.Set;
 import meta.AttachedDeclarationKind;
 import meta.CyanMetaobject;
 import meta.CyanMetaobjectFromDSL_toPrototype;
-import meta.IActionNewPrototypes_afti;
-import meta.IAction_afti;
+import meta.IActionNewPrototypes_afterResTypes;
+import meta.IAction_afterResTypes;
 import meta.Tuple2;
 import meta.WrCyanPackage;
 import meta.WrCyanPackage_dpp;
@@ -27,7 +27,7 @@ import saci.Project;
 public class CyanPackage implements ASTNode, Declaration {
 
 	public CyanPackage(Program program, String packageName, Project project, String packageCanonicalPath,
-	        List<AnnotationAt> attachedMetaobjectAnnotationList,
+	        List<AnnotationAt> attachedAnnotationList,
 	        List<CyanMetaobject> metaobjectList,
 	        List<CyanMetaobject> pyanBeforePackageMetaobjectList
 
@@ -37,9 +37,9 @@ public class CyanPackage implements ASTNode, Declaration {
 		compilationUnitList = new ArrayList<CompilationUnit>();
 		this.project = project;
 		this.setPackageCanonicalPath(packageCanonicalPath);
-		this.attachedMetaobjectAnnotationList = attachedMetaobjectAnnotationList;
-		if ( this.attachedMetaobjectAnnotationList == null ) {
-			this.attachedMetaobjectAnnotationList = new ArrayList<>();
+		this.attachedAnnotationList = attachedAnnotationList;
+		if ( this.attachedAnnotationList == null ) {
+			this.attachedAnnotationList = new ArrayList<>();
 		}
 		hasGenericPrototype = false;
 		compilerVersionLastSuccessfulCompilation = -1;
@@ -133,13 +133,13 @@ public class CyanPackage implements ASTNode, Declaration {
 	 * It includes program units like <code>"Stack< main.Person >"</code> but not <code>Stack<T></code>. In
 	 * the last case, <code>T</code> is a generic parameter
 	 */
-	public ProgramUnit searchPublicNonGenericProgramUnit(String name) {
+	public Prototype searchPublicNonGenericPrototype(String name) {
 
 		// Use the code below. The // one does not replace some
 		// compilation units by new ones
 
 		for ( CompilationUnit compilationUnit : compilationUnitList ) {
-			ProgramUnit pu = compilationUnit.getPublicPrototype();
+			Prototype pu = compilationUnit.getPublicPrototype();
 			if ( pu != null && pu.getName().equals(name)  && ! pu.getGenericPrototype() ) {
 				return pu;
 			}
@@ -149,16 +149,16 @@ public class CyanPackage implements ASTNode, Declaration {
 //		if ( namePrototypeMap == null ) {
 //			namePrototypeMap = new HashMap<>();
 //			for ( CompilationUnit compilationUnit : compilationUnitList ) {
-//				ProgramUnit pu = compilationUnit.getPublicPrototype();
+//				Prototype pu = compilationUnit.getPublicPrototype();
 //				if ( pu != null && ! pu.getGenericPrototype() ) {
 //					namePrototypeMap.put(pu.getName(), pu);
 //				}
 //			}
 //		}
-//		ProgramUnit progUnit = namePrototypeMap.get(name);
+//		Prototype progUnit = namePrototypeMap.get(name);
 //		if ( progUnit == null ) {
 //			for ( CompilationUnit compilationUnit : compilationUnitList ) {
-//				ProgramUnit pu = compilationUnit.getPublicPrototype();
+//				Prototype pu = compilationUnit.getPublicPrototype();
 //				if ( pu != null && pu.getName().equals(name)  && ! pu.getGenericPrototype() ) {
 //					progUnit = compilationUnit.getPublicPrototype();
 //					this.namePrototypeMap.put(progUnit.getName(), progUnit);
@@ -168,22 +168,22 @@ public class CyanPackage implements ASTNode, Declaration {
 //		return progUnit;
 	}
 
-	private Map<String, ProgramUnit> namePrototypeMap = null;
+	private Map<String, Prototype> namePrototypeMap = null;
 	/**
 	 * return prototype whose source file name is sourceFileName and that was declared in this package
 	 */
 
-	public ProgramUnit searchProgramUnitBySourceFileName(String sourceFileName) {
+	public Prototype searchPrototypeBySourceFileName(String sourceFileName) {
 
 //		if ( sourceFileNamePrototypeMap == null ) {
 //			sourceFileNamePrototypeMap = new HashMap<>();
 //			for ( CompilationUnit compilationUnit : compilationUnitList ) {
-//				ProgramUnit pu = compilationUnit.getPublicPrototype();
+//				Prototype pu = compilationUnit.getPublicPrototype();
 //				sourceFileNamePrototypeMap.put(
 //						compilationUnit.getFileNameWithoutExtension(), pu);
 //			}
 //		}
-//		ProgramUnit pu1 = sourceFileNamePrototypeMap.get(sourceFileName);
+//		Prototype pu1 = sourceFileNamePrototypeMap.get(sourceFileName);
 //		return pu1;
 		for ( CompilationUnit compilationUnit : compilationUnitList ) {
 			if ( compilationUnit.getFileNameWithoutExtension().equals(sourceFileName) ) {
@@ -193,7 +193,7 @@ public class CyanPackage implements ASTNode, Declaration {
 		return null;
 	}
 
-	private Map<String, ProgramUnit> sourceFileNamePrototypeMap = null;
+	private Map<String, Prototype> sourceFileNamePrototypeMap = null;
 
 
 	/**
@@ -230,30 +230,30 @@ public class CyanPackage implements ASTNode, Declaration {
 		this.hasGenericPrototype = hasGenericPrototype;
 	}
 
-	public List<AnnotationAt> getAttachedMetaobjectAnnotationList() {
-		return attachedMetaobjectAnnotationList;
+	public List<AnnotationAt> getAttachedAnnotationList() {
+		return attachedAnnotationList;
 	}
 
-	public List<AnnotationAt> getAttachedMetaobjectAnnotationList_IActionProgramUnit_afti_IActionNewPrototypes_afti() {
-		if ( attachedMetaobjectAnnotationList_IActionProgramUnit_afti_IActionNewPrototypes_afti == null ) {
-			attachedMetaobjectAnnotationList_IActionProgramUnit_afti_IActionNewPrototypes_afti = new ArrayList<>();
-			if ( attachedMetaobjectAnnotationList != null ) {
-				for ( AnnotationAt withAtAnnot : attachedMetaobjectAnnotationList ) {
+	public List<AnnotationAt> getAttachedAnnotationList_IActionPrototype_afterResTypes_IActionNewPrototypes_afterResTypes() {
+		if ( attachedAnnotationList_IActionPrototype_afterResTypes_IActionNewPrototypes_afterResTypes == null ) {
+			attachedAnnotationList_IActionPrototype_afterResTypes_IActionNewPrototypes_afterResTypes = new ArrayList<>();
+			if ( attachedAnnotationList != null ) {
+				for ( AnnotationAt withAtAnnot : attachedAnnotationList ) {
 					CyanMetaobject cyanMetaobject = withAtAnnot.getCyanMetaobject();
-					if ( cyanMetaobject instanceof IAction_afti ||
-						 cyanMetaobject instanceof IActionNewPrototypes_afti ) {
-						attachedMetaobjectAnnotationList_IActionProgramUnit_afti_IActionNewPrototypes_afti.add(withAtAnnot);
+					if ( cyanMetaobject instanceof IAction_afterResTypes ||
+						 cyanMetaobject instanceof IActionNewPrototypes_afterResTypes ) {
+						attachedAnnotationList_IActionPrototype_afterResTypes_IActionNewPrototypes_afterResTypes.add(withAtAnnot);
 					}
 				}
 			}
 		}
-		return attachedMetaobjectAnnotationList_IActionProgramUnit_afti_IActionNewPrototypes_afti;
+		return attachedAnnotationList_IActionPrototype_afterResTypes_IActionNewPrototypes_afterResTypes;
 	}
 	/**
-	 * the annotations of attachedMetaobjectAnnotationList that implement interfaces
-	 * IAction_afti or IActionNewPrototypes_afti
+	 * the annotations of attachedAnnotationList that implement interfaces
+	 * IAction_afterResTypes or IActionNewPrototypes_afterResTypes
 	 */
-	List<AnnotationAt>  attachedMetaobjectAnnotationList_IActionProgramUnit_afti_IActionNewPrototypes_afti = null;
+	List<AnnotationAt>  attachedAnnotationList_IActionPrototype_afterResTypes_IActionNewPrototypes_afterResTypes = null;
 
 
 	public List<WrExprAnyLiteral> searchFeature(String name) {
@@ -319,11 +319,11 @@ public class CyanPackage implements ASTNode, Declaration {
 	}
 
 
-	public void checkPublicNonGenericProgramUnit() {
+	public void checkPublicNonGenericPrototype() {
 		HashSet<String> unitNameSet = new HashSet<>();
 		int numRepeated = 0;
 		for ( CompilationUnit compilationUnit : compilationUnitList ) {
-			ProgramUnit pu = compilationUnit.getPublicPrototype();
+			Prototype pu = compilationUnit.getPublicPrototype();
 			String name = pu.getName();
 			if ( unitNameSet.contains(name) ) {
 				System.out.println("already in set: " + unitNameSet);   // ok
@@ -617,6 +617,23 @@ public class CyanPackage implements ASTNode, Declaration {
 //		return false;
 	}
 
+	public void addPrototypeNameAnnotationInfo(String prototypeName, Annotation annot) {
+		if ( mapPrototypeNameAnnot == null ) {
+			mapPrototypeNameAnnot = new HashMap<>();
+		}
+		mapPrototypeNameAnnot.put(this.packageName + "." + prototypeName, annot);
+	}
+
+	public Annotation searchAnnotationCreatedPrototype(String prototypeName) {
+		if ( mapPrototypeNameAnnot == null ) {
+			return null;
+		}
+		else {
+			return mapPrototypeNameAnnot.get(prototypeName);
+		}
+	}
+
+
 	private WrCyanPackage iCyanPackage = null;
 	private WrCyanPackage_dpp iCyanPackage_dpp = null;
 	/**
@@ -690,7 +707,7 @@ public class CyanPackage implements ASTNode, Declaration {
 	 * list of metaobject annotations that precede this package in project .pyan
 	 * and that are attached to the package.
 	 */
-	private List<AnnotationAt> attachedMetaobjectAnnotationList;
+	private List<AnnotationAt> attachedAnnotationList;
 
 	/**
 	 * true if this package has any generic prototype. If it has, then
@@ -741,4 +758,11 @@ public class CyanPackage implements ASTNode, Declaration {
 	 * file "allInterfaces.iyan"
 	 */
 	private boolean useCompiledPrototypes = false;
+
+	/**
+	 * map (key, value) in which the key is a prototype
+	 * created by a metaobjects whose information is in 'value'
+	 */
+	private Map<String, Annotation> mapPrototypeNameAnnot;
+
 }

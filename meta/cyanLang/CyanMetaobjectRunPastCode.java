@@ -13,10 +13,10 @@ import meta.CyanMetaobject;
 import meta.CyanMetaobjectAtAnnot;
 import meta.DirectoryKindPPP;
 import meta.IAbstractCyanCompiler;
-import meta.IAction_dsa;
+import meta.IAction_semAn;
 import meta.ICompiler_ded;
-import meta.ICompiler_dpa;
-import meta.ICompiler_dsa;
+import meta.ICompiler_parsing;
+import meta.ICompiler_semAn;
 import meta.InterpretationErrorException;
 import meta.MetaHelper;
 import meta.Tuple2;
@@ -30,7 +30,7 @@ import saci.LoadUtil;
    @author jose
  */
 public class CyanMetaobjectRunPastCode extends CyanMetaobjectAtAnnot
-implements IAction_dsa {
+implements IAction_semAn {
 
 	public CyanMetaobjectRunPastCode() {
 		super("runPastCode", AnnotationArgumentsKind.OneOrMoreParameters);
@@ -42,18 +42,18 @@ implements IAction_dsa {
 
 
 	@Override
-	public StringBuffer dsa_codeToAdd(ICompiler_dsa compiler_dsa) {
+	public StringBuffer semAn_codeToAdd(ICompiler_semAn compiler_semAn) {
 
-		checkIfPackageWasImported(compiler_dsa, "cyan.io");
+		checkIfPackageWasImported(compiler_semAn, "cyan.io");
 
 
 
-		Object param = this.getMetaobjectAnnotation().getJavaParameterList().get(0);
+		Object param = this.getAnnotation().getJavaParameterList().get(0);
 		if ( !(param instanceof Boolean) ) {
 			this.addError("The parameter to this annotation should be 'true' or 'false'");
 			return null;
 		}
-		cyanCode = new String( ((WrAnnotationAt) metaobjectAnnotation).getTextAttachedDSL() );;
+		cyanCode = new String( ((WrAnnotationAt) annotation).getTextAttachedDSL() );;
 		shouldRun = (Boolean ) param;
 
 
@@ -61,7 +61,7 @@ implements IAction_dsa {
 		if ( shouldRun ) {
 			final Ref<Object> ret = new Ref<>();
 			ret.elem = null;
-			ICompiler_dpa compiler = MetaHelper.createNewCompiler_dpa(cyanCode);
+			ICompiler_parsing compiler = MetaHelper.createNewCompiler_parsing(cyanCode);
 			try {
 				statList = MetaHelper.parseCyanStatementList(compiler);
 			}
@@ -75,26 +75,26 @@ implements IAction_dsa {
 			}
 
 
-			List<Object> javaParamList = this.getMetaobjectAnnotation().getJavaParameterList();
+			List<Object> javaParamList = this.getAnnotation().getJavaParameterList();
 
 			String [] varNameList = new String [javaParamList.size()];
 			varNameList[0] = "compiler";
 			Object [] objValueList = new Object [javaParamList.size()];
-			objValueList[0] = compiler_dsa;
+			objValueList[0] = compiler_semAn;
 
 
 			// if ( ! fillVarNameList(javaParamList) ) { return null; }
 
 
-			LoadUtil.addSaciOutputDirToClassPath(compiler_dsa.getEnv().getProject().getProjectDir(), () -> {
+			LoadUtil.adsemAnciOutputDirToClassPath(compiler_semAn.getEnv().getProject().getProjectDir(), () -> {
 
 				for(int i = 1; i < javaParamList.size(); ++i) {
 					Object obj = javaParamList.get(i);
 					String varName = CyanMetaobject.removeQuotes((String ) obj);
 					varNameList[i] = varName;
 
-					WrAnnotationAt annotation = this.getMetaobjectAnnotation();
-					final String filename = getFilenameVar(compiler_dsa, varName, annotation);
+					WrAnnotationAt annotation = this.getAnnotation();
+					final String filename = getFilenameVar(compiler_semAn, varName, annotation);
 //					SerializeContainer sc = new SerializeContainer(null);
 //					sc.load(filename);
 //					objValueList[i] = sc.value;
@@ -120,9 +120,9 @@ implements IAction_dsa {
 
 				ret.elem = MetaHelper.interpreterFor_MOPInterfaceMethod(
 						statList,
-						compiler_dsa,
+						compiler_semAn,
 						this,
-						"dsa_codeToAdd",
+						"semAn_codeToAdd",
 						varNameList,
 						objValueList,
 						CyString.class);
@@ -141,20 +141,20 @@ implements IAction_dsa {
 			}
 		}
 		else {
-			List<Object> javaParamList = this.getMetaobjectAnnotation().getJavaParameterList();
+			List<Object> javaParamList = this.getAnnotation().getJavaParameterList();
 			if ( javaParamList.size() > 1 ) {
 				StringBuffer sb = new StringBuffer();
 				//if ( ! fillVarNameList(javaParamList) ) { return null; }
 				for(int i = 1; i < javaParamList.size(); ++i) {
 					Object obj = javaParamList.get(i);
 					String varName = CyanMetaobject.removeQuotes((String ) obj);
-					if ( compiler_dsa.searchLocalVariable(varName) == null ) {
+					if ( compiler_semAn.searchLocalVariable(varName) == null ) {
 						this.addError("Variable '" + varName + "' was not found");
 						return null;
 					}
 
-					WrAnnotationAt annotation = this.getMetaobjectAnnotation();
-					final String filename = CyanMetaobject.escapeString(getFilenameVar(compiler_dsa, varName, annotation));
+					WrAnnotationAt annotation = this.getAnnotation();
+					final String filename = CyanMetaobject.escapeString(getFilenameVar(compiler_semAn, varName, annotation));
 
 					sb.append("    ContainerForSerialize saveVariable: " + varName + ", \"" + filename + "\";\n");
 				}
@@ -198,9 +198,9 @@ implements IAction_dsa {
 //		return true;
 //	}
 
-//	public void dpa_parse(String code) {
+//	public void parsing_parse(String code) {
 //
-//		Object param = this.getMetaobjectAnnotation().getJavaParameterList().get(0);
+//		Object param = this.getAnnotation().getJavaParameterList().get(0);
 //		if ( !(param instanceof Boolean) ) {
 //			this.addError("The parameter to this annotation should be 'true' or 'false'");
 //			return ;
@@ -210,7 +210,7 @@ implements IAction_dsa {
 //	}
 
 	/**
-	 * dsa_codeToAdd  for Codeg 'cyan' that uses the syntax:
+	 * semAn_codeToAdd  for Codeg 'cyan' that uses the syntax:
 	 *      {@literal @}cyan(codegId, v1, v2, ..., vn)
 	 *
 	 * This method should be called whenever
@@ -222,15 +222,15 @@ implements IAction_dsa {
 	 *    - the result of the computation (the value of the expression
 	 *       following 'return')
 	 *
-	   @param compiler_dsa
+	   @param compiler_semAn
 	   @return
 	 */
 
-	public Tuple2<String, Object> shouldRun(ICompiler_ded compiler_dsa) {
+	public Tuple2<String, Object> shouldRun(ICompiler_ded compiler_semAn) {
 
 		final Ref<Object> ret = new Ref<>();
 		ret.elem = null;
-		ICompiler_dpa compiler = MetaHelper.createNewCompiler_dpa(cyanCode);
+		ICompiler_parsing compiler = MetaHelper.createNewCompiler_parsing(cyanCode);
 		try {
 			statList = MetaHelper.parseCyanStatementList(compiler);
 		}
@@ -243,7 +243,7 @@ implements IAction_dsa {
 		}
 
 
-		List<Object> javaParamList = this.getMetaobjectAnnotation().getJavaParameterList();
+		List<Object> javaParamList = this.getAnnotation().getJavaParameterList();
 
 		varNameList = new String [javaParamList.size()-1];
 		objValueList = new Object [javaParamList.size()-1];
@@ -252,7 +252,7 @@ implements IAction_dsa {
 		// if ( ! fillVarNameList(javaParamList) ) { return null; }
 
 
-		LoadUtil.addSaciOutputDirToClassPath(compiler_dsa.getProjectDir(), () -> {
+		LoadUtil.adsemAnciOutputDirToClassPath(compiler_semAn.getProjectDir(), () -> {
 
 //			if ( varNameList.length > 0 && objValueList.length > 0 ) {
 //
@@ -263,9 +263,9 @@ implements IAction_dsa {
 				varNameList[i-1] = varName;
 
 
-				WrAnnotationAt annotation = this.getMetaobjectAnnotation();
+				WrAnnotationAt annotation = this.getAnnotation();
 
-				final String filename = getFilenameVar(compiler_dsa, varName, annotation);
+				final String filename = getFilenameVar(compiler_semAn, varName, annotation);
 //				SerializeContainer sc = new SerializeContainer(null);
 //				sc.load(filename);
 //				objValueList[i] = sc.value;
@@ -359,25 +359,25 @@ implements IAction_dsa {
 	}
 
 
-	public StringBuffer dsa_codeToAdd_ForCodegCyan(ICompiler_dsa compiler_dsa) {
+	public StringBuffer semAn_codeToAdd_ForCodegCyan(ICompiler_semAn compiler_semAn) {
 
-		checkIfPackageWasImported(compiler_dsa, "cyan.io");
+		checkIfPackageWasImported(compiler_semAn, "cyan.io");
 
 
-		List<Object> javaParamList = this.getMetaobjectAnnotation().getJavaParameterList();
+		List<Object> javaParamList = this.getAnnotation().getJavaParameterList();
 		if ( javaParamList.size() > 1 ) {
 			StringBuffer sb = new StringBuffer();
 			//if ( ! fillVarNameList(javaParamList) ) { return null; }
 			for(int i = 1; i < javaParamList.size(); ++i) {
 				Object obj = javaParamList.get(i);
 				String varName = CyanMetaobject.removeQuotes((String ) obj);
-				if ( compiler_dsa.searchLocalVariable(varName) == null ) {
+				if ( compiler_semAn.searchLocalVariable(varName) == null ) {
 					this.addError("Variable '" + varName + "' was not found");
 					return null;
 				}
 
-				WrAnnotationAt annotation = this.getMetaobjectAnnotation();
-				final String filename = CyanMetaobject.escapeString(getFilenameVar(compiler_dsa, varName, annotation));
+				WrAnnotationAt annotation = this.getAnnotation();
+				final String filename = CyanMetaobject.escapeString(getFilenameVar(compiler_semAn, varName, annotation));
 
 				sb.append("    ContainerForSerialize saveVariable: " + varName + ", \"" + filename + "\";\n");
 				//sb.append("(SerializeContainer new: " + varName + ") save: " + filename + ";\n");

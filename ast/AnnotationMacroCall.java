@@ -10,17 +10,17 @@ import cyan.lang.CyInt;
 import cyan.lang._Array_LT_GP__Tuple_LT_GP_CyString_GP_CyString_GT__GT;
 import cyan.lang._Tuple_LT_GP_CyString_GP_CyString_GT;
 import cyan.reflect._CyanMetaobjectMacro;
-import cyan.reflect._IActionNewPrototypes__dsa;
+import cyan.reflect._IActionNewPrototypes__semAn;
 import error.ErrorKind;
 import lexer.CompilerPhase;
 import lexer.Symbol;
 import meta.CyanMetaobject;
 import meta.CyanMetaobjectMacro;
-import meta.IActionNewPrototypes_dsa;
+import meta.IActionNewPrototypes_semAn;
 import meta.Tuple2;
 import meta.Tuple4;
 import meta.WrAnnotationMacroCall;
-import metaRealClasses.Compiler_dsa;
+import metaRealClasses.Compiler_semAn;
 import saci.CyanEnv;
 import saci.Env;
 import saci.NameServer;
@@ -33,12 +33,12 @@ public class AnnotationMacroCall extends Annotation {
 
 
 	public AnnotationMacroCall(CyanMetaobjectMacro cyanMacro, CompilationUnit compilationUnit,
-			 ProgramUnit programUnit, Symbol firstSymbol, boolean inExpr) {
-		super(compilationUnit, inExpr);
-		this.setProgramUnit(programUnit);
-		this.setMetaobjectAnnotationNumber(programUnit.getIncMetaobjectAnnotationNumber());
+			 Prototype prototype, Symbol firstSymbol, boolean inExpr, MethodDec method) {
+		super(compilationUnit, inExpr, method);
+		this.setPrototype(prototype);
+		this.setAnnotationNumber(prototype.getIncAnnotationNumber());
 		this.cyanMacro = cyanMacro;
-		this.cyanMacro.setMetaobjectAnnotation(this.getI());
+		this.cyanMacro.setAnnotation(this.getI());
 		this.firstSymbol = firstSymbol;
 		lastSymbolMacroCall = null;
 	}
@@ -63,8 +63,8 @@ public class AnnotationMacroCall extends Annotation {
 		else {}
 		*/
 
-		if ( codeMetaobjectAnnotationParseWithCompiler != null )
-			pw.print(codeMetaobjectAnnotationParseWithCompiler);
+		if ( codeAnnotationParseWithCompiler != null )
+			pw.print(codeAnnotationParseWithCompiler);
 		else
 			pw.print(this.originalText);
 
@@ -93,26 +93,26 @@ public class AnnotationMacroCall extends Annotation {
 	@Override
 	public void calcInternalTypes(Env env) {
 		/*
-		if ( env.getDuring_dsa_actions() ) {
-			env.error(this.getFirstSymbol(), "A dsa action cannot occur inside another dsa actions. For example, you cannot have a macro expansion inside another macro expansion or even a literal object as r\"[a-z]+\" inside a macro");
+		if ( env.getDuring_semAn_actions() ) {
+			env.error(this.getFirstSymbol(), "A SEM_AN action cannot occur inside another SEM_AN actions. For example, you cannot have a macro expansion inside another macro expansion or even a literal object as r\"[a-z]+\" inside a macro");
 		}
 		*/
 		try {
-			env.begin_dsa_actions();
+			env.begin_semAn_actions();
 			super.calcInternalTypes(env);
-			if ( env.getCompInstSet().contains(meta.CompilationInstruction.dsa_actions) ) {
-				final Compiler_dsa compiler_dsa = new Compiler_dsa(env, this);
-				// // cyanMacro.setMetaobjectAnnotation(this, 0);
+			if ( env.getCompInstSet().contains(meta.CompilationInstruction.semAn_actions) ) {
+				final Compiler_semAn compiler_semAn = new Compiler_semAn(env, this);
+				// // cyanMacro.setAnnotation(this, 0);
 				StringBuffer cyanCode = null;
 
 				_CyanMetaobjectMacro other = (_CyanMetaobjectMacro ) cyanMacro.getMetaobjectInCyan();
 
 				try {
 					if ( other == null ) {
-						cyanCode = cyanMacro.dsa_codeToAdd(compiler_dsa);
+						cyanCode = cyanMacro.semAn_codeToAdd(compiler_semAn);
 					}
 					else {
-						cyanCode = new StringBuffer(other._dsa__codeToAdd_1(compiler_dsa).s);
+						cyanCode = new StringBuffer(other._semAn__codeToAdd_1(compiler_semAn).s);
 					}
 				}
 				catch ( final error.CompileErrorException e ) {
@@ -130,27 +130,27 @@ public class AnnotationMacroCall extends Annotation {
 
 				if ( cyanCode != null ) {
 
-					if ( env.sizeStackMetaobjectAnnotationParseWithCompiler() > 1 ) {
+					if ( env.sizeStackAnnotationParseWithCompiler() > 1 ) {
 						/*
 						 * this metaobject annotation is a literal object that is inside other literal object
 						 */
-						this.setCodeMetaobjectAnnotationParseWithCompiler(cyanCode);
+						this.setCodeAnnotationParseWithCompiler(cyanCode);
 					}
 					else {
 
 						  /*
 						   * macros are always removed from the source code
 						   */
-						env.removeCodeMetaobjectAnnotation(cyanMacro);
+						env.removeCodeAnnotation(cyanMacro);
 						final Symbol lastSymbol = this.lastSymbolMacroCall;
 
 						this.codeThatReplacesThisStatement = new StringBuffer(
-								env.addCodeAtMetaobjectAnnotation(cyanMacro, cyanCode, lastSymbol.getOffset() + lastSymbol.getSymbolString().length()) );
+								env.addCodeAtAnnotation(cyanMacro, cyanCode, lastSymbol.getOffset() + lastSymbol.getSymbolString().length()) );
 
 
 					}
 				}
-				final ProgramUnit pu = env.searchPackagePrototype(cyanMacro.getPackageOfType(), cyanMacro.getPrototypeOfType());
+				final Prototype pu = env.searchPackagePrototype(cyanMacro.getPackageOfType(), cyanMacro.getPrototypeOfType());
 				if ( pu == null ) {
 					type = env.searchPackageJavaClass(cyanMacro.getPackageOfType(), cyanMacro.getPrototypeOfType());
 					if ( type == null ) {
@@ -164,19 +164,20 @@ public class AnnotationMacroCall extends Annotation {
 					type = pu;
 
 
-				if ( cyanMacro instanceof IActionNewPrototypes_dsa ||
-						(other != null && other instanceof _IActionNewPrototypes__dsa)
+				if ( cyanMacro instanceof IActionNewPrototypes_semAn
+						||
+						(other != null && other instanceof _IActionNewPrototypes__semAn)
 						) {
 					List<Tuple2<String, StringBuffer>> prototypeNameCodeList = null;
 					try {
 
 						if ( other == null ) {
-							prototypeNameCodeList = ((IActionNewPrototypes_dsa ) cyanMacro).dsa_NewPrototypeList(compiler_dsa);
+							prototypeNameCodeList = ((IActionNewPrototypes_semAn ) cyanMacro).semAn_NewPrototypeList(compiler_semAn);
 						}
 						else {
-							_IActionNewPrototypes__dsa anp = (_IActionNewPrototypes__dsa ) other;
+							_IActionNewPrototypes__semAn anp = (_IActionNewPrototypes__semAn ) other;
 							_Array_LT_GP__Tuple_LT_GP_CyString_GP_CyString_GT__GT array =
-									anp._dsa__NewPrototypeList_1(compiler_dsa);
+									anp._semAn__NewPrototypeList_1(compiler_semAn);
 							int size = array._size().n;
 							if ( size > 0 ) {
 								prototypeNameCodeList = new ArrayList<>();
@@ -190,7 +191,6 @@ public class AnnotationMacroCall extends Annotation {
 									}
 								}
 							}
-
 						}
 
 					}
@@ -206,13 +206,16 @@ public class AnnotationMacroCall extends Annotation {
 						env.errorInMetaobjectCatchExceptions(this.cyanMacro);
 					}
 					if ( prototypeNameCodeList != null ) {
+						CyanPackage currentPackage = env.getCurrentCompilationUnit().getCyanPackage();
 						for ( final Tuple2<String, StringBuffer> prototypeNameCode : prototypeNameCodeList ) {
+							String prototypeName = prototypeNameCode.f1;
 							final CompilationUnit cunit = (CompilationUnit ) this.compilationUnit;
 							final Tuple2<CompilationUnit, String> t = env.getProject().getCompilerManager().createNewPrototype(prototypeNameCode.f1, prototypeNameCode.f2,
 									cunit.getCompilerOptions(), cunit.getCyanPackage());
 							if ( t != null && t.f2 != null ) {
 								env.error(firstSymbol, t.f2);
 							}
+							currentPackage.addPrototypeNameAnnotationInfo(prototypeName, this);
 						}
 					}
 				}
@@ -223,7 +226,7 @@ public class AnnotationMacroCall extends Annotation {
 
 		}
 		finally {
-			env.end_dsa_actions();
+			env.end_semAn_actions();
 		}
 	}
 

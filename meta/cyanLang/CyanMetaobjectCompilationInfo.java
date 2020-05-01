@@ -6,10 +6,10 @@ import java.util.function.Function;
 import meta.AnnotationArgumentsKind;
 import meta.CyanMetaobjectLiteralObject;
 import meta.CyanMetaobjectAtAnnot;
-import meta.IAction_dpa;
-import meta.IAction_dsa;
-import meta.ICompilerAction_dpa;
-import meta.ICompiler_dsa;
+import meta.IAction_parsing;
+import meta.IAction_semAn;
+import meta.ICompilerAction_parsing;
+import meta.ICompiler_semAn;
 import meta.MetaHelper;
 import meta.WrAnnotationAt;
 import meta.WrEnv;
@@ -25,41 +25,41 @@ import meta.lexer.MetaLexer;
    @author José
  */
 public class CyanMetaobjectCompilationInfo extends CyanMetaobjectAtAnnot
-       implements IAction_dpa, IAction_dsa {
+       implements IAction_parsing, IAction_semAn {
 
-	private static HashMap<String, Function<WrAnnotationAt, String>> moToFuncMap_dpa = new HashMap<>();
-	private static HashMap<String, Function<WrEnv, String>> moToFuncMap_dsa = new HashMap<>();
+	private static HashMap<String, Function<WrAnnotationAt, String>> moToFuncMap_parsing = new HashMap<>();
+	private static HashMap<String, Function<WrEnv, String>> moToFuncMap_semAn = new HashMap<>();
 	private static HashMap<String, String> moToTypeMap = new HashMap<>();
 	static {
-		moToFuncMap_dpa.put("filename", (WrAnnotationAt cyanMetaobjectAnnotation) -> {
-			return cyanMetaobjectAnnotation.getCompilationUnit().getFullFileNamePath(); });
+		moToFuncMap_parsing.put("filename", (WrAnnotationAt cyanAnnotation) -> {
+			return cyanAnnotation.getCompilationUnit().getFullFileNamePath(); });
 
-		moToFuncMap_dpa.put("prototypename", (WrAnnotationAt cyanMetaobjectAnnotation) -> {
-			return cyanMetaobjectAnnotation.getPrototypeOfAnnotation(); });
+		moToFuncMap_parsing.put("prototypename", (WrAnnotationAt cyanAnnotation) -> {
+			return cyanAnnotation.getPrototypeOfAnnotation(); });
 
-		moToFuncMap_dpa.put("packagename", (WrAnnotationAt cyanMetaobjectAnnotation) -> {
-    		return cyanMetaobjectAnnotation.getPackageOfAnnotation(); });
-		moToFuncMap_dpa.put("linenumber", (WrAnnotationAt cyanMetaobjectAnnotation) -> {
-			return "" + cyanMetaobjectAnnotation.getSymbolMetaobjectAnnotation().getLineNumber(); });
-		moToFuncMap_dpa.put("columnnumber", (WrAnnotationAt cyanMetaobjectAnnotation) -> {
-			return "" + cyanMetaobjectAnnotation.getSymbolMetaobjectAnnotation().getColumnNumber(); });
+		moToFuncMap_parsing.put("packagename", (WrAnnotationAt cyanAnnotation) -> {
+    		return cyanAnnotation.getPackageOfAnnotation(); });
+		moToFuncMap_parsing.put("linenumber", (WrAnnotationAt cyanAnnotation) -> {
+			return "" + cyanAnnotation.getSymbolAnnotation().getLineNumber(); });
+		moToFuncMap_parsing.put("columnnumber", (WrAnnotationAt cyanAnnotation) -> {
+			return "" + cyanAnnotation.getSymbolAnnotation().getColumnNumber(); });
 
 
-		moToFuncMap_dsa.put("localvariablelist", (WrEnv env) -> {
+		moToFuncMap_semAn.put("localvariablelist", (WrEnv env) -> {
 			return env.getStringVisibleLocalVariableList(); });
 
-		moToFuncMap_dsa.put("fieldlist", (WrEnv env) -> {
+		moToFuncMap_semAn.put("fieldlist", (WrEnv env) -> {
 			return env.getStringFieldList(); });
 
-		moToFuncMap_dsa.put("signatureallmethodslist", (WrEnv env) -> {
+		moToFuncMap_semAn.put("signatureallmethodslist", (WrEnv env) -> {
 			return env.getStringSignatureAllMethods(); });
 
-		moToFuncMap_dsa.put("currentmethodname", (WrEnv env) -> {
+		moToFuncMap_semAn.put("currentmethodname", (WrEnv env) -> {
 			return env.getCurrentMethod() != null ? env.getCurrentMethod().getName() : "no current method" ; });
 
-		moToFuncMap_dsa.put("currentmethodfullname", (WrEnv env) -> {
+		moToFuncMap_semAn.put("currentmethodfullname", (WrEnv env) -> {
 			return env.getCurrentMethod() != null ? env.getCurrentMethod().getMethodSignature().getFullName(env) : "no current method" ; });
-		moToFuncMap_dsa.put("currentmethodreturntypename", (WrEnv env) -> {
+		moToFuncMap_semAn.put("currentmethodreturntypename", (WrEnv env) -> {
 			return env.getCurrentMethod() != null ? env.getCurrentMethod().getMethodSignature().getReturnType(env).getFullName() : "no current method" ; });
 
 
@@ -85,8 +85,8 @@ public class CyanMetaobjectCompilationInfo extends CyanMetaobjectAtAnnot
 
 	@Override
 	public void check() {
-		final WrAnnotationAt cyanMetaobjectAnnotation = this.getMetaobjectAnnotation();
-		final List<Object> javaObjectList = cyanMetaobjectAnnotation.getJavaParameterList();
+		final WrAnnotationAt cyanAnnotation = this.getAnnotation();
+		final List<Object> javaObjectList = cyanAnnotation.getJavaParameterList();
 		if ( javaObjectList.size() != 1 || !(javaObjectList.get(0) instanceof String)) {
 			addError("A single identifier or a single string was expected as parameter to this metaobject");
 			return ;
@@ -94,27 +94,27 @@ public class CyanMetaobjectCompilationInfo extends CyanMetaobjectAtAnnot
 		String param = (String ) javaObjectList.get(0);
 		param = MetaHelper.removeQuotes(param).toLowerCase();
 		param = param.replaceAll(" ", "");
-		if ( moToFuncMap_dpa.get(param) == null && moToFuncMap_dsa.get(param) == null) {
+		if ( moToFuncMap_parsing.get(param) == null && moToFuncMap_semAn.get(param) == null) {
 			String supportedOptions = "";
-			for (final String s : moToFuncMap_dpa.keySet() )
+			for (final String s : moToFuncMap_parsing.keySet() )
 				supportedOptions += "'" + s + "' ";
 			addError("Only the parameters " + supportedOptions + " are supported.");
 		}
 	}
 
 	@Override
-	public StringBuffer dpa_codeToAdd( ICompilerAction_dpa compiler ) {
-		final WrAnnotationAt cyanMetaobjectAnnotation = this.getMetaobjectAnnotation();
+	public StringBuffer parsing_codeToAdd( ICompilerAction_parsing compiler ) {
+		final WrAnnotationAt cyanAnnotation = this.getAnnotation();
 
 		data = null;
-		String param = (String ) cyanMetaobjectAnnotation.getJavaParameterList().get(0);
+		String param = (String ) cyanAnnotation.getJavaParameterList().get(0);
 		param = MetaHelper.removeQuotes(param).toLowerCase();
 		param = param.replaceAll(" ", "");
-		final Function<WrAnnotationAt, String> f = moToFuncMap_dpa.get(param);
+		final Function<WrAnnotationAt, String> f = moToFuncMap_parsing.get(param);
 		if ( f == null ) {
 			return null;
 		}
-		data = f.apply(cyanMetaobjectAnnotation);
+		data = f.apply(cyanAnnotation);
 		if ( data == null )
 			return null;
 		else {
@@ -131,22 +131,22 @@ public class CyanMetaobjectCompilationInfo extends CyanMetaobjectAtAnnot
 	}
 
 	@Override
-	public StringBuffer dsa_codeToAdd(ICompiler_dsa compiler_dsa) {
+	public StringBuffer semAn_codeToAdd(ICompiler_semAn compiler_semAn) {
 
 		if ( data != null ) {
 			return null;
 		}
 		else {
-			final WrAnnotationAt cyanMetaobjectAnnotation = this.getMetaobjectAnnotation();
+			final WrAnnotationAt cyanAnnotation = this.getAnnotation();
 
-			String param = (String ) cyanMetaobjectAnnotation.getJavaParameterList().get(0);
+			String param = (String ) cyanAnnotation.getJavaParameterList().get(0);
 			param = MetaHelper.removeQuotes(param).toLowerCase();
 			param = param.replaceAll(" ", "");
 
-			final Function<WrEnv, String> f = moToFuncMap_dsa.get(param);
+			final Function<WrEnv, String> f = moToFuncMap_semAn.get(param);
 			if ( f == null )
 				return null;
-			data = f.apply(compiler_dsa.getEnv());
+			data = f.apply(compiler_semAn.getEnv());
 			if (  data != null ) {
 
 				final String value = moToTypeMap.get(param);
@@ -179,13 +179,13 @@ public class CyanMetaobjectCompilationInfo extends CyanMetaobjectAtAnnot
 
 	@Override
 	public String getPrototypeOfType() {
-		final WrAnnotationAt cyanMetaobjectAnnotation = this.getMetaobjectAnnotation();
-		final List<Object> jpList = cyanMetaobjectAnnotation.getJavaParameterList();
+		final WrAnnotationAt cyanAnnotation = this.getAnnotation();
+		final List<Object> jpList = cyanAnnotation.getJavaParameterList();
 
 		if ( jpList == null || jpList.size() == 0 )
 			return "Nil";
 
-		String param = (String ) cyanMetaobjectAnnotation.getJavaParameterList().get(0);
+		String param = (String ) cyanAnnotation.getJavaParameterList().get(0);
 		param = MetaHelper.removeQuotes(param).toLowerCase();
 		param = param.replaceAll(" " , "");
 		final String type = moToTypeMap.get(param);

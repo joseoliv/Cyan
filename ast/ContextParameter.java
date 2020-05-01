@@ -41,12 +41,12 @@ import saci.CyanEnv;
 public class ContextParameter extends FieldDec  {
 
 	public ContextParameter(ObjectDec currentObj, SymbolIdent variableSymbol, VariableKind variableKind, Expr typeInDec, Token visibility,
-			Symbol firstSymbol, List<AnnotationAt> nonAttachedMetaobjectAnnotationList,
-			List<AnnotationAt> attachedMetaobjectAnnotationList,
+			Symbol firstSymbol, List<AnnotationAt> nonAttachedAnnotationList,
+			List<AnnotationAt> attachedAnnotationList,
 			Stack<Tuple5<String, String, String, String, Integer>> annotContextStack) {
 
 		super(currentObj, variableSymbol, typeInDec, null, visibility, false,
-				nonAttachedMetaobjectAnnotationList, attachedMetaobjectAnnotationList,
+				nonAttachedAnnotationList, attachedAnnotationList,
 				firstSymbol, false, annotContextStack);
 		setVariableKind(variableKind);
 		if ( variableKind != VariableKind.COPY_VAR )

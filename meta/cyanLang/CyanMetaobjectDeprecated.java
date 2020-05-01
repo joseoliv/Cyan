@@ -5,14 +5,14 @@ import meta.AnnotationArgumentsKind;
 import meta.AttachedDeclarationKind;
 import meta.CyanMetaobjectAtAnnot;
 import meta.ExprReceiverKind;
-import meta.ICheckMessageSend_afsa;
+import meta.ICheckMessageSend_afterSemAn;
 import meta.WrAnnotationAt;
 import meta.WrEnv;
 import meta.WrExpr;
 import meta.WrMessageWithKeywords;
 import meta.WrMethodDec;
 import meta.WrMethodSignature;
-import meta.WrProgramUnit;
+import meta.WrPrototype;
 import meta.WrSymbol;
 
 /**
@@ -25,7 +25,7 @@ import meta.WrSymbol;
    @author jose
  */
 public class CyanMetaobjectDeprecated extends CyanMetaobjectAtAnnot
-    implements ICheckMessageSend_afsa {
+    implements ICheckMessageSend_afterSemAn {
 
 	public CyanMetaobjectDeprecated() {
 		super("deprecated", AnnotationArgumentsKind.ZeroOrMoreParameters,
@@ -36,11 +36,11 @@ public class CyanMetaobjectDeprecated extends CyanMetaobjectAtAnnot
 
 	@Override
 	public void check() {
-		final WrAnnotationAt withAt = (WrAnnotationAt ) this.metaobjectAnnotation;
+		final WrAnnotationAt withAt = (WrAnnotationAt ) this.annotation;
 
 		final List<Object> javaParamList = withAt.getJavaParameterList();
 		if ( javaParamList.size() == 0 ) {
-			// // withAt.setInfo_dpa("This method is deprecated, you should not use it");
+			// // withAt.setInfo_parsing("This method is deprecated, you should not use it");
 
 			this.errorMessage = null;
 		}
@@ -49,7 +49,7 @@ public class CyanMetaobjectDeprecated extends CyanMetaobjectAtAnnot
 				addError("This metaobject annotation should take one string parameter");
 			}
 			else {
-				// // withAt.setInfo_dpa( javaParamList.get(0) );
+				// // withAt.setInfo_parsing( javaParamList.get(0) );
 				errorMessage = (String ) javaParamList.get(0);
 			}
 			return ;
@@ -61,11 +61,11 @@ public class CyanMetaobjectDeprecated extends CyanMetaobjectAtAnnot
 
 
 	@Override
-	public void afsa_checkKeywordMessageSend(WrExpr receiverExpr, WrProgramUnit receiverType,
+	public void afterSemAn_checkKeywordMessageSend(WrExpr receiverExpr, WrPrototype receiverType,
 			ExprReceiverKind receiverKind, WrMessageWithKeywords message, WrMethodSignature ms, WrEnv env
 			) {
 		if ( errorMessage == null ) {
-			this.errorMessage = "Method '" + ((WrMethodDec ) this.getMetaobjectAnnotation().getDeclaration()).getMethodSignature().getName() +
+			this.errorMessage = "Method '" + ((WrMethodDec ) this.getAnnotation().getDeclaration()).getMethodSignature().getName() +
 			"' is deprecated, you should not use it";
 
 		}
@@ -75,8 +75,8 @@ public class CyanMetaobjectDeprecated extends CyanMetaobjectAtAnnot
 
 
 //		WrType wt = receiverExpr.getType();
-//		if ( wt instanceof WrProgramUnit ) {
-//			((WrProgramUnit ) wt).accept(null);
+//		if ( wt instanceof WrPrototype ) {
+//			((WrPrototype ) wt).accept(null);
 //		}
 //		receiverExpr.accept( new WrASTVisitor() {
 //			@Override
@@ -90,10 +90,10 @@ public class CyanMetaobjectDeprecated extends CyanMetaobjectAtAnnot
 	}
 
 	@Override
-	public void afsa_checkUnaryMessageSend(WrExpr receiverExpr, WrProgramUnit receiverType,
+	public void afterSemAn_checkUnaryMessageSend(WrExpr receiverExpr, WrPrototype receiverType,
 			ExprReceiverKind receiverKind, WrSymbol unarySymbol, WrEnv env)  {
 		if ( errorMessage == null ) {
-			this.errorMessage = "Method " + ((WrMethodDec ) this.getMetaobjectAnnotation().getDeclaration()).getMethodSignature().getName() +
+			this.errorMessage = "Method " + ((WrMethodDec ) this.getAnnotation().getDeclaration()).getMethodSignature().getName() +
 			" is deprecated, you should not use it";
 
 		}

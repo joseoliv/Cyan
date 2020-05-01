@@ -18,7 +18,9 @@ import saci.Env;
 public class StatementWhile extends Statement {
 
 	public StatementWhile(Symbol whileSymbol, Expr booleanExpr,
-			   StatementList statementList, Symbol rightCBEndsIf) {
+			   StatementList statementList, Symbol rightCBEndsIf,
+			   MethodDec method) {
+		super(method);
 		this.whileSymbol = whileSymbol;
 		this.booleanExpr = booleanExpr;
 		this.statementList = statementList;
@@ -170,7 +172,7 @@ public class StatementWhile extends Statement {
 		else {
 
 
-			if ( booleanExpr.getType().getInsideType() instanceof ProgramUnit ) {
+			if ( booleanExpr.getType().getInsideType() instanceof Prototype ) {
 		        pw.printlnIdent("if ( !" + tmpVarString + ".b ) break;");
 			}
 			else if ( booleanExpr.getType() instanceof TypeJavaRef ) {

@@ -17,7 +17,7 @@ import java.util.List;
  */
 
 public class CyanMetaobjectLiteralObject extends CyanMetaobject
-                      implements  IAction_dsa {
+                      implements  IAction_semAn {
 
 
 	public CyanMetaobjectLiteralObject() {
@@ -30,14 +30,15 @@ public class CyanMetaobjectLiteralObject extends CyanMetaobject
 	/**
 	 *
 	 * This method should be called by a IDE plugin to show the text associated to the metaobject annotation
-	 * <code>metaobjectAnnotation</code> in several colors (text highlighting).
+	 * <code>annotation</code> in several colors (text highlighting).
 
 	 *
 	 * Each tuple (color number, line number, column number, size). <br>
 	 * The characters starting at line number, column number till column number
 	 * + size - 1 should be highlighted in color "color number".
-	 *  <code>metaobjectAnnotation</code> is redundant nowadays because this class already has a field
+	 *  <code>annotation</code> is redundant nowadays because this class already has a field
 	 *  with the same contents.
+	 * @param metaobjectLiteralObjectAnnotation
 	   @return
 	 */
 	public List<Tuple4<Integer, Integer, Integer, Integer>>
@@ -60,13 +61,13 @@ public class CyanMetaobjectLiteralObject extends CyanMetaobject
 
 
 	@Override
-	public StringBuffer dsa_codeToAdd(ICompiler_dsa compiler_dsa) {
+	public StringBuffer semAn_codeToAdd(ICompiler_semAn compiler_semAn) {
 		return null;
 	}
 
 	public String getUsefulString() {
-		return ((meta.WrAnnotationLiteralObject ) this.metaobjectAnnotation).getUsefulString();
-	
+		return ((meta.WrAnnotationLiteralObject ) this.annotation).getUsefulString();
+
 	}
 
 }

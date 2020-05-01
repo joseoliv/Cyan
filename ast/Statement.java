@@ -24,15 +24,17 @@ import saci.NameServer;
  */
 public abstract class Statement implements GenCyan, CodeWithError, ICalcInternalTypes, ASTNode, INextSymbol {
 
-	public Statement() {
+	public Statement(MethodDec currentMethod) {
+		this.currentMethod = currentMethod;
 		this.shouldBeFollowedBySemicolon = true;
-		setProducedByMetaobjectAnnotation(false);
-		cyanMetaobjectAnnotationThatReplacedStatByAnotherOne = null;
+		setCreatedByMetaobjects(false);
+		cyanAnnotationThatReplacedStatByAnotherOne = null;
 	}
 
-	public Statement(boolean shouldBeFollowedBySemicolon) {
+	public Statement(MethodDec currentMethod, boolean shouldBeFollowedBySemicolon) {
+		this.currentMethod = currentMethod;
 		this.shouldBeFollowedBySemicolon = shouldBeFollowedBySemicolon;
-		cyanMetaobjectAnnotationThatReplacedStatByAnotherOne = null;
+		cyanAnnotationThatReplacedStatByAnotherOne = null;
 	}
 
 	@Override
@@ -102,8 +104,8 @@ public abstract class Statement implements GenCyan, CodeWithError, ICalcInternal
 	}
 
 	public void calcInternalTypes(Env env) {
-		if ( afterMetaobjectAnnotation != null ) {
-			afterMetaobjectAnnotation.calcInternalTypes(env);
+		if ( afterAnnotation != null ) {
+			afterAnnotation.calcInternalTypes(env);
 		}
 	}
 
@@ -197,7 +199,7 @@ public abstract class Statement implements GenCyan, CodeWithError, ICalcInternal
 		}
 		pw.printlnIdent("if (" + aMethodTmp +
 				" == null) throw new ExceptionContainer__( new _ExceptionMethodNotFound( new CyString(\"Method called at line \" + " + lineNumber +
-				"+ \" of prototype '" + env.getCurrentProgramUnit().getFullName() + "' was not found\") ) );");
+				"+ \" of prototype '" + env.getCurrentPrototype().getFullName() + "' was not found\") ) );");
 		final String tmp = NameServer.nextJavaLocalVariableName();
 		pw.printlnIdent("Object " + tmp + " = null;");
 		pw.printlnIdent("try {");
@@ -244,7 +246,7 @@ public abstract class Statement implements GenCyan, CodeWithError, ICalcInternal
         pw.printlnIdent("}");
 		pw.printlnIdent("catch (IllegalAccessException | IllegalArgumentException " + ep + ") {");
 		pw.printlnIdent("        throw new ExceptionContainer__( new _ExceptionMethodNotFound( new CyString(\"Method called at line \" + " + lineNumber +
-				"+ \" of prototype '" + env.getCurrentProgramUnit().getFullName() + "' was not found\") ) );");
+				"+ \" of prototype '" + env.getCurrentPrototype().getFullName() + "' was not found\") ) );");
 
 
 		pw.printlnIdent("}");
@@ -270,7 +272,7 @@ public abstract class Statement implements GenCyan, CodeWithError, ICalcInternal
 				".getClass(), \"" +
 				methodJavaName  + "\", " + numParam + ");");
 		pw.printlnIdent("if ( " + aMethodTmp + " == null ) throw new ExceptionContainer__( new _ExceptionMethodNotFound( new CyString(\"Method called at line \" + " + lineNumber +
-				"+ \" of prototype '" + env.getCurrentProgramUnit().getFullName() + "' was not found\") ) );");
+				"+ \" of prototype '" + env.getCurrentPrototype().getFullName() + "' was not found\") ) );");
 
 
 
@@ -326,7 +328,7 @@ public abstract class Statement implements GenCyan, CodeWithError, ICalcInternal
         pw.printlnIdent("}");
 		pw.printlnIdent("catch (IllegalAccessException | IllegalArgumentException " + ep + ") {");
 		pw.printlnIdent("        throw new ExceptionContainer__( new _ExceptionMethodNotFound( new CyString(\"Method called at line \" + " + lineNumber +
-				"+ \" of prototype '" + env.getCurrentProgramUnit().getFullName() + "' was not found\") ) );");
+				"+ \" of prototype '" + env.getCurrentPrototype().getFullName() + "' was not found\") ) );");
 		pw.printlnIdent("}");
 		pw.sub();
 		pw.printlnIdent("}");
@@ -336,21 +338,21 @@ public abstract class Statement implements GenCyan, CodeWithError, ICalcInternal
 
 
 
-	public Annotation getCyanMetaobjectAnnotationThatReplacedMSbyExpr() {
-		return cyanMetaobjectAnnotationThatReplacedStatByAnotherOne;
+	public Annotation getCyanAnnotationThatReplacedMSbyExpr() {
+		return cyanAnnotationThatReplacedStatByAnotherOne;
 	}
 
-	public void setCyanMetaobjectAnnotationThatReplacedMSbyExpr(Annotation cyanMetaobjectAnnotationThatReplacedMSbyExpr) {
-		this.cyanMetaobjectAnnotationThatReplacedStatByAnotherOne = cyanMetaobjectAnnotationThatReplacedMSbyExpr;
+	public void setCyanAnnotationThatReplacedMSbyExpr(Annotation cyanAnnotationThatReplacedMSbyExpr) {
+		this.cyanAnnotationThatReplacedStatByAnotherOne = cyanAnnotationThatReplacedMSbyExpr;
 	}
 
 
-	public AnnotationAt getAfterMetaobjectAnnotation() {
-		return afterMetaobjectAnnotation;
+	public AnnotationAt getAfterAnnotation() {
+		return afterAnnotation;
 	}
 
-	public void setAfterMetaobjectAnnotation(AnnotationAt afterMetaobjectAnnotation) {
-		this.afterMetaobjectAnnotation = afterMetaobjectAnnotation;
+	public void setAfterAnnotation(AnnotationAt afterAnnotation) {
+		this.afterAnnotation = afterAnnotation;
 	}
 
 	public Symbol getSymbolAfter() {
@@ -361,12 +363,12 @@ public abstract class Statement implements GenCyan, CodeWithError, ICalcInternal
 		this.symbolAfter = symbolAfter;
 	}
 
-	public boolean getProducedByMetaobjectAnnotation() {
-		return producedByMetaobjectAnnotation;
+	public boolean getCreatedByMetaobjects() {
+		return createdByMetaobjects;
 	}
 
-	public void setProducedByMetaobjectAnnotation(boolean producedByMetaobjectAnnotation) {
-		this.producedByMetaobjectAnnotation = producedByMetaobjectAnnotation;
+	public void setCreatedByMetaobjects(boolean createdByMetaobjects) {
+		this.createdByMetaobjects = createdByMetaobjects;
 	}
 
 	public StringBuffer getCodeThatReplacesThisExpr() {
@@ -740,6 +742,13 @@ public abstract class Statement implements GenCyan, CodeWithError, ICalcInternal
 
 
 
+	public MethodDec getCurrentMethod() {
+		return currentMethod;
+	}
+
+
+
+
 	/**
 	 * the symbol that follows the expression
 	 */
@@ -769,12 +778,13 @@ public abstract class Statement implements GenCyan, CodeWithError, ICalcInternal
 	/**
 	 * metaobject annotation that follows this statement
 	 */
-	private AnnotationAt afterMetaobjectAnnotation;
+	private AnnotationAt afterAnnotation;
 
 	/**
-	 * true if this statement was produced by a metaobject annotation. That is, it is inside a contextPush and contextPop
+	 * true if this statement was produced by a metaobject annotation.
+	 * That is, it is inside a contextPush and contextPop
 	 */
-	private boolean producedByMetaobjectAnnotation;
+	private boolean createdByMetaobjects;
 
 	/**
 	 * the code that should replace this expression. Some metaobject or the compiler itself changed the
@@ -784,13 +794,18 @@ public abstract class Statement implements GenCyan, CodeWithError, ICalcInternal
 
 
 	/**
-	 * this statement may have been replaced by another one in phase dsa. This
+	 * this statement may have been replaced by another one in phase SEM_AN. This
 	 * variable keeps the metaobject annotation that asked for this replacement, if non-null.
 	 * Then if this variable is not null, {@link wasReplacedByExpr} is true. But
-	 * {@link wasReplacedByExpr} may be true and {@link cyanMetaobjectAnnotationThatReplacedStatByAnotherOne}
+	 * {@link wasReplacedByExpr} may be true and {@link cyanAnnotationThatReplacedStatByAnotherOne}
 	 * null because the compiler itself may have replaced the statement by another statement.
 	 * This does not happens currently.
 	 */
-	protected Annotation cyanMetaobjectAnnotationThatReplacedStatByAnotherOne;
+	protected Annotation cyanAnnotationThatReplacedStatByAnotherOne;
+
+	/**
+	 * method in which the statement is
+	 */
+	protected MethodDec currentMethod;
 
 }

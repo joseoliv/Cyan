@@ -4,9 +4,9 @@ import java.util.List;
 import meta.AnnotationArgumentsKind;
 import meta.AttachedDeclarationKind;
 import meta.CyanMetaobjectAtAnnot;
-import meta.ICheckDeclaration_afsa;
-import meta.ICheckSubprototype_afsa;
-import meta.ICompiler_dsa;
+import meta.ICheckDeclaration_afterSemAn;
+import meta.ICheckSubprototype_afterSemAn;
+import meta.ICompiler_semAn;
 import meta.IDeclaration;
 import meta.MetaHelper;
 import meta.Token;
@@ -15,11 +15,11 @@ import meta.WrCyanPackage;
 import meta.WrEnv;
 import meta.WrFieldDec;
 import meta.WrProgram;
-import meta.WrProgramUnit;
+import meta.WrPrototype;
 import meta.WrType;
 
 public class CyanMetaobjectImmutable extends CyanMetaobjectAtAnnot
-          implements ICheckDeclaration_afsa, ICheckSubprototype_afsa   {
+          implements ICheckDeclaration_afterSemAn, ICheckSubprototype_afterSemAn   {
 
 	public CyanMetaobjectImmutable() {
 		super("immutable", AnnotationArgumentsKind.ZeroParameters,
@@ -33,17 +33,17 @@ public class CyanMetaobjectImmutable extends CyanMetaobjectAtAnnot
 	 */
 
 	@Override
-	public void afsa_checkSubprototype(ICompiler_dsa compiler_dsa, WrProgramUnit subPrototype) {
+	public void afterSemAn_checkSubprototype(ICompiler_semAn compiler_semAn, WrPrototype subPrototype) {
 
 		final IDeclaration dec = this.getAttachedDeclaration();
-		if ( dec instanceof WrProgramUnit ) {
+		if ( dec instanceof WrPrototype ) {
 
 			final boolean isSubProtoImmutable = isAnnotatedWithImmutable(
-					subPrototype, compiler_dsa.getEnv());
+					subPrototype, compiler_semAn.getEnv());
 			if ( ! isSubProtoImmutable ) {
-				this.addError(subPrototype.getFirstSymbol(compiler_dsa.getEnv()), "Prototype '"
+				this.addError(subPrototype.getFirstSymbol(compiler_semAn.getEnv()), "Prototype '"
 						+ subPrototype.getFullName() + "' inherits from "
-						+ "a immutable prototype, '" + ((WrProgramUnit ) dec).getFullName() +
+						+ "a immutable prototype, '" + ((WrPrototype ) dec).getFullName() +
 						". It should also be annotated with @immutable");
 			}
 		}
@@ -54,10 +54,10 @@ public class CyanMetaobjectImmutable extends CyanMetaobjectAtAnnot
 	   @param subProto
 	   @return
 	 */
-	private static boolean isAnnotatedWithImmutable(WrProgramUnit subProto, WrEnv env) {
+	private static boolean isAnnotatedWithImmutable(WrPrototype subProto, WrEnv env) {
 		boolean isSubProtoImmutable = false;
 		final List<WrAnnotationAt> annotList =
-				subProto.getAttachedMetaobjectAnnotationList(env);
+				subProto.getAttachedAnnotationList(env);
 		if ( annotList != null ) {
 			for ( final WrAnnotationAt mo : annotList ) {
 				if ( mo.getCyanMetaobject() instanceof CyanMetaobjectImmutable ) {
@@ -70,11 +70,11 @@ public class CyanMetaobjectImmutable extends CyanMetaobjectAtAnnot
 	}
 
 	@Override
-	public void afsa_checkDeclaration(ICompiler_dsa compiler_dsa) {
+	public void afterSemAn_checkDeclaration(ICompiler_semAn compiler_semAn) {
 
 		final IDeclaration dec = this.getAttachedDeclaration();
-		if ( dec instanceof WrProgramUnit ) {
-			checkImmutabilityObjectDec( (WrProgramUnit ) dec, WhoAsked.prototypeAsked, compiler_dsa.getEnv());
+		if ( dec instanceof WrPrototype ) {
+			checkImmutabilityObjectDec( (WrPrototype ) dec, WhoAsked.prototypeAsked, compiler_semAn.getEnv());
 		}
 		else if ( dec instanceof WrCyanPackage ) {
 			checkImmutabilityCyanPackage( (WrCyanPackage ) dec, WhoAsked.packageAsked );
@@ -84,7 +84,7 @@ public class CyanMetaobjectImmutable extends CyanMetaobjectAtAnnot
 		}
 	}
 //	@Override
-	//public StringBuffer dsa_codeToAdd(ICompiler_dsa compiler_dsa) {}
+	//public StringBuffer semAn_codeToAdd(ICompiler_semAn compiler_semAn) {}
 
 	private void checkImmutabilityProgram(WrProgram program) {
 //		program.accept( new ASTVisitor() {
@@ -118,11 +118,11 @@ public class CyanMetaobjectImmutable extends CyanMetaobjectAtAnnot
 	/**
 	   @param dec
 	 */
-	private void checkImmutabilityObjectDec(WrProgramUnit proto, WhoAsked whoAsked, WrEnv env) {
+	private void checkImmutabilityObjectDec(WrPrototype proto, WhoAsked whoAsked, WrEnv env) {
 
 		//proto.setImmutable(true, env);
 
-		final WrProgramUnit superProto = proto.getSuperobject(env);
+		final WrPrototype superProto = proto.getSuperobject(env);
 		if (  superProto != null && !superProto.getName().equals("Any") ) {
 			if ( !isAnnotatedWithImmutable(superProto, env) ) {
 				this.addError("This prototype is immutable. It should either be 'Any' or its superprototype should be immutable too");
@@ -165,13 +165,13 @@ public class CyanMetaobjectImmutable extends CyanMetaobjectAtAnnot
 						}
 					}
 					else {
-						final WrProgramUnit ivProto = (WrProgramUnit ) ivType;
+						final WrPrototype ivProto = (WrPrototype ) ivType;
 						boolean error = true;
-						if ( ivProto.getAttachedMetaobjectAnnotationList(env) == null ) {
+						if ( ivProto.getAttachedAnnotationList(env) == null ) {
 							error = true;
 						}
 						else {
-							for ( final WrAnnotationAt annot : ivProto.getAttachedMetaobjectAnnotationList(env) ) {
+							for ( final WrAnnotationAt annot : ivProto.getAttachedAnnotationList(env) ) {
 								if ( annot.getCyanMetaobject().getName().equals(this.getName()) ) {
 									error = false;
 									break;

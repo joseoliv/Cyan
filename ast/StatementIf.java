@@ -28,7 +28,9 @@ public class StatementIf extends Statement {
 
 	public StatementIf(Symbol ifSymbol, List<Expr> ifExprList,
 			           List<StatementList> ifStatementList,
-                       StatementList elseStatementList, Symbol rightCBEndsIf, Symbol lastElse) {
+                       StatementList elseStatementList, Symbol rightCBEndsIf,
+                       Symbol lastElse, MethodDec method) {
+		super(method);
 		this.ifSymbol = ifSymbol;
 		this.ifExprList = ifExprList;
 		this.ifStatementList = ifStatementList;
@@ -145,7 +147,7 @@ public class StatementIf extends Statement {
 				pw.printlnIdent("if ( ((CyBoolean ) " + tmpVarString + ").b ) {");
 			}
 			else {
-				if ( booleanExpr.getType().getInsideType() instanceof ProgramUnit ) {
+				if ( booleanExpr.getType().getInsideType() instanceof Prototype ) {
 					pw.printlnIdent("if ( " + tmpVarString + ".b ) {");
 				}
 				else if ( booleanExpr.getType() instanceof TypeJavaRef ) {

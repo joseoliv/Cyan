@@ -6,10 +6,11 @@ package meta;
 import cyan.lang.CyInt;
 import cyan.lang._Array_LT_GP_CyByte_GT;
 import cyan.lang._Array_LT_GP_CyString_GT;
+import saci.Env;
 
 /**
- * Represent a metaobject annotationed using the syntax
- *        @meta(parameters)<++ ... ++>
+ * Represent a metaobject annotation using the syntax<br>
+ *        {@literal @}meta(parameters)<++ ... ++>
  *
    @author José
  */
@@ -247,7 +248,7 @@ public class CyanMetaobjectAtAnnot extends CyanMetaobject {
 	 * be MethodDec, FieldDec etc.
 	 */
 	final public IDeclaration getAttachedDeclaration() {
-		return ((WrAnnotationAt ) metaobjectAnnotation).getDeclaration();
+		return getAnnotation().getDeclaration();
 	}
 
 
@@ -263,8 +264,8 @@ public class CyanMetaobjectAtAnnot extends CyanMetaobject {
 	public boolean shouldTakeText() { return false; }
 
 	@Override
-	public WrAnnotationAt getMetaobjectAnnotation() {
-		return (WrAnnotationAt ) metaobjectAnnotation;
+	public WrAnnotationAt getAnnotation() {
+		return (WrAnnotationAt ) annotation;
 	}
 
 	/**
@@ -306,6 +307,87 @@ public class CyanMetaobjectAtAnnot extends CyanMetaobject {
 	public Token getVisibility() {
 		return visibility;
 	}
+
+	public void ee(CyanMetaobjectAtAnnot mo) {
+		mo.replaceStatementByCode(null, null, null,  null);
+	}
+
+	/**
+	 * replace statement 'stat' by 'code' that has type 'codeType' (if it is an expression).
+	 * 'codeType' can be 'null' if it is a typeless statement. The current environment
+	 * is 'wrEnv'.
+	 *
+	   @param stat
+	   @param code
+	   @param codeType
+	   @param wrEnv
+	   @return
+	 */
+	protected
+	boolean replaceStatementByCode(WrStatement stat,
+			StringBuffer code, WrType codeType,
+			WrEnv wrEnv
+			) {
+		/*
+		 * cases to consider:
+		 * 		a) annot is attached to a prototype. Check if
+		 *            stat is inside the prototype or not
+		 *      b) annot is attached to a method. Check if
+		 *            stat is inside the method
+		 *      c) annot is inside a method. Check if stat is inside the method
+		 */
+		WrAnnotationAt annot = this.getAnnotation();
+		WrMethodDec statMethod = stat.getCurrentMethod();
+		IDeclaration annotDec = annot.getDeclaration();
+		if ( annotDec instanceof WrPrototype ) {
+			// annotation is attached to a program unit
+
+			// is statement inside the prototype of the annotation?
+			if ( statMethod.getDeclaringObject() != (WrPrototype ) annotDec ) {
+				throw new MetaSecurityException(
+						"Annotation " + annot.getCyanMetaobject().getName()
+						+ " is trying to replace a statement in " +
+				       "another prototype. This is illegal");
+			}
+		}
+		else if ( annotDec instanceof WrMethodDec ) {
+			WrMethodDec annotMethod = (WrMethodDec ) annotDec;
+			// annotation is attached to 'annotMethod'
+			if ( statMethod != annotMethod ) {
+				throw new MetaSecurityException(
+						"Annotation " + annot.getCyanMetaobject().getName()
+						+ " of method " + annotMethod.getName() +
+								" is trying to replace a statement in " +
+				       " method " + statMethod.getName() + ". This is illegal. " +
+						"A metaobject can only replace statements in its own annotation method"		);
+			}
+		}
+		else {
+			// annotation is attached to something else or not attached to anything
+			// annotMethod is the method of the current annotation
+			WrMethodDec annotMethod = annot.getCurrentMethod();
+			if ( statMethod != annotMethod ) {
+				throw new MetaSecurityException(
+						"Annotation " + annot.getCyanMetaobject().getName()
+						+ " of method " + annotMethod.getName() +
+								" is trying to replace a statement in " +
+				       " method " + statMethod.getName() + ". This is illegal. " +
+						"A metaobject can only replace statements in its own annotation method"		);
+			}
+
+		}
+		Env env = meta.GetHiddenItem.getHiddenEnv(wrEnv);
+		if ( env.getCompilationStep().ordinal() > CompilationStep.step_6.ordinal() ) {
+			this.addError(annot.getFirstSymbol(), "The metaobject associated to "
+					+ "this annotation is trying to replace code after step 6 of the compilation. This is illegal");
+		}
+		return env.replaceStatementByCode(
+				meta.GetHiddenItem.getHiddenStatement(stat),
+				meta.GetHiddenItem.getHiddenCyanMetaobjectWithAtAnnotation(annot),
+				code, codeType != null ? meta.GetHiddenItem.getHiddenType(codeType) : null);
+	}
+
+
 
 
 	static public String extractSlotInterface(String code) {

@@ -3,7 +3,7 @@ package meta.cyanLang;
 import java.util.List;
 import meta.AnnotationArgumentsKind;
 import meta.CyanMetaobjectAtAnnot;
-import meta.ICompilerAction_dpa;
+import meta.ICompilerAction_parsing;
 import meta.MetaHelper;
 
 
@@ -12,7 +12,7 @@ import meta.MetaHelper;
    @author jose
  */
 public class CyanMetaobjectCreateFunction extends CyanMetaobjectAtAnnot
-       implements meta.IAction_dpa {
+       implements meta.IAction_parsing {
 
 
 
@@ -21,28 +21,28 @@ public class CyanMetaobjectCreateFunction extends CyanMetaobjectAtAnnot
 	}
 
 	@Override
-	public StringBuffer dpa_codeToAdd(ICompilerAction_dpa compiler) {
+	public StringBuffer parsing_codeToAdd(ICompilerAction_parsing compiler) {
 		StringBuffer s = new StringBuffer();
 
 		/*
-		List<Object> javaParamList = this.getMetaobjectAnnotation().getJavaParameterList();
+		List<Object> javaParamList = this.getAnnotation().getJavaParameterList();
 		Object first = javaParamList.get(0);
 		if ( !(first instanceof String) ) {
-			compiler.error(this.getMetaobjectAnnotation().getFirstSymbol(), "Parameter 'u' or 'r' expected to this metaobject annotation",
-					this.getMetaobjectAnnotation().getFirstSymbol().getSymbolString(), ErrorKind.metaobject_error);
+			compiler.error(this.getAnnotation().getFirstSymbol(), "Parameter 'u' or 'r' expected to this metaobject annotation",
+					this.getAnnotation().getFirstSymbol().getSymbolString(), ErrorKind.metaobject_error);
 			return s;
 		}
 		char param = ((String ) first).charAt(0);
 		if ( param != 'u' && param != 'r' ) {
-			compiler.error(this.getMetaobjectAnnotation().getFirstSymbol(), "Parameter 'u' or 'r' expected to this metaobject annotation",
-					this.getMetaobjectAnnotation().getFirstSymbol().getSymbolString(), ErrorKind.metaobject_error);
+			compiler.error(this.getAnnotation().getFirstSymbol(), "Parameter 'u' or 'r' expected to this metaobject annotation",
+					this.getAnnotation().getFirstSymbol().getSymbolString(), ErrorKind.metaobject_error);
 			return s;
 		}
 		*/
 
 		List<List<String>> strListList = compiler.getGenericPrototypeArgListList();
 		if ( strListList == null ) {
-			compiler.error(this.getMetaobjectAnnotation().getFirstSymbol(), "Metaobject '" + getName() + "' should only be used in a generic prototype");
+			compiler.error(this.getAnnotation().getFirstSymbol(), "Metaobject '" + getName() + "' should only be used in a generic prototype");
 			return null;
 		}
 
@@ -69,7 +69,7 @@ public class CyanMetaobjectCreateFunction extends CyanMetaobjectAtAnnot
 
 
 		if ( strListList.size() < 1 ) {
-			compiler.error(this.getMetaobjectAnnotation().getFirstSymbol(),
+			compiler.error(this.getAnnotation().getFirstSymbol(),
 					"This metaobject should only be used in generic prototype cyan.lang.Function or cyan.lang.UFunction");
 			return s;
 		}
@@ -86,7 +86,7 @@ public class CyanMetaobjectCreateFunction extends CyanMetaobjectAtAnnot
 				size = strList.size();
 				if ( sizeListList > 1 && count == sizeListList - 1 && size == 1 ) {
 					if ( sizeListList > 1 ) {
-						compiler.error(this.getMetaobjectAnnotation().getFirstSymbol(), "The last pair of '<' and '>' should have at least two arguments");
+						compiler.error(this.getAnnotation().getFirstSymbol(), "The last pair of '<' and '>' should have at least two arguments");
 						return new StringBuffer();
 					}
 
@@ -103,7 +103,7 @@ public class CyanMetaobjectCreateFunction extends CyanMetaobjectAtAnnot
 						String typeName = strList.get(i);
 						if ( typeName.equals(MetaHelper.noneArgumentNameForFunctions) ) {
 							if ( size != 2 ) {
-								compiler.error(this.getMetaobjectAnnotation().getFirstSymbol(),
+								compiler.error(this.getAnnotation().getFirstSymbol(),
 										"The '" + MetaHelper.noneArgumentNameForFunctions + "' argument for a function type should be alone between "
 										+ " '<' and '>' as in 'Function<none><Int><none>', except in the last pair of '<' and '>'. This type represents a function with method 'eval: eval: Int eval:'. "
 											+ "It would be illegal to write 'Function<none, Int, String>'");
@@ -128,7 +128,7 @@ public class CyanMetaobjectCreateFunction extends CyanMetaobjectAtAnnot
 						String typeName = strList.get(i);
 						if ( typeName.equals(MetaHelper.noneArgumentNameForFunctions) ) {
 							if ( size != 1) {
-								compiler.error(this.getMetaobjectAnnotation().getFirstSymbol(),
+								compiler.error(this.getAnnotation().getFirstSymbol(),
 										"The '" + MetaHelper.noneArgumentNameForFunctions + "' argument for a function type should be alone between "
 										+ " '<' and '>' as in 'Function<none><Int><none>', except in the last pair of '<' and '>'. This type represents a function with method 'eval: eval: Int eval:'. "
 											+ "It would be illegal to write 'Function<none, Int, String>'");

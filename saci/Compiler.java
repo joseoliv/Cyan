@@ -74,7 +74,7 @@ import ast.InterfaceDec;
 import ast.JVMPackage;
 import ast.MessageBinaryOperator;
 import ast.MessageKeywordWithRealParameters;
-import ast.MessageSendToMetaobjectAnnotation;
+import ast.MessageSendToAnnotation;
 import ast.MessageWithKeywords;
 import ast.MetaInfoServer;
 import ast.MethodDec;
@@ -86,9 +86,10 @@ import ast.MethodSignatureWithKeywords;
 import ast.ObjectDec;
 import ast.ParameterDec;
 import ast.Program;
-import ast.ProgramUnit;
+import ast.Prototype;
 import ast.SlotDec;
 import ast.Statement;
+import ast.StatementAnnotation;
 import ast.StatementAssignmentList;
 import ast.StatementBreak;
 import ast.StatementCast;
@@ -97,7 +98,6 @@ import ast.StatementIf;
 import ast.StatementList;
 import ast.StatementLocalVariableDec;
 import ast.StatementLocalVariableDecList;
-import ast.StatementMetaobjectAnnotation;
 import ast.StatementMinusMinusIdent;
 import ast.StatementNull;
 import ast.StatementPlusPlusIdent;
@@ -115,13 +115,13 @@ import cyan.lang._Tuple_LT_GP_CyString_GP_CyString_GT;
 import cyan.reflect._CyanMetaobject;
 import cyan.reflect._CyanMetaobjectAtAnnot;
 import cyan.reflect._CyanMetaobjectMacro;
-import cyan.reflect._IActionNewPrototypes__dpa;
-import cyan.reflect._IActionProgramUnitLater__dpa;
+import cyan.reflect._IActionNewPrototypes__parsing;
+import cyan.reflect._IActionPrototypeLater__parsing;
 import cyan.reflect._IAction__dpp;
 import cyan.reflect._ICodeg;
-import cyan.reflect._ICompilerInfo__dpa;
+import cyan.reflect._ICompilerInfo__parsing;
 import cyan.reflect._IInformCompilationError;
-import cyan.reflect._IParseWithCyanCompiler__dpa;
+import cyan.reflect._IParseWithCyanCompiler__parsing;
 import error.CompileErrorException;
 import error.ErrorKind;
 import error.UnitError;
@@ -129,7 +129,7 @@ import lexer.CompilerPhase;
 import lexer.Lexer;
 import lexer.Symbol;
 import lexer.SymbolCharSequence;
-import lexer.SymbolCyanMetaobjectAnnotation;
+import lexer.SymbolCyanAnnotation;
 import lexer.SymbolIdent;
 import lexer.SymbolKeyword;
 import lexer.SymbolLiteralObject;
@@ -140,7 +140,7 @@ import meta.AnnotationArgumentsKind;
 import meta.AttachedDeclarationKind;
 import meta.CompilationInstruction;
 import meta.CompilationStep;
-import meta.CompilerMacro_dpa;
+import meta.CompilerMacro_parsing;
 import meta.Compiler_dpp;
 import meta.CyanMetaobject;
 import meta.CyanMetaobjectAtAnnot;
@@ -149,18 +149,18 @@ import meta.CyanMetaobjectLiteralObject;
 import meta.CyanMetaobjectLiteralString;
 import meta.CyanMetaobjectMacro;
 import meta.IActionAssignment_cge;
-import meta.IActionAttachedType_dsa;
+import meta.IActionAttachedType_semAn;
 import meta.IActionFunction;
-import meta.IActionNewPrototypes_dpa;
-import meta.IActionProgramUnitLater_dpa;
+import meta.IActionNewPrototypes_parsing;
+import meta.IActionPrototypeLater_parsing;
 import meta.IAction_cge;
-import meta.IAction_dpa;
 import meta.IAction_dpp;
+import meta.IAction_parsing;
 import meta.ICodeg;
-import meta.ICompilerAction_dpa;
-import meta.ICompilerInfo_dpa;
+import meta.ICompilerAction_parsing;
+import meta.ICompilerInfo_parsing;
 import meta.IInformCompilationError;
-import meta.IParseWithCyanCompiler_dpa;
+import meta.IParseWithCyanCompiler_parsing;
 import meta.MetaHelper;
 import meta.Token;
 import meta.Tuple2;
@@ -171,9 +171,9 @@ import meta.WrExprAnyLiteral;
 import meta.cyanLang.CyanMetaobjectCompilationContextPop;
 import meta.cyanLang.CyanMetaobjectCompilationContextPush;
 import meta.cyanLang.CyanMetaobjectCompilationMarkDeletedCode;
-import metaRealClasses.CompilerAction_dpa;
-import metaRealClasses.CompilerGenericProgramUnit_dpa;
-import metaRealClasses.Compiler_dpa;
+import metaRealClasses.CompilerAction_parsing;
+import metaRealClasses.CompilerGenericPrototype_parsing;
+import metaRealClasses.Compiler_parsing;
 import refactoring.ActionDelete;
 import refactoring.ActionInsert;
 
@@ -293,7 +293,7 @@ public final class Compiler implements Cloneable {
 	/**
 
 	 */
-	public void pushStartMacroKeywordsAllMacros() {
+	public void pushStartMacroKeyworsemAnllMacros() {
 		for (final String keyword : this.metaObjectMacroTable.keySet()) {
 			final CyanMetaobjectMacro cyanMacro = this.metaObjectMacroTable
 					.get(keyword);
@@ -597,7 +597,7 @@ public final class Compiler implements Cloneable {
 		final String fileSeparator = System.getProperty("file.separator");
 
 		compInstSet = new HashSet<>();
-		compInstSet.add(CompilationInstruction.dpa_actions);
+		compInstSet.add(CompilationInstruction.parsing_actions);
 		compInstSet.add(CompilationInstruction.pyanSourceCode);
 
 		final List<String> importList = new ArrayList<>();
@@ -665,21 +665,21 @@ public final class Compiler implements Cloneable {
 		 * the metaobject annotations may or may not be attached to the program
 		 */
 
-		List<AnnotationAt> attachedMetaobjectAnnotationList = new ArrayList<>();
-		List<AnnotationAt> nonAttachedMetaobjectAnnotationList = null;
+		List<AnnotationAt> attachedAnnotationList = new ArrayList<>();
+		List<AnnotationAt> nonAttachedAnnotationList = null;
 
-		Tuple2<List<AnnotationAt>, List<AnnotationAt>> tc = parseMetaobjectAnnotations_NonAttached_Attached();
+		Tuple2<List<AnnotationAt>, List<AnnotationAt>> tc = parseAnnotations_NonAttached_Attached();
 		if ( tc != null ) {
-			nonAttachedMetaobjectAnnotationList = tc.f1;
-			attachedMetaobjectAnnotationList = tc.f2;
-			if ( nonAttachedMetaobjectAnnotationList != null
-					&& nonAttachedMetaobjectAnnotationList.size() > 0 ) {
+			nonAttachedAnnotationList = tc.f1;
+			attachedAnnotationList = tc.f2;
+			if ( nonAttachedAnnotationList != null
+					&& nonAttachedAnnotationList.size() > 0 ) {
 				/*
 				 * there could be no annotations before 'program' that are not
 				 * linked to it
 				 */
 				project.error("The metaobject of the annotation '"
-						+ nonAttachedMetaobjectAnnotationList.get(0)
+						+ nonAttachedAnnotationList.get(0)
 								.getCompleteName()
 						+ "' should be attached to 'program'");
 
@@ -695,14 +695,14 @@ public final class Compiler implements Cloneable {
 		else
 			next();
 
-		if ( attachedMetaobjectAnnotationList != null ) {
-			for (final AnnotationAt annotation : attachedMetaobjectAnnotationList) {
+		if ( attachedAnnotationList != null ) {
+			for (final AnnotationAt annotation : attachedAnnotationList) {
 				final CyanMetaobjectAtAnnot cyanMetaobject = annotation
 						.getCyanMetaobject();
 				if ( !cyanMetaobject.mayBeAttachedTo(
 						AttachedDeclarationKind.PROGRAM_DEC) && !cyanMetaobject.mayBeAttachedTo(
 								AttachedDeclarationKind.PROTOTYPE_DEC)) {
-					this.error(true, annotation.getSymbolMetaobjectAnnotation(),
+					this.error(true, annotation.getSymbolAnnotation(),
 							"This metaobject annotation cannot be attached to a program. It can be attached to "
 									+ " one entity of the following list: [ "
 									+ cyanMetaobject.attachedListAsString()
@@ -712,17 +712,17 @@ public final class Compiler implements Cloneable {
 				}
 				annotation.setDeclaration(program.getI_dpp());
 				annotation.setOriginalDeclaration(AttachedDeclarationKind.PROGRAM_DEC);
-//				if ( cyanMetaobject instanceof ICompilerInfo_dpa ) {
-//					final ICompilerInfo_dpa moInfo = (ICompilerInfo_dpa) cyanMetaobject;
+//				if ( cyanMetaobject instanceof ICompilerInfo_parsing ) {
+//					final ICompilerInfo_parsing moInfo = (ICompilerInfo_parsing) cyanMetaobject;
 //					final List<Tuple2<String, WrExprAnyLiteral>> t = moInfo
 //							.featureListToDeclaration();
 //					if ( t != null ) program.addFeatureList(t);
-//					moInfo.action_dpa(getCompilerAction_dpa());
+//					moInfo.action_parsing(getCompilerAction_parsing());
 //				}
 			}
 		}
-		program.setAttachedMetaobjectAnnotationList(
-				attachedMetaobjectAnnotationList);
+		program.setAttachedAnnotationList(
+				attachedAnnotationList);
 
 		Symbol atSymbol = null;
 		if ( symbol.token == Token.IDENT
@@ -782,10 +782,10 @@ public final class Compiler implements Cloneable {
 			mainPackage = "main";
 		}
 
-		if ( attachedMetaobjectAnnotationList != null && attachedMetaobjectAnnotationList.size() > 0 ) {
+		if ( attachedAnnotationList != null && attachedAnnotationList.size() > 0 ) {
 			Compiler_dpp compiler_dpp = new Compiler_dpp(project);
 
-			for (final AnnotationAt annotation : attachedMetaobjectAnnotationList) {
+			for (final AnnotationAt annotation : attachedAnnotationList) {
 				dpp_action(annotation, compiler_dpp);
 			}
 		}
@@ -793,8 +793,8 @@ public final class Compiler implements Cloneable {
 		// Program fakeProgram = new Program();
 		/*
 		 * Project project = new Project( program, mainPackage, mainObject,
-		 * null, null, null, nonAttachedMetaobjectAnnotationList,
-		 * attachedMetaobjectAnnotationList, importList);
+		 * null, null, null, nonAttachedAnnotationList,
+		 * attachedAnnotationList, importList);
 		 *
 		 */
 		project.setMainPackage(mainPackage);
@@ -845,21 +845,21 @@ public final class Compiler implements Cloneable {
 			 * package
 			 */
 
-			attachedMetaobjectAnnotationList = null;
-			nonAttachedMetaobjectAnnotationList = null;
+			attachedAnnotationList = null;
+			nonAttachedAnnotationList = null;
 
-			tc = parseMetaobjectAnnotations_NonAttached_Attached();
+			tc = parseAnnotations_NonAttached_Attached();
 			if ( tc != null ) {
-				nonAttachedMetaobjectAnnotationList = tc.f1;
-				attachedMetaobjectAnnotationList = tc.f2;
-				if ( nonAttachedMetaobjectAnnotationList != null
-						&& nonAttachedMetaobjectAnnotationList.size() > 0 ) {
+				nonAttachedAnnotationList = tc.f1;
+				attachedAnnotationList = tc.f2;
+				if ( nonAttachedAnnotationList != null
+						&& nonAttachedAnnotationList.size() > 0 ) {
 					/*
 					 * there could be no annotations before 'package' that are
 					 * not linked to it
 					 */
 					project.error("The metaobject of the annotation '"
-							+ nonAttachedMetaobjectAnnotationList.get(0)
+							+ nonAttachedAnnotationList.get(0)
 									.getCompleteName()
 							+ "' should be attached to a package");
 
@@ -943,7 +943,7 @@ public final class Compiler implements Cloneable {
 			// **************************
 
 			final CyanPackage cyanPackage = createCyanPackage(program, project,
-					attachedMetaobjectAnnotationList, packageName,
+					attachedAnnotationList, packageName,
 					packageCanonicalPath, metaobjectList,
 					pyanBeforePackageMetaobjectList);
 
@@ -953,16 +953,16 @@ public final class Compiler implements Cloneable {
 
 			project.addCyanPackage(cyanPackage);
 
-			if ( attachedMetaobjectAnnotationList != null && attachedMetaobjectAnnotationList.size() > 0 ) {
+			if ( attachedAnnotationList != null && attachedAnnotationList.size() > 0 ) {
 				Compiler_dpp compiler_dpp = new Compiler_dpp(project);
-				for (final AnnotationAt annotation : attachedMetaobjectAnnotationList) {
+				for (final AnnotationAt annotation : attachedAnnotationList) {
 					final CyanMetaobjectAtAnnot cyanMetaobject = annotation
 							.getCyanMetaobject();
 					if ( !cyanMetaobject.mayBeAttachedTo(
 							AttachedDeclarationKind.PACKAGE_DEC) && !cyanMetaobject.mayBeAttachedTo(
 									AttachedDeclarationKind.PROTOTYPE_DEC)) {
 						this.error(true,
-								annotation.getSymbolMetaobjectAnnotation(),
+								annotation.getSymbolAnnotation(),
 								"This metaobject annotation cannot be attached to a package. It can be attached to "
 										+ " one entity of the following list: [ "
 										+ cyanMetaobject.attachedListAsString()
@@ -1180,7 +1180,7 @@ public final class Compiler implements Cloneable {
 	 * Create a Cyan package of program <code>program</code> and project
 	 * <code>project1</code>. The annotations attached to this package
 	 * in the project file are
-	 * <code>attachedMetaobjectAnnotationList</code>. The package name is
+	 * <code>attachedAnnotationList</code>. The package name is
 	 * <code>packageName</code> of directory <code>packageCanonicalPath</code>.
 	 * The metaobjects of this package, avaliable in Cyan source code when
 	 * the package is imported, are in the list <code>metaobjectList</code>.
@@ -1203,7 +1203,7 @@ public final class Compiler implements Cloneable {
 	 * @return
 	 */
 	private CyanPackage createCyanPackage(Program program1, Project project1,
-			List<AnnotationAt> attachedMetaobjectAnnotationList,
+			List<AnnotationAt> attachedAnnotationList,
 			String packageName, String packageCanonicalPath,
 			List<CyanMetaobject> metaobjectList,
 			List<CyanMetaobject> pyanBeforePackageMetaobjectList) {
@@ -1218,7 +1218,7 @@ public final class Compiler implements Cloneable {
 
 		final CyanPackage cyanPackage = new CyanPackage(program1, packageName,
 				project1, packageCanonicalPath,
-				attachedMetaobjectAnnotationList, metaobjectList,
+				attachedAnnotationList, metaobjectList,
 				pyanBeforePackageMetaobjectList);
 		CollectError ce = cyanPackage.calculateURLs();
 
@@ -1409,7 +1409,7 @@ public final class Compiler implements Cloneable {
 	 * Parse the compilation unit
 	 *
 	 * CompilationUnit ::= PackageDec ImportDec { CTmetaobjectAnnotationList
-	 * ProgramUnit }
+	 * Prototype }
 	 *
 	 */
 
@@ -1417,7 +1417,7 @@ public final class Compiler implements Cloneable {
 
 		lineShift = 0;
 
-		currentProgramUnit = null;
+		currentPrototype = null;
 
 		final CyanPackage importedPackage = this.project.getCyanLangPackage();
 
@@ -1437,13 +1437,13 @@ public final class Compiler implements Cloneable {
 			ExprIdentStar packageIdent = null;
 			if ( symbol.token == Token.METAOBJECT_ANNOTATION ) {
 				final Tuple2<List<AnnotationAt>, List<AnnotationAt>> tctmo = this
-						.parseMetaobjectAnnotations_NonAttached_Attached();
+						.parseAnnotations_NonAttached_Attached();
 				if ( tctmo != null ) {
-					final List<AnnotationAt> nonAttachedMetaobjectAnnotationList = tctmo.f1;
-					final List<AnnotationAt> attachedMetaobjectAnnotationList = tctmo.f2;
-					if ( attachedMetaobjectAnnotationList != null
-							&& attachedMetaobjectAnnotationList.size() > 0 ) {
-						for (final AnnotationAt annotation : attachedMetaobjectAnnotationList) {
+					final List<AnnotationAt> nonAttachedAnnotationList = tctmo.f1;
+					final List<AnnotationAt> attachedAnnotationList = tctmo.f2;
+					if ( attachedAnnotationList != null
+							&& attachedAnnotationList.size() > 0 ) {
+						for (final AnnotationAt annotation : attachedAnnotationList) {
 							this.error2(annotation.getFirstSymbol(),
 									"Metaobject '"
 											+ annotation.getCyanMetaobject()
@@ -1452,8 +1452,8 @@ public final class Compiler implements Cloneable {
 						}
 					}
 					this.compilationUnit
-							.setNonAttachedMetaobjectAnnotationListBeforePackage(
-									nonAttachedMetaobjectAnnotationList);
+							.setNonAttachedAnnotationListBeforePackage(
+									nonAttachedAnnotationList);
 				}
 
 			}
@@ -1528,15 +1528,15 @@ public final class Compiler implements Cloneable {
 						packageName, ErrorKind.package_has_a_wrong_name);
 			}
 
-			this.numPublicPackageProgramUnits = 0;
+			this.numPublicPackagePrototypes = 0;
 			while (true) {
 
 				if ( symbol.token != Token.EOF ) {
 
 					try {
-						currentProgramUnit = programUnit();
-						// programUnitArray.add(currentProgramUnit);
-						//System.out.println("currentProgramUnit***" + currentProgramUnit.getFullName());
+						currentPrototype = prototype();
+						// prototypeArray.add(currentPrototype);
+						//System.out.println("currentPrototype***" + currentPrototype.getFullName());
 
 					}
 					catch (final CompileErrorException e) {
@@ -1564,28 +1564,28 @@ public final class Compiler implements Cloneable {
 				 */
 				if ( !compilationUnit.hasCompilationError() ) {
 
-					if ( this.numPublicPackageProgramUnits == 0 ) error(true,
-							currentProgramUnit != null
-									? currentProgramUnit.getSymbol()
+					if ( this.numPublicPackagePrototypes == 0 ) error(true,
+							currentPrototype != null
+									? currentPrototype.getSymbol()
 									: null,
 							"This source file should declare at least a public prototype named "
 									+ NameServer.fileNameToPrototypeName(
 											compilationUnit.getFilename()),
-							currentProgramUnit != null
-									? currentProgramUnit.getName()
+							currentPrototype != null
+									? currentPrototype.getName()
 									: null,
 							ErrorKind.no_public_protected_prototype_found_in_source_file,
-							"identifier = \"" + (currentProgramUnit != null
-									? currentProgramUnit.getName()
+							"identifier = \"" + (currentPrototype != null
+									? currentPrototype.getName()
 									: "") + "\"");
 
 					// there should be exactly one public or protected prototype in
 					// the source file
-					if ( this.numPublicPackageProgramUnits != 1 ) {
+					if ( this.numPublicPackagePrototypes != 1 ) {
 						int n = 0, i = 0;
-						while (i < compilationUnit.getProgramUnitList().size()) {
-							final ProgramUnit pu = compilationUnit
-									.getProgramUnitList().get(i);
+						while (i < compilationUnit.getPrototypeList().size()) {
+							final Prototype pu = compilationUnit
+									.getPrototypeList().get(i);
 							if ( pu.getVisibility() == Token.PUBLIC
 									|| pu.getVisibility() == Token.PACKAGE ) {
 								++n;
@@ -1594,10 +1594,10 @@ public final class Compiler implements Cloneable {
 							++i;
 						}
 						error(true,
-								compilationUnit.getProgramUnitList().get(1)
+								compilationUnit.getPrototypeList().get(1)
 										.getSymbol(),
 								"There should be exactly one 'public' or 'package' prototype in every source file. This is the second one",
-								compilationUnit.getProgramUnitList().get(1)
+								compilationUnit.getPrototypeList().get(1)
 										.getName(),
 								ErrorKind.two_or_more_public_protected_prototype_found_in_source_file);
 					}
@@ -1608,32 +1608,34 @@ public final class Compiler implements Cloneable {
 							.getHasGenericPrototype();
 					// if ( hasGenericPrototype ) {}
 
-					for (final ProgramUnit pu : compilationUnit
-							.getProgramUnitList()) {
+					for (final Prototype pu : compilationUnit
+							.getPrototypeList()) {
 
 						for (final Annotation annotation : pu
-								.getCompleteMetaobjectAnnotationList()) {
+								.getCompleteAnnotationList()) {
 							final CyanMetaobject cyanMetaobject = annotation
 									.getCyanMetaobject();
 							_CyanMetaobject other = cyanMetaobject.getMetaobjectInCyan();
-							if ( cyanMetaobject instanceof IActionProgramUnitLater_dpa ||
-									(other != null && other instanceof _IActionProgramUnitLater__dpa)) {
+							if ( cyanMetaobject instanceof IActionPrototypeLater_parsing
+									||
+									(other != null && other instanceof _IActionPrototypeLater__parsing)
+									) {
 
 								// //
-								// cyanMetaobject.setMetaobjectAnnotation(annotation,
+								// cyanMetaobject.setAnnotation(annotation,
 								// 0);
-								final CompilerGenericProgramUnit_dpa compilerGenericProgramUnit_dpa = new CompilerGenericProgramUnit_dpa(
+								final CompilerGenericPrototype_parsing compilerGenericPrototype_parsing = new CompilerGenericPrototype_parsing(
 										this, pu);
 
 								try {
 									if ( other == null ) {
-										final IActionProgramUnitLater_dpa iaction = (IActionProgramUnitLater_dpa) cyanMetaobject;
-										iaction.dpa_actionProgramUnitLater(
-												compilerGenericProgramUnit_dpa);
+										final IActionPrototypeLater_parsing iaction = (IActionPrototypeLater_parsing) cyanMetaobject;
+										iaction.parsing_actionPrototypeLater(
+												compilerGenericPrototype_parsing);
 									}
 									else {
-										((_IActionProgramUnitLater__dpa ) other)._dpa__actionProgramUnitLater_1(
-												compilerGenericProgramUnit_dpa);
+										((_IActionPrototypeLater__parsing ) other)._parsing__actionPrototypeLater_1(
+												compilerGenericPrototype_parsing);
 									}
 								}
 								catch (final error.CompileErrorException e) {
@@ -1698,10 +1700,10 @@ public final class Compiler implements Cloneable {
 			this.compilationUnitSuper.setSymbolList(symbolList, sizeSymbolList);
 		}
 		catch (final CompileErrorException e) {
-			// return programUnitArray;
+			// return prototypeArray;
 		}
 
-		// return programUnitArray;
+		// return prototypeArray;
 	}
 
 	/**
@@ -1719,7 +1721,7 @@ public final class Compiler implements Cloneable {
 				if ( paramList == null || paramList.size() < 1 ) {
 					CyanMetaobject metaobject = annotation.getCyanMetaobject();
 					_CyanMetaobject other = metaobject.getMetaobjectInCyan();
-					boolean demandsLabel;
+					boolean demandsLabel = false;
 					if ( other == null ) {
 						demandsLabel = ((ICodeg) metaobject)
 								.demandsLabel();
@@ -1747,7 +1749,7 @@ public final class Compiler implements Cloneable {
 			 * the source file.
 			 */
 			if ( compInstSet
-					.contains(CompilationInstruction.dpa_actions) ) {
+					.contains(CompilationInstruction.parsing_actions) ) {
 				for (final AnnotationAt annotation : codegList) {
 					/*
 					 * read codeg information from files or from
@@ -2271,7 +2273,7 @@ public final class Compiler implements Cloneable {
 			identSymbolArray.add(symbol);
 			next();
 		}
-		return new ExprIdentStar(identSymbolArray, symbol);
+		return new ExprIdentStar(identSymbolArray, symbol, currentMethod);
 	}
 
 	private ExprIdentStar identColon() {
@@ -2280,7 +2282,7 @@ public final class Compiler implements Cloneable {
 		if ( symbol.token == Token.IDENTCOLON ) {
 			identSymbolArray.add(symbol);
 			next();
-			return new ExprIdentStar(identSymbolArray, symbol);
+			return new ExprIdentStar(identSymbolArray, symbol, currentMethod);
 		}
 		return null;
 	}
@@ -2302,7 +2304,7 @@ public final class Compiler implements Cloneable {
 			CyanMetaobjectAtAnnot cyanMetaobject, String metaobjectName,
 			boolean inExpr) {
 
-		final SymbolCyanMetaobjectAnnotation metaobjectSymbol = (SymbolCyanMetaobjectAnnotation) symbol;
+		final SymbolCyanAnnotation metaobjectSymbol = (SymbolCyanAnnotation) symbol;
 		// String metaobjectName = symbol.getSymbolString();
 
 		if ( cyanMetaobject == null ) {
@@ -2338,30 +2340,30 @@ public final class Compiler implements Cloneable {
 		final Symbol metaobjectAnnotationSymbol = symbol;
 		cyanMetaobject = cyanMetaobject.myClone();
 		final AnnotationAt annotation = new AnnotationAt(
-				compilationUnit, (SymbolCyanMetaobjectAnnotation) symbol,
-				cyanMetaobject, inExpr);
+				compilationUnit, (SymbolCyanAnnotation) symbol,
+				cyanMetaobject, inExpr, currentMethod);
 		_CyanMetaobject other_mo = cyanMetaobject.getMetaobjectInCyan();
 		if ( other_mo != null ) {
-			other_mo._getHidden().setMetaobjectAnnotation(cyanMetaobject.getMetaobjectAnnotation());
+			other_mo._getHidden().setAnnotation(cyanMetaobject.getAnnotation());
 		}
-		// cyanMetaobject.setMetaobjectAnnotation(annotation);
+		// cyanMetaobject.setAnnotation(annotation);
 
 		annotation.setInsideProjectFile(this.compInstSet
 				.contains(CompilationInstruction.pyanSourceCode));
 
 		annotation.setInsideMethod(this.currentMethod != null);
 
-		metaobjectSymbol.setMetaobjectAnnotation(annotation);
+		metaobjectSymbol.setAnnotation(annotation);
 
 		if ( cyanMetaobject instanceof ICodeg ) {
 			this.codegList.add(annotation);
 		}
 
-		if ( currentProgramUnit != null ) {
-			currentProgramUnit.addMetaobjectAnnotation(annotation);
-			annotation.setProgramUnit(currentProgramUnit);
-			annotation.setMetaobjectAnnotationNumber(
-					currentProgramUnit.getIncMetaobjectAnnotationNumber());
+		if ( currentPrototype != null ) {
+			currentPrototype.addAnnotation(annotation);
+			annotation.setPrototype(currentPrototype);
+			annotation.setAnnotationNumber(
+					currentPrototype.getIncAnnotationNumber());
 		}
 		annotation.setCompilationUnit(compilationUnit);
 
@@ -2391,23 +2393,23 @@ public final class Compiler implements Cloneable {
 		 * information to the user.
 		 *
 		 */
-		boolean action_dpa = false;
+		boolean action_parsing = false;
 		if ( // ! cyanMetaobject.shouldTakeText() &&
-				cyanMetaobject instanceof IAction_dpa
+				cyanMetaobject instanceof IAction_parsing
 				&& (annotation.getPostfix() == null
-						|| annotation.getPostfix().lessThan(CompilerPhase.DPA))
-				&& (this.currentProgramUnit == null
-						|| !this.currentProgramUnit.isGeneric()) ) {
+						|| annotation.getPostfix().lessThan(CompilerPhase.PARSING))
+				&& (this.currentPrototype == null
+						|| !this.currentPrototype.isGeneric()) ) {
 
 			// symbol is a metaobject annotation
-			action_dpa = true;
+			action_parsing = true;
 			// always use compilation context
-			insertPhaseChange(CompilerPhase.DPA, annotation);
+			insertPhaseChange(CompilerPhase.PARSING, annotation);
 
 			/*
 			 * if (
-			 * cyanMetaobject.useCompilationContext_keepTheMetaobjectAnnotation(
-			 * ) ) { insertPhaseChange(CompilerPhase.DPA, annotation); } else {
+			 * cyanMetaobject.useCompilationContext_keepTheAnnotation(
+			 * ) ) { insertPhaseChange(CompilerPhase.PARSING, annotation); } else {
 			 * offsetStartDelete = symbol.getOffset(); }
 			 */
 		}
@@ -2415,7 +2417,7 @@ public final class Compiler implements Cloneable {
 		final List<WrExprAnyLiteral> exprList = new ArrayList<>();
 		List<Object> javaObjectList = null;
 
-		if ( !metaobjectSymbol.getLeftParAfterMetaobjectAnnotation() ) {
+		if ( !metaobjectSymbol.getLeftParAfterAnnotation() ) {
 			// no '(' immediatelly after the metaobject name. Then there should
 			// be no parameters
 			if ( cyanMetaobject.shouldTakeText() ) {
@@ -2546,7 +2548,7 @@ public final class Compiler implements Cloneable {
 			}
 		}
 
-		ICompilerAction_dpa compilerAction_dpaLocal = null;
+		ICompilerAction_parsing compilerAction_dpaLocal = null;
 		/*
 		 * true if a text between a sequence of characters was found after the
 		 * metaobject name/parameters
@@ -2555,15 +2557,15 @@ public final class Compiler implements Cloneable {
 
 
 
-		if ( action_dpa ) {
-			final IAction_dpa codeGen = (IAction_dpa) cyanMetaobject;
-			final Compiler_dpa compiler_dpa = new Compiler_dpa(this, lexer,
+		if ( action_parsing ) {
+			final IAction_parsing codeGen = (IAction_parsing) cyanMetaobject;
+			final Compiler_parsing compiler_parsing = new Compiler_parsing(this, lexer,
 					null);
-			compilerAction_dpaLocal = compiler_dpa;
+			compilerAction_dpaLocal = compiler_parsing;
 			StringBuffer sb = null;
 
 			try {
-				sb = codeGen.dpa_codeToAdd(compiler_dpa);
+				sb = codeGen.parsing_codeToAdd(compiler_parsing);
 			}
 			catch (final CompileErrorException e) {
 			}
@@ -2583,23 +2585,23 @@ public final class Compiler implements Cloneable {
 								moError.getMessage());
 					}
 				}
-				this.copyLexerData(compiler_dpa.compiler);
+				this.copyLexerData(compiler_parsing.compiler);
 			}
 
 			if ( sb != null ) {
 
 				if ( cyanMetaobject.shouldTakeText() ) {
 					error2(annotation.getFirstSymbol(), "The metaobject class associated to this annotation implements interface '"
-							+ IAction_dpa.class.getName() + "' and at the same time its method 'shouldTakeText' returns true."
+							+ IAction_parsing.class.getName() + "' and at the same time its method 'shouldTakeText' returns true."
 							+ " That is, there should be a DSL following the annotation like in '@rpn{* 1 2 + *}'. "
-							+ "This is only valid if sole method of '" + IAction_dpa.class.getName() + "' returns null");
+							+ "This is only valid if sole method of '" + IAction_parsing.class.getName() + "' returns null");
 				}
 
-				if ( cyanMetaobject instanceof IActionAttachedType_dsa ) {
+				if ( cyanMetaobject instanceof IActionAttachedType_semAn ) {
 					error2(annotation.getFirstSymbol(),
-							"The metaobject class associated to this annotation implements '" + IActionAttachedType_dsa.class.getName()
+							"The metaobject class associated to this annotation implements '" + IActionAttachedType_semAn.class.getName()
 									+ "'. Therefore the metaobject cannot add code"
-									+ " after the annotation. However, Method dpa_codeToAdd of the "
+									+ " after the annotation. However, Method parsing_codeToAdd of the "
 									+ "metaobject returned a non-null string");
 				}
 				if ( this.compilationStep
@@ -2623,7 +2625,7 @@ public final class Compiler implements Cloneable {
 				// always use compilation context
 				if ( cyanMetaobject.isExpression() ) {
 					s.append(" @" + MetaHelper.pushCompilationContextName
-							+ "(dpa" + Compiler.contextNumber + ", \""
+							+ "(parsing" + Compiler.contextNumber + ", \""
 							+ metaobjectName + "\", \""
 							+ this.compilationUnit.getPackageName()
 							+ "\", \""
@@ -2632,14 +2634,14 @@ public final class Compiler implements Cloneable {
 					s.append(") ");
 					s.append(sb);
 					s.append(" @" + MetaHelper.popCompilationContextName
-							+ "(dpa" + Compiler.contextNumber + ", \""
+							+ "(parsing" + Compiler.contextNumber + ", \""
 							+ cyanMetaobject.getPackageOfType() + "\", \""
 							+ cyanMetaobject.getPrototypeOfType() + "\") ");
 				}
 				else {
 					s.append(" @"
 							+ MetaHelper.pushCompilationContextStatementName
-							+ "(dpa" + Compiler.contextNumber + ", \""
+							+ "(parsing" + Compiler.contextNumber + ", \""
 							+ metaobjectName + "\", \""
 							+ this.compilationUnit.getPackageName()
 							+ "\", \""
@@ -2648,7 +2650,7 @@ public final class Compiler implements Cloneable {
 					s.append(") ");
 					s.append(sb);
 					s.append(" @" + MetaHelper.popCompilationContextName
-							+ "(dpa" + Compiler.contextNumber + ") ");
+							+ "(parsing" + Compiler.contextNumber + ") ");
 				}
 
 				/*
@@ -2675,7 +2677,7 @@ public final class Compiler implements Cloneable {
 		if ( !cyanMetaobject.shouldTakeText() ) {
 			/*
 			 * there should not be a text between a sequence of characters like
-			 * in <code> <br> var g = @graph#dpa{* 1:2 2:3 *} <br> </code> <br>
+			 * in <code> <br> var g = @graph#parsing{* 1:2 2:3 *} <br> </code> <br>
 			 * That is, the metaobject annotation is as in the following
 			 * examples: <code> <br> var list = @compilationInfo("fieldlist");
 			 *
@@ -2698,23 +2700,25 @@ public final class Compiler implements Cloneable {
 
 			/*
 			 * if ( !
-			 * compInstSet.contains(saci.CompilationInstruction.dpa_actions) &&
+			 * compInstSet.contains(saci.CompilationInstruction.parsing_actions) &&
 			 * !(cyanMetaobject instanceof IAction_cge) ) { /* test if the
-			 * metaobject annotation ends with #dpa such as in <code> <br> var g
-			 * = @graph#dpa{* 1:2 2:3 *} <br> </code> / if (
-			 * annotation.getPostfix() != CompilerPhase.DPA ) { /* found a
+			 * metaobject annotation ends with #parsing such as in <code> <br> var g
+			 * = @graph#parsing{* 1:2 2:3 *} <br> </code> / if (
+			 * annotation.getPostfix() != CompilerPhase.PARSING ) { /* found a
 			 * literal object in a compiler step that does not allow literal
 			 * objects. See the Figure in Chapter "Metaobjects" of the Cyan
 			 * manual / this.error(true, symbol,
 			 * "Literal object in a compiler step that does not allow literal objects"
 			 * , symbol.getSymbolString(), ErrorKind.
-			 * dpa_compilation_phase_literal_objects_and_macros_are_not_allowed)
+			 * parsing_compilation_phase_literal_objects_and_macros_are_not_allowed)
 			 * ;
 			 *
 			 * } } else
 			 */
-			if ( (cyanMetaobject instanceof IParseWithCyanCompiler_dpa) ||
-					(other != null && other instanceof _IParseWithCyanCompiler__dpa) ) {
+			if ( (cyanMetaobject instanceof IParseWithCyanCompiler_parsing)
+					||
+					(other != null && other instanceof _IParseWithCyanCompiler__parsing)
+					) {
 				/*
 				 * represents DSL such as in <br> <code>
 				 *
@@ -2724,13 +2728,13 @@ public final class Compiler implements Cloneable {
 				 * parsed with the help of the Cyan compiler.
 				 */
 
-				// // cyanMetaobject.setMetaobjectAnnotation(annotation, 0);
-				final Compiler_dpa compiler_dpa = new Compiler_dpa(this, lexer,
+				// // cyanMetaobject.setAnnotation(annotation, 0);
+				final Compiler_parsing compiler_parsing = new Compiler_parsing(this, lexer,
 						leftCharSeqSymbol.getSymbolString());
 				final int offsetLeftCharSeq = this.symbol.getOffset()
 						+ symbol.getSymbolString().length();
 
-				compilerAction_dpaLocal = compiler_dpa;
+				compilerAction_dpaLocal = compiler_parsing;
 
 				/*
 				 * the errors found in the compilation are introduced in object
@@ -2739,11 +2743,11 @@ public final class Compiler implements Cloneable {
 
 				try {
 					if ( other == null ) {
-						((IParseWithCyanCompiler_dpa) cyanMetaobject)
-								.dpa_parse(compiler_dpa);
+						((IParseWithCyanCompiler_parsing) cyanMetaobject)
+								.parsing_parse(compiler_parsing);
 					}
 					else {
-						((_IParseWithCyanCompiler__dpa) other)._dpa__parse_1(compiler_dpa);
+						((_IParseWithCyanCompiler__parsing) other)._parsing__parse_1(compiler_parsing);
 					}
 				}
 				catch (final error.CompileErrorException e) {
@@ -2758,10 +2762,10 @@ public final class Compiler implements Cloneable {
 				}
 				finally {
 					this.metaobjectError(cyanMetaobject, annotation);
-					this.copyLexerData(compiler_dpa.compiler);
+					this.copyLexerData(compiler_parsing.compiler);
 				}
 
-				annotation.setExprStatList(compiler_dpa.getExprStatList());
+				annotation.setExprStatList(compiler_parsing.getExprStatList());
 				if ( symbol.token != Token.RIGHTCHAR_SEQUENCE ) {
 					while (symbol.token != Token.EOF) {
 						next();
@@ -2773,7 +2777,7 @@ public final class Compiler implements Cloneable {
 						 */
 						if ( symbol.token == Token.RIGHTCHAR_SEQUENCE ) {
 							if ( symbol.getSymbolString().equals(
-									compiler_dpa.getRightSeqSymbols()) ) {
+									compiler_parsing.getRightSeqSymbols()) ) {
 								break;
 							}
 						}
@@ -2790,7 +2794,7 @@ public final class Compiler implements Cloneable {
 							offsetRightCharSeq);
 					annotation.setTextAttachedDSL(text);
 					annotation.setLeftCharSeqSymbol(leftCharSeqSymbol);
-					// // cyanMetaobject.setMetaobjectAnnotation(annotation, 0);
+					// // cyanMetaobject.setAnnotation(annotation, 0);
 					annotation
 							.setRightCharSeqSymbol((SymbolCharSequence) symbol);
 
@@ -2810,15 +2814,15 @@ public final class Compiler implements Cloneable {
 				foundtextBetweenSeq = true;
 
 			}
-			else { // if ( cyanMetaobject instanceof IAction_dsa ) {
+			else { // if ( cyanMetaobject instanceof IAction_semAn ) {
 				/*
 				 * found a literal object that is parsed with a user-defined
 				 * compiler. That is, the text inside the literal object is not
 				 * parsed with the help of the Cyan compiler.
 				 */
 
-				if ( cyanMetaobject instanceof IActionNewPrototypes_dpa ) {
-					compilerAction_dpaLocal = new CompilerAction_dpa(this);
+				if ( cyanMetaobject instanceof IActionNewPrototypes_parsing ) {
+					compilerAction_dpaLocal = new CompilerAction_parsing(this);
 				}
 
 				final char[] rightCharSeq = lexer.getRightSymbolSeq(
@@ -2832,7 +2836,7 @@ public final class Compiler implements Cloneable {
 
 				annotation.setLeftCharSeqSymbol(leftCharSeqSymbol);
 				annotation.setTextAttachedDSL(text);
-				cyanMetaobject.setMetaobjectAnnotation(annotation.getI());
+				cyanMetaobject.setAnnotation(annotation.getI());
 				annotation.setRightCharSeqSymbol(rightCharSeqSymbol);
 				next();
 				this.previousSymbol = rightCharSeqSymbol;
@@ -2844,21 +2848,23 @@ public final class Compiler implements Cloneable {
 //			else {
 //				this.error(true, symbol, "metaobject annotation '"
 //						+ metaobjectName + "' has a Java class "
-//						+ " that does not implement any of the following interfaces: 'IParseWithoutCyanCompiler_dpa', 'IParseWithCyanCompiler_dpa', 'IAction_cge', IAction_dsa",
+//						+ " that does not implement any of the following interfaces: 'IParseWithoutCyanCompiler_parsing', 'IParseWithCyanCompiler_parsing', 'IAction_cge', IAction_semAn",
 //						null, ErrorKind.metaobject_error);
 //
 //			}
 		}
 
-		if ( (cyanMetaobject instanceof IActionNewPrototypes_dpa || (other != null &&
-				other instanceof _IActionNewPrototypes__dpa))
+		if ( (cyanMetaobject instanceof IActionNewPrototypes_parsing
+				|| (other != null &&
+				other instanceof _IActionNewPrototypes__parsing)
+				)
 				&& this.compilationStep.ordinal() < CompilationStep.step_7
 						.ordinal() ) {
 			if ( compilerAction_dpaLocal == null ) {
-				compilerAction_dpaLocal = new Compiler_dpa(this, lexer, null);
+				compilerAction_dpaLocal = new Compiler_parsing(this, lexer, null);
 			}
 
-			actionNewPrototypes_dpa(cyanMetaobject, metaobjectAnnotationSymbol,
+			actionNewPrototypes_parsing(cyanMetaobject, metaobjectAnnotationSymbol,
 					annotation, compilerAction_dpaLocal);
 
 		}
@@ -2872,7 +2878,7 @@ public final class Compiler implements Cloneable {
 		// cyanMetaobject.mayTakeText() )
 		// next();
 
-		cyanMetaobject.setMetaobjectAnnotation(annotation.getI());
+		cyanMetaobject.setAnnotation(annotation.getI());
 
 		// # checkError = ... was here
 
@@ -2898,7 +2904,7 @@ public final class Compiler implements Cloneable {
 
 			if ( cyanMetaobject instanceof CyanMetaobjectCompilationContextPush ) {
 				if ( compInstSet
-						.contains(CompilationInstruction.dpa_originalSourceCode)
+						.contains(CompilationInstruction.parsing_originalSourceCode)
 						&& !this.hasAdded_pp_new_Methods
 						&& !this.hasAddedInnerPrototypes
 						&& !hasMade_dpa_actions )
@@ -2936,7 +2942,7 @@ public final class Compiler implements Cloneable {
 			}
 			else if ( cyanMetaobject instanceof CyanMetaobjectCompilationContextPop ) {
 				if ( compInstSet
-						.contains(CompilationInstruction.dpa_originalSourceCode)
+						.contains(CompilationInstruction.parsing_originalSourceCode)
 						&& !this.hasAdded_pp_new_Methods
 						&& !this.hasAddedInnerPrototypes
 						&& !hasMade_dpa_actions )
@@ -2963,7 +2969,7 @@ public final class Compiler implements Cloneable {
 								&& !insideCyanMetaobjectCompilationContextPushAnnotation ) {
 							boolean replace = true;
 							final String symName = symbol.symbolString;
-							if ( symbol instanceof lexer.SymbolCyanMetaobjectAnnotation
+							if ( symbol instanceof lexer.SymbolCyanAnnotation
 									&& (symName.equals(
 											MetaHelper.pushCompilationContextName)
 											|| symName.equals(
@@ -2976,7 +2982,7 @@ public final class Compiler implements Cloneable {
 							}
 						}
 						// lineShift +=
-						// cyanMetaobject.getMetaobjectAnnotation().getSymbolCTMOCall().getLineNumber()
+						// cyanMetaobject.getAnnotation().getSymbolCTMOCall().getLineNumber()
 						// - lineStartCompilationContextPush + 1;
 						/*
 						 * if ( cyanMetaobjectContextStack.empty() ) { lineShift
@@ -2991,7 +2997,7 @@ public final class Compiler implements Cloneable {
 			}
 			else if ( cyanMetaobject instanceof CyanMetaobjectCompilationMarkDeletedCode ) {
 				if ( compInstSet
-						.contains(CompilationInstruction.dpa_originalSourceCode)
+						.contains(CompilationInstruction.parsing_originalSourceCode)
 						&& !this.hasAdded_pp_new_Methods
 						&& !this.hasAddedInnerPrototypes
 						&& !hasMade_dpa_actions )
@@ -3045,8 +3051,8 @@ public final class Compiler implements Cloneable {
 		}
 		/*
 		 * if ( metaobjectName.equals("createTuple") && !
-		 * this.currentProgramUnit.isGeneric() &&
-		 * this.currentProgramUnit.getName().equals(
+		 * this.currentPrototype.isGeneric() &&
+		 * this.currentPrototype.getName().equals(
 		 * "Tuple<key,String,value,Any>") ) {
 		 * MyFile.write(this.compilationUnit); }
 		 */
@@ -3065,7 +3071,7 @@ public final class Compiler implements Cloneable {
 			final String prototypeOfType = cyanMetaobject.getPrototypeOfType();
 
 			if ( cyanMetaobject.isExpression() ) {
-				if ( this.currentProgramUnit == null ) {
+				if ( this.currentPrototype == null ) {
 					// metaobject produce code that can be used inside an
 					// expression but it is being used outside a program unit
 					this.error2(annotation.getFirstSymbol(),
@@ -3095,10 +3101,10 @@ public final class Compiler implements Cloneable {
 
 				/*
 				 * the expression below is associated to this compilation unit.
-				 * In the phase afti, the compiler will assure that the type is
+				 * In the phase AF_RES_TYPES, the compiler will assure that the type is
 				 * created if necessary.
 				 */
-				final Expr programUnitAsExpr = Compiler
+				final Expr prototypeAsExpr = Compiler
 						.parseSingleTypeFromString(
 								packageOfType + "." + prototypeOfType,
 								annotation.getFirstSymbol(),
@@ -3106,10 +3112,10 @@ public final class Compiler implements Cloneable {
 										+ packageOfType + "." + prototypeOfType
 										+ "'. This type is not syntactically correct",
 								this.compilationUnit,
-								this.currentProgramUnit /* , this */);
-				if ( programUnitAsExpr instanceof ExprGenericPrototypeInstantiation ) {
-					this.currentProgramUnit.addGpiList(
-							(ExprGenericPrototypeInstantiation) programUnitAsExpr);
+								this.currentPrototype /* , this */);
+				if ( prototypeAsExpr instanceof ExprGenericPrototypeInstantiation ) {
+					this.currentPrototype.addGpiList(
+							(ExprGenericPrototypeInstantiation) prototypeAsExpr);
 				}
 			}
 			else {
@@ -3140,12 +3146,12 @@ public final class Compiler implements Cloneable {
 	   @param annotation
 	   @param compilerAction_dpaLocal
 	 */
-	private void actionNewPrototypes_dpa(CyanMetaobject cyanMetaobject,
+	private void actionNewPrototypes_parsing(CyanMetaobject cyanMetaobject,
 			final Symbol errSymbol,
 			final Annotation annotation,
-			ICompilerAction_dpa compilerAction_dpaLocal) {
+			ICompilerAction_parsing compilerAction_dpaLocal) {
 
-		// Compiler_dpa compiler_dpa = new Compiler_dpa(this, lexer, null,
+		// Compiler_parsing compiler_parsing = new Compiler_parsing(this, lexer, null,
 		// metaobjectAnnotationSymbol.getColumnNumber());
 		_CyanMetaobject other = cyanMetaobject.getMetaobjectInCyan();
 
@@ -3153,14 +3159,14 @@ public final class Compiler implements Cloneable {
 		try {
 
 			if ( other == null ) {
-				final IActionNewPrototypes_dpa actionNewPrototype = (IActionNewPrototypes_dpa) cyanMetaobject;
+				final IActionNewPrototypes_parsing actionNewPrototype = (IActionNewPrototypes_parsing) cyanMetaobject;
 				prototypeNameCodeList = actionNewPrototype
-						.dpa_NewPrototypeList(compilerAction_dpaLocal);
+						.parsing_NewPrototypeList(compilerAction_dpaLocal);
 			}
 			else {
-				_IActionNewPrototypes__dpa anp = (_IActionNewPrototypes__dpa ) other;
+				_IActionNewPrototypes__parsing anp = (_IActionNewPrototypes__parsing ) other;
 				_Array_LT_GP__Tuple_LT_GP_CyString_GP_CyString_GT__GT array =
-						anp._dpa__NewPrototypeList_1(compilerAction_dpaLocal);
+						anp._parsing__NewPrototypeList_1(compilerAction_dpaLocal);
 				int size = array._size().n;
 				if ( size > 0 ) {
 					prototypeNameCodeList = new ArrayList<>();
@@ -3193,15 +3199,20 @@ public final class Compiler implements Cloneable {
 			metaobjectError(cyanMetaobject, annotation);
 		}
 		if ( prototypeNameCodeList != null ) {
+			CyanPackage currentCyanPackage = this.compilationUnit.getCyanPackage();
+
 			for (final Tuple2<String, StringBuffer> prototypeNameCode : prototypeNameCodeList) {
+				String prototypeName = prototypeNameCode.f1;
+
 				final Tuple2<CompilationUnit, String> t = this.project
 						.getCompilerManager().createNewPrototype(
-								prototypeNameCode.f1, prototypeNameCode.f2,
+								prototypeName, prototypeNameCode.f2,
 								this.compilationUnit.getCompilerOptions(),
-								this.compilationUnit.getCyanPackage());
+								currentCyanPackage);
 				if ( t != null && t.f2 != null ) {
 					this.error2(errSymbol, t.f2);
 				}
+				currentCyanPackage.addPrototypeNameAnnotationInfo(prototypeName, annotation);
 			}
 		}
 
@@ -3254,19 +3265,19 @@ public final class Compiler implements Cloneable {
 		return null;
 	}
 
-	private ProgramUnit programUnit() {
+	private Prototype prototype() {
 
-		List<AnnotationAt> attachedMetaobjectAnnotationList = null;
-		List<AnnotationAt> nonAttachedMetaobjectAnnotationList = null;
+		List<AnnotationAt> attachedAnnotationList = null;
+		List<AnnotationAt> nonAttachedAnnotationList = null;
 
-		final Tuple2<List<AnnotationAt>, List<AnnotationAt>> tc = parseMetaobjectAnnotations_NonAttached_Attached();
+		final Tuple2<List<AnnotationAt>, List<AnnotationAt>> tc = parseAnnotations_NonAttached_Attached();
 		if ( tc != null ) {
-			nonAttachedMetaobjectAnnotationList = tc.f1;
-			attachedMetaobjectAnnotationList = tc.f2;
+			nonAttachedAnnotationList = tc.f1;
+			attachedAnnotationList = tc.f2;
 		}
 
-		if ( attachedMetaobjectAnnotationList != null ) {
-			for (final AnnotationAt annotation : attachedMetaobjectAnnotationList) {
+		if ( attachedAnnotationList != null ) {
+			for (final AnnotationAt annotation : attachedAnnotationList) {
 				if ( annotation.getCyanMetaobject()
 						.shouldBeAttachedToSomething() ) {
 					if ( !annotation.getCyanMetaobject().mayBeAttachedTo(
@@ -3294,25 +3305,25 @@ public final class Compiler implements Cloneable {
 			next();
 		}
 		if ( visibility == Token.PUBLIC || visibility == Token.PACKAGE ) {
-			++this.numPublicPackageProgramUnits;
+			++this.numPublicPackagePrototypes;
 		}
 		boolean immutable = false;
 		if ( symbol.token == Token.IMMUTABLE ) {
 			immutable = true;
 		}
 		if ( symbol.token == Token.INTERFACE )
-			interfaceDec(visibility, nonAttachedMetaobjectAnnotationList,
-					attachedMetaobjectAnnotationList, null);
+			interfaceDec(visibility, nonAttachedAnnotationList,
+					attachedAnnotationList, null);
 		else
-			objectDec(visibility, nonAttachedMetaobjectAnnotationList,
-					attachedMetaobjectAnnotationList, null);
+			objectDec(visibility, nonAttachedAnnotationList,
+					attachedAnnotationList, null);
 
-		if ( attachedMetaobjectAnnotationList != null
-				&& attachedMetaobjectAnnotationList.size() > 0 ) {
-			for (final AnnotationAt annotation : attachedMetaobjectAnnotationList) {
+		if ( attachedAnnotationList != null
+				&& attachedAnnotationList.size() > 0 ) {
+			for (final AnnotationAt annotation : attachedAnnotationList) {
 				if ( annotation.getCyanMetaobject().mayBeAttachedTo(
 						AttachedDeclarationKind.PROTOTYPE_DEC) ) {
-					annotation.setDeclaration(currentProgramUnit == null ? null : currentProgramUnit.getI());
+					annotation.setDeclaration(currentPrototype == null ? null : currentPrototype.getI());
 				}
 			}
 		}
@@ -3333,47 +3344,44 @@ public final class Compiler implements Cloneable {
 		 * 2, 3, 2.
 		 */
 		final HashMap<String, Integer> mapMetaobjectNameToNumber = new HashMap<>();
-		for (final Annotation annotation : currentProgramUnit
-				.getCompleteMetaobjectAnnotationList()) {
+		for (final Annotation annotation : currentPrototype
+				.getCompleteAnnotationList()) {
 			final String name = annotation.getCyanMetaobject().getName();
 			final Integer metaobjectNumber = mapMetaobjectNameToNumber
 					.get(name);
 			int numberByKind;
 			numberByKind = metaobjectNumber != null ? metaobjectNumber + 1
-					: Annotation.firstMetaobjectAnnotationNumber;
+					: Annotation.firstAnnotationNumber;
 			mapMetaobjectNameToNumber.put(name, numberByKind);
-			annotation.setMetaobjectAnnotationNumberByKind(numberByKind);
+			annotation.setAnnotationNumberByKind(numberByKind);
 
 		}
 
 
 		if ( this.compilationStep.ordinal() < CompilationStep.step_7
 						.ordinal() ) {
-			ICompilerAction_dpa compilerAction_dpaLocal = null;
+			ICompilerAction_parsing compilerAction_dpaLocal = null;
 			List<Annotation> annotList =
-					currentProgramUnit.getPrototypePackageProgramAnnotationList();
-			currentProgramUnit.setDeclarationImportedFromPackageProgram();
+					currentPrototype.getPrototypePackageProgramAnnotationList();
+			currentPrototype.setDeclarationImportedFromPackageProgram();
 
-			for ( Annotation annot : annotList) {
-				CyanMetaobject cyanMetaobject = annot.getCyanMetaobject();
-
-				_CyanMetaobject other = cyanMetaobject.getMetaobjectInCyan();
-
-				if ( cyanMetaobject instanceof IActionNewPrototypes_dpa || (other != null &&
-						other instanceof _IActionNewPrototypes__dpa) ) {
-					if ( compilerAction_dpaLocal == null ) {
-						compilerAction_dpaLocal = new Compiler_dpa(this, lexer, null);
-					}
-
-					actionNewPrototypes_dpa(cyanMetaobject, annot.getFirstSymbol(),
-							annot, compilerAction_dpaLocal);
-				}
-
-			}
+//			for ( Annotation annot : annotList) {
+//				CyanMetaobject cyanMetaobject = annot.getCyanMetaobject();
+//				_CyanMetaobject other = cyanMetaobject.getMetaobjectInCyan();
+//				if ( cyanMetaobject instanceof IActionNewPrototypes_parsing || (other != null &&
+//						other instanceof _IActionNewPrototypes__parsing) ) {
+//					if ( compilerAction_dpaLocal == null ) {
+//						compilerAction_dpaLocal = new Compiler_parsing(this, lexer, null);
+//					}
+//
+//					actionNewPrototypes_parsing(cyanMetaobject, annot.getFirstSymbol(),
+//							annot, compilerAction_dpaLocal);
+//				}
+//			}
 
 
 		}
-		return currentProgramUnit;
+		return currentPrototype;
 	}
 
 	/**
@@ -3382,15 +3390,15 @@ public final class Compiler implements Cloneable {
 	 * @param metaobjectAnnotationList
 	 * @return
 	 */
-	private ProgramUnit interfaceDec(Token visibility,
-			List<AnnotationAt> nonAttachedMetaobjectAnnotationList,
-			List<AnnotationAt> attachedMetaobjectAnnotationList,
+	private Prototype interfaceDec(Token visibility,
+			List<AnnotationAt> nonAttachedAnnotationList,
+			List<AnnotationAt> attachedAnnotationList,
 			ObjectDec outerObject) {
 
 		// List<AnnotationAt>
-		// nonAttachedMetaobjectAnnotationList,
+		// nonAttachedAnnotationList,
 		// List<AnnotationAt>
-		// attachedMetaobjectAnnotationList
+		// attachedAnnotationList
 
 		InterfaceDec interfaceDec = null;
 		final Symbol interfaceSymbol = symbol;
@@ -3412,41 +3420,41 @@ public final class Compiler implements Cloneable {
 				this.cloneFromTo(newObj, previousObj);
 				InterfaceDec.initInterfaceDec(previousObj, outerObject,
 						interfaceSymbol, (SymbolIdent) symbol, visibility,
-						nonAttachedMetaobjectAnnotationList,
-						attachedMetaobjectAnnotationList, lexer);
-				currentProgramUnit = interfaceDec = previousObj;
+						nonAttachedAnnotationList,
+						attachedAnnotationList, lexer);
+				currentPrototype = interfaceDec = previousObj;
 				this.compilationUnit.removePrototype(previousObj);
 			}
 			else {
-				currentProgramUnit = interfaceDec = new InterfaceDec(outerObject,
+				currentPrototype = interfaceDec = new InterfaceDec(outerObject,
 						interfaceSymbol, (SymbolIdent) symbol, visibility,
-						nonAttachedMetaobjectAnnotationList,
-						attachedMetaobjectAnnotationList, lexer);
+						nonAttachedAnnotationList,
+						attachedAnnotationList, lexer);
 			}
 
 
 
-			currentProgramUnit.setCompilationUnit(compilationUnit);
+			currentPrototype.setCompilationUnit(compilationUnit);
 
-			compilationUnit.addProgramUnit(currentProgramUnit);
+			compilationUnit.addPrototype(currentPrototype);
 
-			currentProgramUnit.setFirstSymbol(interfaceSymbol);
-			currentProgramUnit.setSymbolObjectInterface(interfaceSymbol);
+			currentPrototype.setFirstSymbol(interfaceSymbol);
+			currentPrototype.setSymbolObjectInterface(interfaceSymbol);
 
-			if ( attachedMetaobjectAnnotationList != null ) {
+			if ( attachedAnnotationList != null ) {
 				/*
 				 * the number of a metaobject annotation that is textually
 				 * before a prototype is not set in method {@link
 				 * Compiler#annotation()} before when this method is called
-				 * {@link currentProgramUnit} is null.
+				 * {@link currentPrototype} is null.
 				 */
-				for (final AnnotationAt annotation : attachedMetaobjectAnnotationList) {
-					currentProgramUnit.addMetaobjectAnnotation(annotation);
+				for (final AnnotationAt annotation : attachedAnnotationList) {
+					currentPrototype.addAnnotation(annotation);
 					annotation.setCompilationUnit(compilationUnit);
-					annotation.setProgramUnit(currentProgramUnit);
-					annotation.setMetaobjectAnnotationNumber(currentProgramUnit
-							.getIncMetaobjectAnnotationNumber());
-					annotation.setDeclaration(currentProgramUnit == null ? null : currentProgramUnit.getI());
+					annotation.setPrototype(currentPrototype);
+					annotation.setAnnotationNumber(currentPrototype
+							.getIncAnnotationNumber());
+					annotation.setDeclaration(currentPrototype == null ? null : currentPrototype.getI());
 					if ( annotation
 							.getCyanMetaobject() instanceof IActionAssignment_cge ) {
 						this.error2(annotation.getFirstSymbol(), "Metaobject "
@@ -3461,34 +3469,34 @@ public final class Compiler implements Cloneable {
 
 			if ( symbol.token != Token.LT_NOT_PREC_SPACE ) {
 				// check if the file name of the source file is correct
-				if ( currentProgramUnit.getVisibility() == Token.PUBLIC ) {
-					final String fileNameCurrentProgramUnit = currentProgramUnit
+				if ( currentPrototype.getVisibility() == Token.PUBLIC ) {
+					final String fileNameCurrentPrototype = currentPrototype
 							.getName() + "."
 							+ MetaHelper.cyanSourceFileExtension;
-					if ( fileNameCurrentProgramUnit
+					if ( fileNameCurrentPrototype
 							.compareTo(compilationUnit.getFilename()) != 0  && !parsingPackageInterfaces )
-						error(true, currentProgramUnit.getSymbol(),
+						error(true, currentPrototype.getSymbol(),
 								"The file name of this compilation unit has an incorret name. It should be "
-										+ fileNameCurrentProgramUnit,
+										+ fileNameCurrentPrototype,
 								"",
 								ErrorKind.file_name_incorrect_in_compilation_unit);
 				}
 			}
 			else {
-				if ( currentProgramUnit.getVisibility() != Token.PUBLIC ) {
-					error(true, currentProgramUnit.getSymbol(),
+				if ( currentPrototype.getVisibility() != Token.PUBLIC ) {
+					error(true, currentPrototype.getSymbol(),
 							"Generic prototypes should be declared 'public'",
-							currentProgramUnit.getName(),
+							currentPrototype.getName(),
 							ErrorKind.non_public_generic_prototype);
 				}
 				if ( compilationUnit.getHasGenericPrototype() ) {
-					error(true, currentProgramUnit.getSymbol(),
+					error(true, currentPrototype.getSymbol(),
 							"Two generic prototypes cannot be declared in the same source file",
-							currentProgramUnit.getName(),
+							currentPrototype.getName(),
 							ErrorKind.two_or_more_generic_prototype_in_the_same_source_file);
 				}
 				while (symbol.token == Token.LT_NOT_PREC_SPACE)
-					currentProgramUnit.addGenericParameterList(templateDec());
+					currentPrototype.addGenericParameterList(templateDec());
 
 				/*
 				 * check if real and formal parameters are mixed in the
@@ -3501,18 +3509,18 @@ public final class Compiler implements Cloneable {
 				 * false; GenericParameter firstTypeGenericParameter = null;
 				 * GenericParameter firstRealPrototypeGenericParameter = null;
 				 * for ( List<GenericParameter> genericParameterList :
-				 * currentProgramUnit.getGenericParameterListList() ) { for (
+				 * currentPrototype.getGenericParameterListList() ) { for (
 				 * GenericParameter gp : genericParameterList ) { if (
 				 * gp.isRealPrototype() ) { hasRealParameter = true;
 				 * firstRealPrototypeGenericParameter = gp; if (
-				 * hasTypeParameter ) error(currentProgramUnit.getSymbol(),
+				 * hasTypeParameter ) error(currentPrototype.getSymbol(),
 				 * "Generic parameters and real parameters cannot be mixed in generic prototype declaration. That is, 'Function<T, Int>' is illegal in which T is a formal parameter"
 				 * , "", ErrorKind.mixins_of_generic_and_non_generic_parameters,
 				 * "parameter0 = " +
 				 * firstRealPrototypeGenericParameter.getName(), "parameter1 = "
 				 * + firstTypeGenericParameter.getName()); } else {
 				 * firstTypeGenericParameter = gp; hasTypeParameter = true; if (
-				 * hasRealParameter ) error(currentProgramUnit.getSymbol(),
+				 * hasRealParameter ) error(currentPrototype.getSymbol(),
 				 * "Generic parameters and real parameters cannot be mixed in generic prototype declaration. That is, 'Function<T, Int>' is illegal in which T is a formal parameter"
 				 * , "", ErrorKind.mixins_of_generic_and_non_generic_parameters,
 				 * "parameter0 = " +
@@ -3521,12 +3529,12 @@ public final class Compiler implements Cloneable {
 				 */
 
 				final boolean hasTypeParameter = checkFormalParameterListGenericPrototype(
-						currentProgramUnit);
+						currentPrototype);
 
-				currentProgramUnit.setGenericPrototype(hasTypeParameter);
+				currentPrototype.setGenericPrototype(hasTypeParameter);
 				compilationUnit.setHasGenericPrototype(hasTypeParameter);
 				compilationUnit.setPrototypeIsNotGeneric(!hasTypeParameter);
-				currentProgramUnit.setPrototypeIsNotGeneric(!hasTypeParameter);
+				currentPrototype.setPrototypeIsNotGeneric(!hasTypeParameter);
 				/**
 				 * check if the source file has the correct name. It should be
 				 * "Stack(Int).cyan" if the generic prototype is "Stack<Int>"
@@ -3535,32 +3543,32 @@ public final class Compiler implements Cloneable {
 				 *
 				 */
 
-				filename = currentProgramUnit.getNameSourceFile() + "."
+				filename = currentPrototype.getNameSourceFile() + "."
 						+ MetaHelper.cyanSourceFileExtension;
 				if ( filename.compareTo(compilationUnit.getFilename()) != 0 && !parsingPackageInterfaces) {
-					currentProgramUnit.getNameSourceFile();
-					error2(currentProgramUnit.getSymbol(),
+					currentPrototype.getNameSourceFile();
+					error2(currentPrototype.getSymbol(),
 							"The file name of this compilation unit has an incorret name. It should be "
 									+ filename);
 				}
 
 			}
 
-			List<AnnotationAt> beforeExtendsAttachedMetaobjectAnnotationList = null;
-			List<AnnotationAt> beforeExtendsNonAttachedMetaobjectAnnotationList = null;
+			List<AnnotationAt> beforeExtensemAnttachedAnnotationList = null;
+			List<AnnotationAt> beforeExtendsNonAttachedAnnotationList = null;
 
 			if ( symbol.token == Token.METAOBJECT_ANNOTATION ) {
-				final Tuple2<List<AnnotationAt>, List<AnnotationAt>> tc = parseMetaobjectAnnotations_NonAttached_Attached();
+				final Tuple2<List<AnnotationAt>, List<AnnotationAt>> tc = parseAnnotations_NonAttached_Attached();
 				if ( tc != null ) {
-					beforeExtendsNonAttachedMetaobjectAnnotationList = tc.f1;
-					beforeExtendsAttachedMetaobjectAnnotationList = tc.f2;
+					beforeExtendsNonAttachedAnnotationList = tc.f1;
+					beforeExtensemAnttachedAnnotationList = tc.f2;
 				}
 				if ( symbol.token == Token.EXTENDS ) {
-					if ( beforeExtendsAttachedMetaobjectAnnotationList != null ) {
-						final CyanMetaobject cyanMetaobject = beforeExtendsAttachedMetaobjectAnnotationList
+					if ( beforeExtensemAnttachedAnnotationList != null ) {
+						final CyanMetaobject cyanMetaobject = beforeExtensemAnttachedAnnotationList
 								.get(0).getCyanMetaobject();
 						this.error(true,
-								beforeExtendsAttachedMetaobjectAnnotationList
+								beforeExtensemAnttachedAnnotationList
 										.get(0).getFirstSymbol(),
 								"There is a metaobject annotation to metaobject '"
 										+ cyanMetaobject.getName()
@@ -3568,10 +3576,10 @@ public final class Compiler implements Cloneable {
 										+ "(prototype, method, field, etc). However, no declaration follows the metaobject annotation",
 								null, ErrorKind.metaobject_error);
 					}
-					this.currentProgramUnit
+					this.currentPrototype
 							.setCyanMetaobjectListBeforeExtendsMixinImplements(
-									beforeExtendsNonAttachedMetaobjectAnnotationList);
-					beforeExtendsNonAttachedMetaobjectAnnotationList = null;
+									beforeExtendsNonAttachedAnnotationList);
+					beforeExtendsNonAttachedAnnotationList = null;
 				}
 			}
 
@@ -3585,20 +3593,20 @@ public final class Compiler implements Cloneable {
 
 			}
 			else {
-				if ( beforeExtendsAttachedMetaobjectAnnotationList != null
-						|| beforeExtendsNonAttachedMetaobjectAnnotationList != null ) {
-					nonAttachedMetaobjectAnnotationList = beforeExtendsNonAttachedMetaobjectAnnotationList;
-					attachedMetaobjectAnnotationList = beforeExtendsAttachedMetaobjectAnnotationList;
+				if ( beforeExtensemAnttachedAnnotationList != null
+						|| beforeExtendsNonAttachedAnnotationList != null ) {
+					nonAttachedAnnotationList = beforeExtendsNonAttachedAnnotationList;
+					attachedAnnotationList = beforeExtensemAnttachedAnnotationList;
 				}
 			}
 
 			Tuple2<List<AnnotationAt>, List<AnnotationAt>> tc;
-			if ( beforeExtendsAttachedMetaobjectAnnotationList == null
-					&& beforeExtendsNonAttachedMetaobjectAnnotationList == null ) {
-				tc = parseMetaobjectAnnotations_NonAttached_Attached();
+			if ( beforeExtensemAnttachedAnnotationList == null
+					&& beforeExtendsNonAttachedAnnotationList == null ) {
+				tc = parseAnnotations_NonAttached_Attached();
 				if ( tc != null ) {
-					nonAttachedMetaobjectAnnotationList = tc.f1;
-					attachedMetaobjectAnnotationList = tc.f2;
+					nonAttachedAnnotationList = tc.f1;
+					attachedAnnotationList = tc.f2;
 				}
 			}
 
@@ -3685,8 +3693,8 @@ public final class Compiler implements Cloneable {
 						 */
 						currentMethod = new MethodDec(null, visibility,
 								false,
-								nonAttachedMetaobjectAnnotationList,
-								attachedMetaobjectAnnotationList,
+								nonAttachedAnnotationList,
+								attachedAnnotationList,
 								methodNumber++,
 								// compiler does not create method for interfaces
 								false,
@@ -3708,17 +3716,17 @@ public final class Compiler implements Cloneable {
 						error2(ms.getFirstSymbol(),
 								"'initOnce' methods cannot be declared in interfaces");
 
-					ms.setMetaobjectAnnotationNonAttachedAttached(
-							nonAttachedMetaobjectAnnotationList,
-							attachedMetaobjectAnnotationList);
+					ms.setAnnotationNonAttachedAttached(
+							nonAttachedAnnotationList,
+							attachedAnnotationList);
 
-					if ( attachedMetaobjectAnnotationList != null ) {
+					if ( attachedAnnotationList != null ) {
 
-						for (final AnnotationAt annotation : attachedMetaobjectAnnotationList) {
+						for (final AnnotationAt annotation : attachedAnnotationList) {
 
 							final CyanMetaobject cyanMetaobject = annotation
 									.getCyanMetaobject();
-							actionCompilerInfo_dpa(cyanMetaobject);
+							actionCompilerInfo_parsing(cyanMetaobject);
 
 							if ( annotation.getCyanMetaobject().mayBeAttachedTo(
 									AttachedDeclarationKind.METHOD_DEC) ) {
@@ -3741,22 +3749,22 @@ public final class Compiler implements Cloneable {
 						}
 					}
 
-					nonAttachedMetaobjectAnnotationList = null;
-					attachedMetaobjectAnnotationList = null;
+					nonAttachedAnnotationList = null;
+					attachedAnnotationList = null;
 
-					tc = parseMetaobjectAnnotations_NonAttached_Attached();
+					tc = parseAnnotations_NonAttached_Attached();
 					if ( tc != null ) {
-						nonAttachedMetaobjectAnnotationList = tc.f1;
-						attachedMetaobjectAnnotationList = tc.f2;
+						nonAttachedAnnotationList = tc.f1;
+						attachedAnnotationList = tc.f2;
 					}
 				}
 
 			}
-			if ( attachedMetaobjectAnnotationList != null ) {
-				final CyanMetaobject cyanMetaobject = attachedMetaobjectAnnotationList
+			if ( attachedAnnotationList != null ) {
+				final CyanMetaobject cyanMetaobject = attachedAnnotationList
 						.get(0).getCyanMetaobject();
 				this.error(true,
-						attachedMetaobjectAnnotationList.get(0)
+						attachedAnnotationList.get(0)
 								.getFirstSymbol(),
 						"There is a metaobject annotation to metaobject '"
 								+ cyanMetaobject.getName()
@@ -3765,17 +3773,17 @@ public final class Compiler implements Cloneable {
 						null, ErrorKind.metaobject_error);
 
 			}
-			this.currentProgramUnit
-					.setBeforeEndNonAttachedMetaobjectAnnotationList(
-							nonAttachedMetaobjectAnnotationList);
+			this.currentPrototype
+					.setBeforeEndNonAttachedAnnotationList(
+							nonAttachedAnnotationList);
 
 			if ( symbol.token != Token.END )
 				error(true, symbol, "keyword 'end'." + foundSuch(), "",
 						ErrorKind.keyword_end_expected);
-			this.currentProgramUnit.setEndSymbol(symbol);
+			this.currentPrototype.setEndSymbol(symbol);
 			/*
 			 * if ( symbol.getColumnNumber() !=
-			 * this.currentProgramUnit.getFirstSymbol().getColumnNumber() ) {
+			 * this.currentPrototype.getFirstSymbol().getColumnNumber() ) {
 			 * error2(symbol, "'end' should be in the same column as 'object'");
 			 * }
 			 */
@@ -3783,7 +3791,7 @@ public final class Compiler implements Cloneable {
 			next();
 
 		}
-		lexer.setProgramUnit(null);
+		lexer.setPrototype(null);
 
 		return interfaceDec;
 
@@ -3821,8 +3829,8 @@ public final class Compiler implements Cloneable {
 	 */
 
 	private ObjectDec objectDec(Token visibility,
-			List<AnnotationAt> nonAttachedMetaobjectAnnotationList,
-			List<AnnotationAt> attachedMetaobjectAnnotationList,
+			List<AnnotationAt> nonAttachedAnnotationList,
+			List<AnnotationAt> attachedAnnotationList,
 			ObjectDec outerObject) {
 
 		methodNumber = 0;
@@ -3835,40 +3843,40 @@ public final class Compiler implements Cloneable {
 			ObjectDec previousObj = (ObjectDec ) this.compilationUnit.getPublicPrototype();
 			this.cloneFromTo(newObj, previousObj);
 			ObjectDec.initObjectDec(previousObj, outerObject, visibility,
-					nonAttachedMetaobjectAnnotationList, attachedMetaobjectAnnotationList, lexer);
+					nonAttachedAnnotationList, attachedAnnotationList, lexer);
 			currentObject = previousObj;
 			this.compilationUnit.removePrototype(previousObj);
 		}
 		else {
 			currentObject = new ObjectDec(outerObject, visibility,
-					nonAttachedMetaobjectAnnotationList,
-					attachedMetaobjectAnnotationList, lexer);
+					nonAttachedAnnotationList,
+					attachedAnnotationList, lexer);
 		}
 
 		if ( outerObject == null ) {
-			compilationUnit.addProgramUnit(currentObject);
+			compilationUnit.addPrototype(currentObject);
 		}
 		currentObject.setCompilationUnit(compilationUnit);
 		objectDecStack.push(currentObject);
 
 		currentObject.setCompilationUnit(this.compilationUnit);
 
-		currentProgramUnit = currentObject;
+		currentPrototype = currentObject;
 
-		if ( attachedMetaobjectAnnotationList != null ) {
+		if ( attachedAnnotationList != null ) {
 			/*
 			 * the number of a metaobject annotation that is textually before a
 			 * prototype is not set in method {@link Compiler#annotation()}
-			 * before when this method is called {@link currentProgramUnit} is
+			 * before when this method is called {@link currentPrototype} is
 			 * null.
 			 */
-			for (final AnnotationAt annotation : attachedMetaobjectAnnotationList) {
-				currentProgramUnit.addMetaobjectAnnotation(annotation);
+			for (final AnnotationAt annotation : attachedAnnotationList) {
+				currentPrototype.addAnnotation(annotation);
 				annotation.setCompilationUnit(compilationUnit);
-				annotation.setProgramUnit(currentProgramUnit);
-				annotation.setMetaobjectAnnotationNumber(
-						currentProgramUnit.getIncMetaobjectAnnotationNumber());
-				annotation.setDeclaration(currentProgramUnit == null ? null : currentProgramUnit.getI());
+				annotation.setPrototype(currentPrototype);
+				annotation.setAnnotationNumber(
+						currentPrototype.getIncAnnotationNumber());
+				annotation.setDeclaration(currentPrototype == null ? null : currentPrototype.getI());
 			}
 
 		}
@@ -3974,10 +3982,10 @@ public final class Compiler implements Cloneable {
 			final boolean hasTypeParameter = checkFormalParameterListGenericPrototype(
 					currentObject);
 
-			currentProgramUnit.setGenericPrototype(hasTypeParameter);
+			currentPrototype.setGenericPrototype(hasTypeParameter);
 			compilationUnit.setHasGenericPrototype(hasTypeParameter);
 			compilationUnit.setPrototypeIsNotGeneric(!hasTypeParameter);
-			currentProgramUnit.setPrototypeIsNotGeneric(!hasTypeParameter);
+			currentPrototype.setPrototypeIsNotGeneric(!hasTypeParameter);
 			/**
 			 * check if the source file has the correct name. It should be
 			 * "Stack(Int).cyan" if the generic prototype is "Stack<Int>" and
@@ -4000,20 +4008,20 @@ public final class Compiler implements Cloneable {
 		if ( symbol.token == Token.LEFTPAR )
 			currentObject.setContextParameterArray(contextDec());
 
-		Tuple2<List<AnnotationAt>, List<AnnotationAt>> tc = parseMetaobjectAnnotations_NonAttached_Attached();
+		Tuple2<List<AnnotationAt>, List<AnnotationAt>> tc = parseAnnotations_NonAttached_Attached();
 		if ( tc != null ) {
-			nonAttachedMetaobjectAnnotationList = tc.f1;
-			attachedMetaobjectAnnotationList = tc.f2;
+			nonAttachedAnnotationList = tc.f1;
+			attachedAnnotationList = tc.f2;
 		}
 
 		boolean hadExtendsMixinImplements = false;
 
 		if ( symbol.token == Token.EXTENDS ) {
-			if ( attachedMetaobjectAnnotationList != null ) {
-				final CyanMetaobject cyanMetaobject = attachedMetaobjectAnnotationList
+			if ( attachedAnnotationList != null ) {
+				final CyanMetaobject cyanMetaobject = attachedAnnotationList
 						.get(0).getCyanMetaobject();
 				this.error(true,
-						attachedMetaobjectAnnotationList.get(0)
+						attachedAnnotationList.get(0)
 								.getFirstSymbol(),
 						"There is a metaobject annotation to metaobject '"
 								+ cyanMetaobject.getName()
@@ -4034,14 +4042,15 @@ public final class Compiler implements Cloneable {
 			}
 
 			currentObject.setSuperobjectExpr(superPrototype);
-			this.currentProgramUnit
+			this.currentPrototype
 					.setCyanMetaobjectListBeforeExtendsMixinImplements(
-							nonAttachedMetaobjectAnnotationList);
+							nonAttachedAnnotationList);
 			hadExtendsMixinImplements = true;
 
-			final ObjectDec currentProto = (ObjectDec) this.currentProgramUnit;
-			if ( currentProto.getContextParameterArray() != null
-					&& currentProto.getContextParameterArray().size() > 0 ) {
+			// TODO: this assignment is unnecessary, replace currentObj by currentObject
+			final ObjectDec currentObj = (ObjectDec) this.currentPrototype;
+			if ( currentObj.getContextParameterArray() != null
+					&& currentObj.getContextParameterArray().size() > 0 ) {
 				/*
 				 * there are context parameters. Then there may be '(' in the
 				 * super-prototype as in <br> {@code object Worker(String name,
@@ -4049,7 +4058,7 @@ public final class Compiler implements Cloneable {
 				 */
 				if ( symbol.token == Token.LEFTPAR ) {
 					next();
-					final List<ContextParameter> cpList = currentProto
+					final List<ContextParameter> cpList = currentObj
 							.getContextParameterArray();
 					final List<ContextParameter> superContextParameterList = new ArrayList<>();
 					if ( symbol.token != Token.IDENT ) {
@@ -4070,9 +4079,9 @@ public final class Compiler implements Cloneable {
 									foundCP = true;
 									superContextParameterList.add(cp);
 									// cp.setDoNotCreateField(true);
-									((ObjectDec) this.currentProgramUnit)
+									((ObjectDec) this.currentPrototype)
 											.removeField(cp);
-									((ObjectDec) this.currentProgramUnit)
+									((ObjectDec) this.currentPrototype)
 											.removeSlot(cp);
 
 								}
@@ -4095,7 +4104,7 @@ public final class Compiler implements Cloneable {
 								break;
 							}
 						}
-						currentProto.setSuperContextParameterList(
+						currentObj.setSuperContextParameterList(
 								superContextParameterList);
 						// currentObject.setContextParameterArray(newContextParameterList);
 					}
@@ -4117,20 +4126,20 @@ public final class Compiler implements Cloneable {
 			next();
 			currentObject.setInterfaceList(typeList());
 			hadExtendsMixinImplements = true;
-			this.currentProgramUnit
+			this.currentPrototype
 					.setCyanMetaobjectListBeforeExtendsMixinImplements(
-							nonAttachedMetaobjectAnnotationList);
+							nonAttachedAnnotationList);
 
 		}
 
 		if ( hadExtendsMixinImplements ) {
-			attachedMetaobjectAnnotationList = null;
-			nonAttachedMetaobjectAnnotationList = null;
+			attachedAnnotationList = null;
+			nonAttachedAnnotationList = null;
 
-			tc = parseMetaobjectAnnotations_NonAttached_Attached();
+			tc = parseAnnotations_NonAttached_Attached();
 			if ( tc != null ) {
-				nonAttachedMetaobjectAnnotationList = tc.f1;
-				attachedMetaobjectAnnotationList = tc.f2;
+				nonAttachedAnnotationList = tc.f1;
+				attachedAnnotationList = tc.f2;
 			}
 		}
 
@@ -4150,12 +4159,12 @@ public final class Compiler implements Cloneable {
 		hasAddedInnerPrototypes = false;
 
 		/*
-		 * true if hasSetBeforeInnerObjectNonAttachedMetaobjectAnnotationList of
+		 * true if hasSetBeforeInnerObjectNonAttachedAnnotationList of
 		 * currentObjectDec has been set already
 		 *
 		 */
 
-		boolean hasSetBeforeInnerObjectNonAttachedMetaobjectAnnotationList = false;
+		boolean hasSetBeforeInnerObjectNonAttachedAnnotationList = false;
 
 		while (symbol.token == Token.PRIVATE || symbol.token == Token.PUBLIC
 				|| symbol.token == Token.PROTECTED
@@ -4186,8 +4195,8 @@ public final class Compiler implements Cloneable {
 					 */
 
 					final ObjectDec innerObjectDec = objectDec(Token.PUBLIC,
-							nonAttachedMetaobjectAnnotationList,
-							attachedMetaobjectAnnotationList, currentObject);
+							nonAttachedAnnotationList,
+							attachedAnnotationList, currentObject);
 					if ( numObjForFunctionParsed < currentObject
 							.getNextFunctionNumber() ) {
 						currentObject.getFunctionList()
@@ -4196,16 +4205,16 @@ public final class Compiler implements Cloneable {
 						++numObjForFunctionParsed;
 					}
 
-					this.currentProgramUnit = currentObject = this.objectDecStack
+					this.currentPrototype = currentObject = this.objectDecStack
 							.peek();
 
-					nonAttachedMetaobjectAnnotationList = null;
-					attachedMetaobjectAnnotationList = null;
+					nonAttachedAnnotationList = null;
+					attachedAnnotationList = null;
 
-					tc = parseMetaobjectAnnotations_NonAttached_Attached();
+					tc = parseAnnotations_NonAttached_Attached();
 					if ( tc != null ) {
-						nonAttachedMetaobjectAnnotationList = tc.f1;
-						attachedMetaobjectAnnotationList = tc.f2;
+						nonAttachedAnnotationList = tc.f1;
+						attachedAnnotationList = tc.f2;
 					}
 				}
 			}
@@ -4215,21 +4224,21 @@ public final class Compiler implements Cloneable {
 				if ( symbol.token != Token.END ) {
 					try {
 						slotDec(currentObject,
-								nonAttachedMetaobjectAnnotationList,
-								attachedMetaobjectAnnotationList,
+								nonAttachedAnnotationList,
+								attachedAnnotationList,
 								firstSlotSymbol, compilerCreatedMethod);
 					}
 					catch (final CompileErrorException e) {
 						this.skipTo(Token.FUNC, Token.OVERLOAD, Token.PUBLIC,
 								Token.END, Token.PRIVATE, Token.PROTECTED);
 					}
-					nonAttachedMetaobjectAnnotationList = null;
-					attachedMetaobjectAnnotationList = null;
+					nonAttachedAnnotationList = null;
+					attachedAnnotationList = null;
 
-					tc = parseMetaobjectAnnotations_NonAttached_Attached();
+					tc = parseAnnotations_NonAttached_Attached();
 					if ( tc != null ) {
-						nonAttachedMetaobjectAnnotationList = tc.f1;
-						attachedMetaobjectAnnotationList = tc.f2;
+						nonAttachedAnnotationList = tc.f1;
+						attachedAnnotationList = tc.f2;
 					}
 				}
 
@@ -4240,9 +4249,9 @@ public final class Compiler implements Cloneable {
 						if ( hasAddedInnerPrototypes )
 							break;
 						else {
-							if ( currentProgramUnit instanceof ObjectDec
-									&& !currentProgramUnit.isGeneric()
-							// && ! currentProgramUnit.getName().equals("Nil")
+							if ( currentPrototype instanceof ObjectDec
+									&& !currentPrototype.isGeneric()
+							// && ! currentPrototype.getName().equals("Nil")
 							) {
 
 								/*
@@ -4250,7 +4259,7 @@ public final class Compiler implements Cloneable {
 								 * prototype to represent the interface when it
 								 * is used in expressions (the interface as an
 								 * object). This new prototype is only created
-								 * after the semantic analysis with dsa actions,
+								 * after the semantic analysis with SEM_AN actions,
 								 * which is phase 7 of the Figure of chapter
 								 * metaobjects of the Cyan manual. Therefore
 								 * code for methods prototype, defaultValue,
@@ -4267,13 +4276,13 @@ public final class Compiler implements Cloneable {
 										|| compilationUnit
 												.getIsInterfaceAsObject() ) {
 
-									if ( currentProgramUnit
-											.getAttachedMetaobjectAnnotationList() != null ) {
-										for (final Annotation annotation : currentProgramUnit
-												.getAttachedMetaobjectAnnotationList()) {
+									if ( currentPrototype
+											.getAttachedAnnotationList() != null ) {
+										for (final Annotation annotation : currentPrototype
+												.getAttachedAnnotationList()) {
 											final CyanMetaobject cyanMetaobject = annotation
 													.getCyanMetaobject();
-											actionCompilerInfo_dpa(
+											actionCompilerInfo_parsing(
 													cyanMetaobject);
 										}
 									}
@@ -4306,31 +4315,31 @@ public final class Compiler implements Cloneable {
 										 * anonymous functions
 										 */
 
-										if ( !hasSetBeforeInnerObjectNonAttachedMetaobjectAnnotationList ) {
+										if ( !hasSetBeforeInnerObjectNonAttachedAnnotationList ) {
 
-											if ( currentProgramUnit instanceof ObjectDec ) {
+											if ( currentPrototype instanceof ObjectDec ) {
 												List<SlotDec> slotList = currentObject.getSlotList();
 												if ( slotList != null && slotList.size() > 0 ) {
 													slotList.get(slotList.size()-1).setLastSlot(true);
 												}
 
 											}
-											currentProgramUnit
-													.setBeforeInnerObjectNonAttachedMetaobjectAnnotationList(
-															nonAttachedMetaobjectAnnotationList);
-											currentProgramUnit
-													.setBeforeInnerObjectAttachedMetaobjectAnnotationList(
-															attachedMetaobjectAnnotationList);
+											currentPrototype
+													.setBeforeInnerObjectNonAttachedAnnotationList(
+															nonAttachedAnnotationList);
+											currentPrototype
+													.setBeforeInnerObjectAttachedAnnotationList(
+															attachedAnnotationList);
 
-											hasSetBeforeInnerObjectNonAttachedMetaobjectAnnotationList = true;
+											hasSetBeforeInnerObjectNonAttachedAnnotationList = true;
 
-											nonAttachedMetaobjectAnnotationList = null;
-											attachedMetaobjectAnnotationList = null;
+											nonAttachedAnnotationList = null;
+											attachedAnnotationList = null;
 
-											tc = parseMetaobjectAnnotations_NonAttached_Attached();
+											tc = parseAnnotations_NonAttached_Attached();
 											if ( tc != null ) {
-												nonAttachedMetaobjectAnnotationList = tc.f1;
-												attachedMetaobjectAnnotationList = tc.f2;
+												nonAttachedAnnotationList = tc.f1;
+												attachedAnnotationList = tc.f2;
 											}
 										}
 
@@ -4368,7 +4377,7 @@ public final class Compiler implements Cloneable {
 												+ "(inner"
 												+ Compiler.contextNumber
 												+ ", inner) ");
-										if ( ((ObjectDec) currentProgramUnit)
+										if ( ((ObjectDec) currentPrototype)
 												.getFunctionList().size() > 0 )
 											addObjectDecForFunctions(s);
 
@@ -4398,9 +4407,9 @@ public final class Compiler implements Cloneable {
 						// hasAddedInnerPrototypes = true;
 					}
 					else {
-						if ( currentProgramUnit instanceof ObjectDec
-								&& !currentProgramUnit.isGeneric()
-								&& !currentProgramUnit.getName()
+						if ( currentPrototype instanceof ObjectDec
+								&& !currentPrototype.isGeneric()
+								&& !currentPrototype.getName()
 										.equals("Nil") ) {
 
 							/**
@@ -4416,7 +4425,7 @@ public final class Compiler implements Cloneable {
 									.contains(
 											CompilationInstruction.pp_new_inner_addCode)
 									&& NameServer.isNameInnerPrototype(
-											currentProgramUnit.getName());
+											currentPrototype.getName());
 
 							// see comment above on inner_addCode
 							if ( compInstSet
@@ -4474,20 +4483,20 @@ public final class Compiler implements Cloneable {
 						hasAdded_pp_new_Methods = true;
 					}
 
-					tc = parseMetaobjectAnnotations_NonAttached_Attached();
+					tc = parseAnnotations_NonAttached_Attached();
 					if ( tc != null ) {
 						if ( tc.f1 != null ) {
-							if ( nonAttachedMetaobjectAnnotationList == null )
-								nonAttachedMetaobjectAnnotationList = tc.f1;
+							if ( nonAttachedAnnotationList == null )
+								nonAttachedAnnotationList = tc.f1;
 							else
-								nonAttachedMetaobjectAnnotationList
+								nonAttachedAnnotationList
 										.addAll(tc.f1);
 						}
 						if ( tc.f2 != null ) {
-							if ( attachedMetaobjectAnnotationList == null )
-								attachedMetaobjectAnnotationList = tc.f2;
+							if ( attachedAnnotationList == null )
+								attachedAnnotationList = tc.f2;
 							else
-								attachedMetaobjectAnnotationList.addAll(tc.f2);
+								attachedAnnotationList.addAll(tc.f2);
 						}
 					}
 
@@ -4496,8 +4505,8 @@ public final class Compiler implements Cloneable {
 
 		}
 		if ( symbol.token != Token.END ) {
-			if ( currentProgramUnit instanceof ObjectDec ) {
-				final ObjectDec objDec = (ObjectDec) this.currentProgramUnit;
+			if ( currentPrototype instanceof ObjectDec ) {
+				final ObjectDec objDec = (ObjectDec) this.currentPrototype;
 				final List<FieldDec> ivList = objDec.getFieldList();
 				if ( ivList.size() > 0 ) {
 					final Expr expr = ivList.get(ivList.size() - 1).getExpr();
@@ -4540,19 +4549,19 @@ public final class Compiler implements Cloneable {
 			}
 			error2(symbol, "keyword 'end' expected." + foundSuch());
 		}
-		this.currentProgramUnit.setEndSymbol(symbol);
+		this.currentPrototype.setEndSymbol(symbol);
 
 		/*
 		 * if ( symbol.getColumnNumber() !=
-		 * this.currentProgramUnit.getFirstSymbol().getColumnNumber() ) {
+		 * this.currentPrototype.getFirstSymbol().getColumnNumber() ) {
 		 * error2(symbol, "'end' should be in the same column as 'object'"); }
 		 */
 
-		if ( attachedMetaobjectAnnotationList != null ) {
-			final CyanMetaobject cyanMetaobject = attachedMetaobjectAnnotationList
+		if ( attachedAnnotationList != null ) {
+			final CyanMetaobject cyanMetaobject = attachedAnnotationList
 					.get(0).getCyanMetaobject();
 			this.error(true,
-					attachedMetaobjectAnnotationList.get(0).getFirstSymbol(),
+					attachedAnnotationList.get(0).getFirstSymbol(),
 					"There is a metaobject annotation to metaobject '"
 							+ cyanMetaobject.getName()
 							+ "' that should be attached to a declaration "
@@ -4560,10 +4569,10 @@ public final class Compiler implements Cloneable {
 					null, ErrorKind.metaobject_error);
 
 		}
-		if ( nonAttachedMetaobjectAnnotationList != null ) {
-			this.currentProgramUnit
-					.setBeforeEndNonAttachedMetaobjectAnnotationList(
-							nonAttachedMetaobjectAnnotationList);
+		if ( nonAttachedAnnotationList != null ) {
+			this.currentPrototype
+					.setBeforeEndNonAttachedAnnotationList(
+							nonAttachedAnnotationList);
 		}
 
 		next();
@@ -4585,7 +4594,7 @@ public final class Compiler implements Cloneable {
 	 */
 	private void addMethodsForFeatures(StringBuffer s) {
 		s.append("\n");
-		final String puName = this.currentProgramUnit.getName();
+		final String puName = this.currentPrototype.getName();
 		if ( puName.equals("Nil") ) return;
 		final boolean isAny = puName.equals("Any");
 		if ( !isAny ) {
@@ -4594,14 +4603,14 @@ public final class Compiler implements Cloneable {
 		List<String> annotList = null;
 		s.append(
 				"    func getFeatureListNameDoesNotCollide__ -> Array<Tuple<key, String, value, Any>> {\n");
-		if ( currentProgramUnit.getFeatureList() != null
-				&& currentProgramUnit.getFeatureList().size() > 0 ) {
+		if ( currentPrototype.getFeatureList() != null
+				&& currentPrototype.getFeatureList().size() > 0 ) {
 			// s.append("featureList_name_does_not_collide__;\n");
 			s.append(
 					"    let featureList_name_does_not_collide__ = Array<Tuple<key, String, value, Any>> new;\n");
 			// s.append(" [ ");
-			// int size = currentProgramUnit.getFeatureList().size();
-			for (final Tuple2<String, WrExprAnyLiteral> t : this.currentProgramUnit
+			// int size = currentPrototype.getFeatureList().size();
+			for (final Tuple2<String, WrExprAnyLiteral> t : this.currentPrototype
 					.getFeatureList()) {
 				s.append("        featureList_name_does_not_collide__ add: ");
 
@@ -4672,8 +4681,8 @@ public final class Compiler implements Cloneable {
 
 		// s.append("[. slotName = \"\", key = \"\", value = Any cast: \"\"
 		// .]");
-		if ( this.currentProgramUnit instanceof ObjectDec ) {
-			final ObjectDec currentObj = (ObjectDec) this.currentProgramUnit;
+		if ( this.currentPrototype instanceof ObjectDec ) {
+			final ObjectDec currentObj = (ObjectDec) this.currentPrototype;
 			for (final FieldDec iv : currentObj.getFieldList()) {
 				final String ivName = iv.getName();
 				if ( iv.getFeatureList() != null ) {
@@ -4725,7 +4734,7 @@ public final class Compiler implements Cloneable {
 		}
 		else {
 			// interface
-			final InterfaceDec interDec = (InterfaceDec) this.currentProgramUnit;
+			final InterfaceDec interDec = (InterfaceDec) this.currentPrototype;
 			for (final MethodSignature ms : interDec.getMethodSignatureList()) {
 				final String signature = ms.getName();
 				if ( ms.getFeatureList() != null ) {
@@ -4772,7 +4781,7 @@ public final class Compiler implements Cloneable {
 	 * parameters), false otherwise.
 	 */
 	private boolean checkFormalParameterListGenericPrototype(
-			ProgramUnit currentProgramUnit2) {
+			Prototype currentPrototype2) {
 		/*
 		 * use real parameters such as in object Stack<main.Person> ... end
 		 * object Inter<add> ... end object Stack<Int> ... end
@@ -4787,7 +4796,7 @@ public final class Compiler implements Cloneable {
 		 * end
 		 */
 		int useFormalParameterWithPlus = 0;
-		for (final List<GenericParameter> genericParameterList : currentProgramUnit2
+		for (final List<GenericParameter> genericParameterList : currentPrototype2
 				.getGenericParameterListList()) {
 			for (final GenericParameter gp : genericParameterList) {
 				if ( gp.getKind() == GenericParameterKind.FormalParameter ) {
@@ -4816,18 +4825,18 @@ public final class Compiler implements Cloneable {
 
 		if ( useRealParameters + useFormalParameterWITHOUT_Plus
 				+ useFormalParameterWithPlus > 1 )
-			error(true, currentProgramUnit2.getSymbol(),
+			error(true, currentPrototype2.getSymbol(),
 					"Different kinds of parameters (real parameters, formal parameters, formal parameters with +) cannot apper together in the declaration of generic prototype",
-					currentProgramUnit2.getSymbol().getSymbolString(),
+					currentPrototype2.getSymbol().getSymbolString(),
 					ErrorKind.mixing_of_different_parameter_kinds_in_generic_prototype);
 
 		if ( useFormalParameterWithPlus == 1 ) {
-			if ( currentProgramUnit2.getGenericParameterListList().size() != 1
-					|| currentProgramUnit2.getGenericParameterListList().get(0)
+			if ( currentPrototype2.getGenericParameterListList().size() != 1
+					|| currentPrototype2.getGenericParameterListList().get(0)
 							.size() != 1 )
-				error(true, currentProgramUnit2.getSymbol(),
+				error(true, currentPrototype2.getSymbol(),
 						"A generic prototype with varying number of parameters should have just one set of pairs '<' and '>' and just one parameter",
-						currentProgramUnit2.getSymbol().getSymbolString(),
+						currentPrototype2.getSymbol().getSymbolString(),
 						ErrorKind.mixing_of_different_parameter_kinds_in_generic_prototype);
 		}
 
@@ -4846,10 +4855,10 @@ public final class Compiler implements Cloneable {
 	 *
 	 * @return
 	 */
-	private Tuple2<List<AnnotationAt>, List<AnnotationAt>> parseMetaobjectAnnotations_NonAttached_Attached() {
+	private Tuple2<List<AnnotationAt>, List<AnnotationAt>> parseAnnotations_NonAttached_Attached() {
 
-		List<AnnotationAt> attachedMetaobjectAnnotationList = null;
-		List<AnnotationAt> nonAttachedMetaobjectAnnotationList = null;
+		List<AnnotationAt> attachedAnnotationList = null;
+		List<AnnotationAt> nonAttachedAnnotationList = null;
 
 		AnnotationAt annotation = null;
 		int step = 0; // getting non-attached first
@@ -4870,8 +4879,8 @@ public final class Compiler implements Cloneable {
 
 			if ( annotation == null ) {
 				return new Tuple2<List<AnnotationAt>, List<AnnotationAt>>(
-						nonAttachedMetaobjectAnnotationList,
-						attachedMetaobjectAnnotationList);
+						nonAttachedAnnotationList,
+						attachedAnnotationList);
 			}
 
 			CyanMetaobjectAtAnnot withAt = annotation.getCyanMetaobject();
@@ -4882,27 +4891,30 @@ public final class Compiler implements Cloneable {
 				mayBeAttachedToSomething = withAt.mayBeAttachedToSomething();
 			}
 			else {
-				mayBeAttachedToSomething = other_mo._mayBeAttachedToSomething();
+				//## {
+//				mayBeAttachedToSomething = other_mo._mayBeAttachedToSomething().b;
+				//## }
+				mayBeAttachedToSomething = true;
 			}
 			switch (step) {
 			case 0:
 				if ( mayBeAttachedToSomething ) {
 					step = 1;
-					if ( attachedMetaobjectAnnotationList == null )
-						attachedMetaobjectAnnotationList = new ArrayList<>();
-					attachedMetaobjectAnnotationList.add(annotation);
+					if ( attachedAnnotationList == null )
+						attachedAnnotationList = new ArrayList<>();
+					attachedAnnotationList.add(annotation);
 				}
 				else {
-					if ( nonAttachedMetaobjectAnnotationList == null )
-						nonAttachedMetaobjectAnnotationList = new ArrayList<>();
-					nonAttachedMetaobjectAnnotationList.add(annotation);
+					if ( nonAttachedAnnotationList == null )
+						nonAttachedAnnotationList = new ArrayList<>();
+					nonAttachedAnnotationList.add(annotation);
 				}
 				break;
 			case 1:
 				if ( mayBeAttachedToSomething ) {
-					if ( attachedMetaobjectAnnotationList == null )
-						attachedMetaobjectAnnotationList = new ArrayList<>();
-					attachedMetaobjectAnnotationList.add(annotation);
+					if ( attachedAnnotationList == null )
+						attachedAnnotationList = new ArrayList<>();
+					attachedAnnotationList.add(annotation);
 				}
 				else {
 					/*
@@ -4938,28 +4950,28 @@ public final class Compiler implements Cloneable {
 		}
 
 		return new Tuple2<List<AnnotationAt>, List<AnnotationAt>>(
-				nonAttachedMetaobjectAnnotationList,
-				attachedMetaobjectAnnotationList);
+				nonAttachedAnnotationList,
+				attachedAnnotationList);
 	}
 
 	/**
 	 * add one inner prototype for each method declared in this prototype
 	 */
 	private void addObjectDecForMethods(StringBuffer s) {
-		final ObjectDec currentPrototype = (ObjectDec) currentProgramUnit;
+		final ObjectDec currentObject = (ObjectDec) currentPrototype;
 		final CyanEnv cyanEnv = new CyanEnv(false, false);
 
-		cyanEnv.atBeginningOfProgramUnit(currentProgramUnit);
+		cyanEnv.atBeginningOfPrototype(currentPrototype);
 
-		// String currentPrototypeName = currentPrototype.getName();
+		// String currentObjectName = currentObject.getName();
 
 		// StringBuffer s = new StringBuffer();
 		s.append("\n");
-		for (final MethodDec method : currentPrototype.getMethodDecList()) {
+		for (final MethodDec method : currentObject.getMethodDecList()) {
 			method.genProtoForMethod(s, cyanEnv);
 		}
 		s.append("\n\n");
-		cyanEnv.atEndOfCurrentProgramUnit();
+		cyanEnv.atEndOfCurrentPrototype();
 		/*
 		 * the lines below add string 's' to the text of the current compilation
 		 * unit. The string is added just before 'symbol'.
@@ -5023,23 +5035,23 @@ public final class Compiler implements Cloneable {
 	 */
 	private void addObjectDecForFunctions(StringBuffer s) {
 
-		final ObjectDec currentPrototype = (ObjectDec) currentProgramUnit;
+		final ObjectDec currentObject = (ObjectDec) currentPrototype;
 
-		final String currentPrototypeName = currentPrototype.getName();
+		final String currentObjectName = currentObject.getName();
 
 		s.append("\n");
 		s.append(
 				"        // a prototype for each of the anonymous functions of prototype "
-						+ currentPrototypeName + " \n\n");
+						+ currentObjectName + " \n\n");
 
 		final CyanEnv cyanEnv = new CyanEnv(true, false);
-		cyanEnv.atBeginningOfProgramUnit(currentProgramUnit);
+		cyanEnv.atBeginningOfPrototype(currentPrototype);
 
-		for (final ExprFunction function : currentPrototype.getFunctionList()) {
+		for (final ExprFunction function : currentObject.getFunctionList()) {
 			s.append(function.genContextObjectForFunction(cyanEnv));
 		}
 		s.append("\n\n");
-		cyanEnv.atEndOfCurrentProgramUnit();
+		cyanEnv.atEndOfCurrentPrototype();
 
 	}
 
@@ -5057,9 +5069,9 @@ public final class Compiler implements Cloneable {
 	 */
 	private void addMethodsEveryPrototypeHas(StringBuffer s) {
 
-		final ObjectDec currentPrototype = (ObjectDec) currentProgramUnit;
-		final String currentPrototypeName = currentPrototype.getName();
-		String currentPrototypeTypeName;
+		final ObjectDec currentObject = (ObjectDec) currentPrototype;
+		final String currentObjectName = currentObject.getName();
+		String currentObjectTypeName;
 
 		List<MethodSignature> methodSignatureList;
 
@@ -5075,31 +5087,31 @@ public final class Compiler implements Cloneable {
 		 * this method is override func prototype -> Inter
 		 *
 		 *
-		 * In regular prototypes, currentPrototypeTypeName is equal to the
+		 * In regular prototypes, currentObjectTypeName is equal to the
 		 * prototype name. In a compiler-created prototype "Proto_Inter" created
-		 * because of an interface "Inter", currentPrototypeTypeName is equal to
+		 * because of an interface "Inter", currentObjectTypeName is equal to
 		 * the interface name, "Inter".
 		 *
 		 */
-		if ( NameServer.isPrototypeFromInterface(currentPrototype.getName()) ) {
+		if ( NameServer.isPrototypeFromInterface(currentObject.getName()) ) {
 
 			// if ( compilationUnit.getIsPrototypeInterface() ) {
 			// was created from an interface by the compiler. Use the interface
 			// name as parameter
-			currentPrototypeTypeName = NameServer
-					.interfaceNameFromPrototypeName(currentPrototypeName);
+			currentObjectTypeName = NameServer
+					.interfaceNameFromPrototypeName(currentObjectName);
 		}
 		else
-			currentPrototypeTypeName = currentPrototypeName;
+			currentObjectTypeName = currentObjectName;
 
 		final StringBuffer nameWithSpaces = new StringBuffer();
-		for (int ii = 0; ii < currentPrototypeTypeName.length(); ++ii) {
-			final char ch = currentPrototypeTypeName.charAt(ii);
+		for (int ii = 0; ii < currentObjectTypeName.length(); ++ii) {
+			final char ch = currentObjectTypeName.charAt(ii);
 			nameWithSpaces.append(ch);
 			if ( ch == ',' ) nameWithSpaces.append(' ');
 		}
-		currentPrototypeTypeName = nameWithSpaces.toString();
-		// S ystem.out.p rintln("addMethods: " + currentPrototypeName);
+		currentObjectTypeName = nameWithSpaces.toString();
+		// S ystem.out.p rintln("addMethods: " + currentObjectName);
 
 		s.append("\n");
 		s.append("    // Methods added by the compiler\n");
@@ -5110,24 +5122,24 @@ public final class Compiler implements Cloneable {
 		 *
 		 */
 
-		methodSignatureList = currentPrototype
+		methodSignatureList = currentObject
 				.searchMethodPrivateProtectedPublic("prototype");
 		if ( methodSignatureList.size() == 0 ) {
 			s.append("    override");
 			s.append("    func prototype -> "
-					+ Lexer.addSpaceAfterComma(currentPrototypeTypeName)
+					+ Lexer.addSpaceAfterComma(currentObjectTypeName)
 					+ " {\n");
 			s.append("        @javacode{* return ");
-			if ( this.currentProgramUnit.getOuterObject() == null )
+			if ( this.currentPrototype.getOuterObject() == null )
 				s.append("prototype");
 			else
-				s.append("prototype" + currentPrototypeName);
+				s.append("prototype" + currentObjectName);
 			s.append(";\n");
 			s.append("        *}\n");
 			s.append("    } \n");
 		}
-		else if ( currentPrototypeName.compareTo("Any") != 0 )
-			error(true, currentPrototype.getSymbol(),
+		else if ( currentObjectName.compareTo("Any") != 0 )
+			error(true, currentObject.getSymbol(),
 					"Method 'prototype' cannot be user-defined", "prototype",
 					ErrorKind.method_cannot_be_user_defined);
 
@@ -5145,12 +5157,12 @@ public final class Compiler implements Cloneable {
 	 */
 	private void addMethodsToPrototypeIfNotDefined(StringBuffer s) {
 
-		final ObjectDec currentPrototype = (ObjectDec) currentProgramUnit;
+		final ObjectDec currentObject = (ObjectDec) currentPrototype;
 
-		final String currentPrototypeName = currentPrototype.getName();
-		String currentPrototypeTypeName;
-		final String currentPrototypeJavaName = MetaHelper
-				.getJavaName(currentPrototypeName);
+		final String currentObjectName = currentObject.getName();
+		String currentObjectTypeName;
+		final String currentObjectJavaName = MetaHelper
+				.getJavaName(currentObjectName);
 
 		List<MethodSignature> methodSignatureList;
 
@@ -5166,31 +5178,31 @@ public final class Compiler implements Cloneable {
 		 * this method is override func prototype -> Inter
 		 *
 		 *
-		 * In regular prototypes, currentPrototypeTypeName is equal to the
+		 * In regular prototypes, currentObjectTypeName is equal to the
 		 * prototype name. In a compiler-created prototype "Proto_Inter" created
-		 * because of an interface "Inter", currentPrototypeTypeName is equal to
+		 * because of an interface "Inter", currentObjectTypeName is equal to
 		 * the interface name, "Inter".
 		 *
 		 */
 		final boolean isPrototypeFromInterface = NameServer
-				.isPrototypeFromInterface(currentPrototype.getName());
+				.isPrototypeFromInterface(currentObject.getName());
 		if ( isPrototypeFromInterface ) {
 			// if ( compilationUnit.getIsPrototypeInterface() ) {
 			// was created from an interface by the compiler. Use the interface
 			// name as parameter
-			currentPrototypeTypeName = NameServer
-					.interfaceNameFromPrototypeName(currentPrototypeName);
+			currentObjectTypeName = NameServer
+					.interfaceNameFromPrototypeName(currentObjectName);
 		}
 		else
-			currentPrototypeTypeName = currentPrototypeName;
+			currentObjectTypeName = currentObjectName;
 
-		// S ystem.out.p rintln("addMethods: " + currentPrototypeName);
+		// S ystem.out.p rintln("addMethods: " + currentObjectName);
 
 		s.append("\n");
 		s.append("    // Methods added by the compiler\n");
 
 		// add clone method
-		methodSignatureList = currentPrototype
+		methodSignatureList = currentObject
 				.searchMethodPrivateProtectedPublic("clone");
 		if ( methodSignatureList.size() == 0 ) {
 			// add clone method
@@ -5199,7 +5211,7 @@ public final class Compiler implements Cloneable {
 			 */
 			s.append("\n    override");
 			s.append("    func clone -> "
-					+ Lexer.addSpaceAfterComma(currentPrototypeTypeName)
+					+ Lexer.addSpaceAfterComma(currentObjectTypeName)
 					+ " {\n");
 
 			s.append("        @javacode<<*\n");
@@ -5211,12 +5223,12 @@ public final class Compiler implements Cloneable {
 			}
 			else {
 				s.append("        try {\n");
-				s.append("            return (" + currentPrototypeJavaName
+				s.append("            return (" + currentObjectJavaName
 						+ " ) ");
 				/*
 				 * s.append("prototype"); if (
-				 * this.currentProgramUnit.getOuterObject() != null )
-				 * s.append(this.currentProgramUnit.getName());
+				 * this.currentPrototype.getOuterObject() != null )
+				 * s.append(this.currentPrototype.getName());
 				 */
 				s.append("this.clone(); \n");
 				s.append(
@@ -5234,21 +5246,21 @@ public final class Compiler implements Cloneable {
 			// current prototype
 			if ( methodSignatureList.get(0).getReturnTypeExpr()
 					.ifPrototypeReturnsItsName()
-					.compareTo(currentPrototypeName) != 0
+					.compareTo(currentObjectName) != 0
 					&& methodSignatureList.get(0).getReturnTypeExpr()
 							.ifPrototypeReturnsItsName()
 							.compareTo(this.compilationUnit.getPackageName()
-									+ "." + currentPrototypeName) != 0 )
-				this.error2(currentPrototype.getSymbol(),
+									+ "." + currentObjectName) != 0 )
+				this.error2(currentObject.getSymbol(),
 						"Method 'clone' has a wrong signature. It should be 'clone -> "
-								+ currentPrototypeName + "'");
+								+ currentObjectName + "'");
 		}
 		else if ( methodSignatureList.size() > 1 )
-			error2(currentPrototype.getSymbol(),
+			error2(currentObject.getSymbol(),
 					"Two or more 'clone' methods. There should be only one");
 
 		// add 'new' method
-		methodSignatureList = currentPrototype.searchInitNewMethod("init");
+		methodSignatureList = currentObject.searchInitNewMethod("init");
 		boolean hasAtLeastOneInitMethod = methodSignatureList.size() > 0;
 		if ( methodSignatureList.size() == 1 ) {
 			final MethodSignature initSignature = methodSignatureList.get(0);
@@ -5261,11 +5273,11 @@ public final class Compiler implements Cloneable {
 			 * && returnTypeExpr.ifPrototypeReturnsItsName().compareTo( "Nil")
 			 * != 0 && returnTypeExpr.ifPrototypeReturnsItsName()
 			 * .compareTo(this.compilationUnit.getPackageName() + "." +
-			 * currentPrototypeName) != 0 ) { error(true,
+			 * currentObjectName) != 0 ) { error(true,
 			 * initSignature.getFirstSymbol(),
 			 * "Methods 'init' and 'init:' should have no return value type",
 			 * "init", ErrorKind.init_should_return_Nil); } methodSignatureList
-			 * = currentPrototype .searchMethodPrivateProtectedPublic("new"); if
+			 * = currentObject .searchMethodPrivateProtectedPublic("new"); if
 			 * ( methodSignatureList.size() != 0 )
 			 * error2(initSignature.getFirstSymbol(),
 			 * "You cannot declare both methods 'init' and 'new' in the same prototype"
@@ -5283,19 +5295,19 @@ public final class Compiler implements Cloneable {
 			}
 
 			s.append("func new -> "
-					+ Lexer.addSpaceAfterComma(currentPrototypeTypeName)
+					+ Lexer.addSpaceAfterComma(currentObjectTypeName)
 					+ " {\n");
 
 			s.append("         @javacode<**< \n");
 			s.append("            return new ");
-			s.append(currentPrototypeJavaName + "();");
+			s.append(currentObjectJavaName + "();");
 			s.append("         >**>\n");
 
 			s.append("    }\n");
 
 		}
 		else if ( methodSignatureList.size() > 1 )
-			error(true, currentPrototype.getSymbol(),
+			error(true, currentObject.getSymbol(),
 					"There is a 'init' method declared in line "
 							+ methodSignatureList.get(0).getFirstSymbol()
 									.getLineNumber()
@@ -5306,7 +5318,7 @@ public final class Compiler implements Cloneable {
 
 		// add 'new:' methods
 		//##
-		methodSignatureList = currentPrototype.searchInitNewMethodBySelectorList("init:");
+		methodSignatureList = currentObject.searchInitNewMethodBySelectorList("init:");
 		hasAtLeastOneInitMethod = hasAtLeastOneInitMethod
 				|| methodSignatureList.size() > 0;
 		int initMethodNumber = 0;
@@ -5316,7 +5328,7 @@ public final class Compiler implements Cloneable {
 
 		}
 
-		if ( currentPrototype.getContextParameterArray() != null ) {
+		if ( currentObject.getContextParameterArray() != null ) {
 			/*
 			 * Is there any init method with the parameters types given in the
 			 * prototype head? For example, in object Sum(Int s) ... end We
@@ -5324,7 +5336,7 @@ public final class Compiler implements Cloneable {
 			 */
 			/*
 			 * List<ContextParameter> cpArray =
-			 * currentPrototype.getContextParameterArray(); boolean foundInit =
+			 * currentObject.getContextParameterArray(); boolean foundInit =
 			 * true; for (MethodSignature methodSignature : methodSignatureList)
 			 * { int indexcp = 0; MethodSignatureWithKeywords ms =
 			 * (MethodSignatureWithKeywords ) methodSignature; if (
@@ -5346,8 +5358,8 @@ public final class Compiler implements Cloneable {
 			final StringBuffer initBody = new StringBuffer();
 			initBody.append("        @javacode{*\n");
 
-			int sizecp = currentPrototype.getContextParameterArray().size();
-			for (final ContextParameter cp : currentPrototype
+			int sizecp = currentObject.getContextParameterArray().size();
+			for (final ContextParameter cp : currentObject
 					.getContextParameterArray()) {
 				if ( cp.getTypeInDec() != null ) {
 					if ( cp.getTypeInDec() instanceof ExprIdentStar ) {
@@ -5377,7 +5389,7 @@ public final class Compiler implements Cloneable {
 					ivName = cp.getName();
 				s.append(ivName);
 				final String ivJavaName = MetaHelper.getJavaName(ivName);
-				if ( currentPrototype.searchField(cp.getName()) != null ) {
+				if ( currentObject.searchField(cp.getName()) != null ) {
 					// context paramter is a field
 					initBody.append("        this." + ivJavaName + " = "
 							+ ivJavaName + ";\n");
@@ -5386,16 +5398,16 @@ public final class Compiler implements Cloneable {
 				if ( --sizecp > 0 ) s.append(", ");
 			}
 			s.append(" {\n");
-			if ( currentPrototype.getSuperContextParameterList() != null
-					&& currentPrototype.getSuperContextParameterList()
+			if ( currentObject.getSuperContextParameterList() != null
+					&& currentObject.getSuperContextParameterList()
 							.size() > 0 ) {
 				/*
 				 * super init: aa, bb;
 				 */
 				s.append("    super init: ");
-				int sizescpl = currentPrototype.getSuperContextParameterList()
+				int sizescpl = currentObject.getSuperContextParameterList()
 						.size();
-				for (final ContextParameter cp : currentPrototype
+				for (final ContextParameter cp : currentObject
 						.getSuperContextParameterList()) {
 					s.append(cp.getName());
 					if ( --sizescpl > 0 ) s.append(", ");
@@ -5410,8 +5422,8 @@ public final class Compiler implements Cloneable {
 			s.append("\n");
 			s.append("    func new: ");
 
-			sizecp = currentPrototype.getContextParameterArray().size();
-			for (final ContextParameter cp : currentPrototype
+			sizecp = currentObject.getContextParameterArray().size();
+			for (final ContextParameter cp : currentObject
 					.getContextParameterArray()) {
 				String strType = "";
 				if ( cp.getTypeInDec() != null ) {
@@ -5441,15 +5453,15 @@ public final class Compiler implements Cloneable {
 				if ( --sizecp > 0 ) s.append(", ");
 			}
 			s.append(" -> "
-					+ Lexer.addSpaceAfterComma(currentPrototypeTypeName));
+					+ Lexer.addSpaceAfterComma(currentObjectTypeName));
 			s.append(" {\n");
 
 			s.append("        @javacode<**< \n");
 			s.append("            return new ");
-			s.append(currentPrototypeJavaName + "(");
+			s.append(currentObjectJavaName + "(");
 
-			int sizecpa = currentPrototype.getContextParameterArray().size();
-			for (final ContextParameter cp : currentPrototype
+			int sizecpa = currentObject.getContextParameterArray().size();
+			for (final ContextParameter cp : currentObject
 					.getContextParameterArray()) {
 				final String ivJavaName = MetaHelper.getJavaName(cp.getName());
 				s.append(ivJavaName);
@@ -5463,7 +5475,7 @@ public final class Compiler implements Cloneable {
 
 		}
 
-		if ( !currentPrototype.getIsAbstract() ) {
+		if ( !currentObject.getIsAbstract() ) {
 			for (final MethodSignature methodSignature : methodSignatureList) {
 				/*
 				 * for each 'init:' method, create a 'new:' method
@@ -5567,12 +5579,12 @@ public final class Compiler implements Cloneable {
 				if ( parameterList.size() > 0 ) s.append(" )");
 
 				s.append(" -> "
-						+ Lexer.addSpaceAfterComma(currentPrototypeTypeName));
+						+ Lexer.addSpaceAfterComma(currentObjectTypeName));
 				s.append(" {\n");
 
 				s.append("        @javacode<**< \n");
 				s.append("            return new ");
-				s.append(currentPrototypeJavaName + "(");
+				s.append(currentObjectJavaName + "(");
 				size = parameterList.size();
 				for (int ii = 0; ii < parameterList.size(); ++ii) {
 					s.append("_p" + ii);
@@ -5587,18 +5599,18 @@ public final class Compiler implements Cloneable {
 
 		}
 
-		if ( !hasAtLeastOneInitMethod && (currentPrototype
+		if ( !hasAtLeastOneInitMethod && (currentObject
 				.getContextParameterArray() == null
-				|| currentPrototype.getContextParameterArray().size() == 0)
+				|| currentObject.getContextParameterArray().size() == 0)
 
 		) {
-			if ( currentPrototype.getFieldList().size() > 0 ) {
+			if ( currentObject.getFieldList().size() > 0 ) {
 				/*
 				 * there is no init or init: method and the prototype has
 				 * fields.
 				 */
 				final List<FieldDec> nonInitializedField = new ArrayList<>();
-				for (final FieldDec iv : currentPrototype.getFieldList()) {
+				for (final FieldDec iv : currentObject.getFieldList()) {
 					if ( iv.getExpr() == null && !iv.isShared() ) {
 						nonInitializedField.add(iv);
 						break;
@@ -5617,24 +5629,24 @@ public final class Compiler implements Cloneable {
 					else
 						strList = "The fields " + strList
 								+ " are not initialized in their declarations ";
-					this.error2(this.currentProgramUnit.getSymbol(), strList
+					this.error2(this.currentPrototype.getSymbol(), strList
 							+ "and the prototype does not declare any 'init' or 'init:' method. This is illegal");
 				}
 			}
 
 			// create an empty init method
 			s.append("    func init { } \n");
-			currentPrototype.setCreatedInitMethod(true);
+			currentObject.setCreatedInitMethod(true);
 
 			// add new method
-			if ( !currentPrototype.getIsAbstract() ) {
+			if ( !currentObject.getIsAbstract() ) {
 				s.append("\n    func new -> "
-						+ Lexer.addSpaceAfterComma(currentPrototypeTypeName)
+						+ Lexer.addSpaceAfterComma(currentObjectTypeName)
 						+ " {\n");
 
 				s.append("        @javacode<**< \n");
 				s.append("            return new ");
-				s.append(currentPrototypeJavaName + "();");
+				s.append(currentObjectJavaName + "();");
 				s.append("        >**>\n");
 				s.append("    }\n");
 			}
@@ -5831,7 +5843,7 @@ public final class Compiler implements Cloneable {
 	 * "Generic parameter expected" ); genericParameterSymbol = ((ExprIdentStar
 	 * ) t).getIdentSymbolArray().get(0); genericParameter = new
 	 * GenericParameter(genericParameterSymbol); }
-	 * currentProgramUnit.setGenericPrototype(true); } else {
+	 * currentPrototype.setGenericPrototype(true); } else {
 	 *
 	 * // a real prototype as formal parameter such as Boolean in // object
 	 * MyGeneric<Int><Boolean> ... end
@@ -5877,32 +5889,32 @@ public final class Compiler implements Cloneable {
 		VariableKind parameterType;
 		Token visibility = Token.PRIVATE;
 
-		List<AnnotationAt> attachedMetaobjectAnnotationList = null;
-		List<AnnotationAt> nonAttachedMetaobjectAnnotationList = null;
+		List<AnnotationAt> attachedAnnotationList = null;
+		List<AnnotationAt> nonAttachedAnnotationList = null;
 
-		final Tuple2<List<AnnotationAt>, List<AnnotationAt>> tc = parseMetaobjectAnnotations_NonAttached_Attached();
+		final Tuple2<List<AnnotationAt>, List<AnnotationAt>> tc = parseAnnotations_NonAttached_Attached();
 		if ( tc != null ) {
-			nonAttachedMetaobjectAnnotationList = tc.f1;
-			attachedMetaobjectAnnotationList = tc.f2;
+			nonAttachedAnnotationList = tc.f1;
+			attachedAnnotationList = tc.f2;
 		}
-		if ( nonAttachedMetaobjectAnnotationList != null ) {
+		if ( nonAttachedAnnotationList != null ) {
 			this.error(true,
-					nonAttachedMetaobjectAnnotationList.get(0).getFirstSymbol(),
+					nonAttachedAnnotationList.get(0).getFirstSymbol(),
 					"This metaobject annotation of metaobject '"
-							+ nonAttachedMetaobjectAnnotationList.get(0)
+							+ nonAttachedAnnotationList.get(0)
 									.getCyanMetaobject().getName()
 							+ "' cannot be attached to a context object or any other declaration."
 							+ "just before the specification of a Program.",
 					null, ErrorKind.metaobject_error);
 		}
-		if ( attachedMetaobjectAnnotationList != null ) {
-			for (final AnnotationAt annotation : attachedMetaobjectAnnotationList) {
+		if ( attachedAnnotationList != null ) {
+			for (final AnnotationAt annotation : attachedAnnotationList) {
 				final CyanMetaobjectAtAnnot cyanMetaobject = annotation
 						.getCyanMetaobject();
 				if ( !cyanMetaobject
 						.mayBeAttachedTo(AttachedDeclarationKind.FIELD_DEC) ) {
 					this.error(true,
-							attachedMetaobjectAnnotationList.get(0)
+							attachedAnnotationList.get(0)
 									.getFirstSymbol(),
 							"This metaobject annotation cannot be attached to a field. It can be attached to "
 									+ " one entity of the following list: [ "
@@ -5934,7 +5946,7 @@ public final class Compiler implements Cloneable {
 
 		if ( symbol.token == Token.BITAND ) {
 			/*
-			 * if ( ! this.currentProgramUnit.getIsFinal() ) {
+			 * if ( ! this.currentPrototype.getIsFinal() ) {
 			 * this.error2(symbol,
 			 * "This prototype has a reference context parameter as 'sum' in " +
 			 * "\n    object Sum(Int &sum) ... end\n" +
@@ -5951,10 +5963,10 @@ public final class Compiler implements Cloneable {
 			error2(symbol, "identifier expected." + foundSuch());
 		}
 		final ContextParameter contextParameter = new ContextParameter(
-				(ObjectDec) this.currentProgramUnit, (SymbolIdent) symbol,
+				(ObjectDec) this.currentPrototype, (SymbolIdent) symbol,
 				parameterType, type, visibility, firstSymbol,
-				nonAttachedMetaobjectAnnotationList,
-				attachedMetaobjectAnnotationList, cyanMetaobjectContextStack);
+				nonAttachedAnnotationList,
+				attachedAnnotationList, cyanMetaobjectContextStack);
 
 		final CyanMetaobjectMacro cyanMacro = metaObjectMacroTable
 				.get(symbol.getSymbolString());
@@ -5963,8 +5975,8 @@ public final class Compiler implements Cloneable {
 					"This field has the name of a macro keyword of a macro imported by this compilation unit");
 		}
 
-		if ( attachedMetaobjectAnnotationList != null ) {
-			for (final AnnotationAt annotation : attachedMetaobjectAnnotationList) {
+		if ( attachedAnnotationList != null ) {
+			for (final AnnotationAt annotation : attachedAnnotationList) {
 				if ( annotation.getCyanMetaobject()
 						.mayBeAttachedTo(AttachedDeclarationKind.FIELD_DEC) ) {
 					annotation.setDeclaration(contextParameter.getI());
@@ -5984,42 +5996,44 @@ public final class Compiler implements Cloneable {
 				}
 				final CyanMetaobject cyanMetaobject = annotation
 						.getCyanMetaobject();
-				actionCompilerInfo_dpa(cyanMetaobject);
+				actionCompilerInfo_parsing(cyanMetaobject);
 			}
 		}
 
 		next();
 		contextParameterArray.add(contextParameter);
-		((ObjectDec) this.currentProgramUnit).addField(contextParameter);
-		((ObjectDec) this.currentProgramUnit).addSlot(contextParameter);
-		((ObjectDec) this.currentProgramUnit).setHasContextParameter(true);
+		((ObjectDec) this.currentPrototype).addField(contextParameter);
+		((ObjectDec) this.currentPrototype).addSlot(contextParameter);
+		((ObjectDec) this.currentPrototype).setHasContextParameter(true);
 	}
 
 	/**
 	   @param cyanMetaobject
 	 */
-	private void actionCompilerInfo_dpa(final CyanMetaobject cyanMetaobject) {
+	private void actionCompilerInfo_parsing(final CyanMetaobject cyanMetaobject) {
 		_CyanMetaobject other = cyanMetaobject.getMetaobjectInCyan();
-		if ( cyanMetaobject instanceof ICompilerInfo_dpa ||
-				(other != null && other instanceof _ICompilerInfo__dpa) ) {
+		if ( cyanMetaobject instanceof ICompilerInfo_parsing
+				||
+				(other != null && other instanceof _ICompilerInfo__parsing)
+				) {
 			if ( other == null ) {
-				final ICompilerInfo_dpa moInfo = (ICompilerInfo_dpa) cyanMetaobject;
-				moInfo.action_dpa(getCompilerAction_dpa());
+				final ICompilerInfo_parsing moInfo = (ICompilerInfo_parsing) cyanMetaobject;
+				moInfo.action_parsing(getCompilerAction_parsing());
 			}
 			else {
-				final _ICompilerInfo__dpa moInfo = (_ICompilerInfo__dpa) cyanMetaobject;
-				moInfo._action__dpa_1(getCompilerAction_dpa());
+				final _ICompilerInfo__parsing moInfo = (_ICompilerInfo__parsing) cyanMetaobject;
+				moInfo._action__parsing_1(getCompilerAction_parsing());
 			}
 		}
 	}
 
-	private ICompilerAction_dpa compilerAction_dpa = null;
+	private ICompilerAction_parsing compilerAction_parsing = null;
 
-	private ICompilerAction_dpa getCompilerAction_dpa() {
-		if ( compilerAction_dpa == null ) {
-			compilerAction_dpa = new CompilerAction_dpa(this);
+	private ICompilerAction_parsing getCompilerAction_parsing() {
+		if ( compilerAction_parsing == null ) {
+			compilerAction_parsing = new CompilerAction_parsing(this);
 		}
-		return compilerAction_dpa;
+		return compilerAction_parsing;
 	}
 	/**
 	 * parse a type that may have a "|" in it as Int | Char
@@ -6050,30 +6064,30 @@ public final class Compiler implements Cloneable {
 			final List<List<Expr>> typeArrayArray = new ArrayList<List<Expr>>();
 			typeArrayArray.add(typeArray);
 			final Symbol first = typeArray.get(0).getFirstSymbol();
-			final ExprIdentStar unionId = new ExprIdentStar(
+			final ExprIdentStar unionId = new ExprIdentStar( currentMethod,
 					new SymbolIdent(Token.IDENT, "Union", first.getStartLine(),
 							first.getLineNumber(), first.getColumnNumber(),
 							first.getOffset(), this.compilationUnit));
 			final ExprGenericPrototypeInstantiation unionExpr = new ExprGenericPrototypeInstantiation(
-					unionId, typeArrayArray, this.currentProgramUnit, null);
+					unionId, typeArrayArray, this.currentPrototype, null, currentMethod);
 
 			final Tuple2<Symbol, String> tss = checkExprGenericPrototypeInstantiation(
 					unionExpr);
 			if ( tss != null ) {
 				this.error2(tss.f1, tss.f2);
 			}
-			MessageSendToMetaobjectAnnotation messageSendToMetaobjectAnnotation = null;
+			MessageSendToAnnotation messageSendToAnnotation = null;
 			if ( symbol.token == Token.DOT_OCTOTHORPE ) {
 				// if ( symbol.token == Token.CYANSYMBOL ) {
-				messageSendToMetaobjectAnnotation = this
-						.parseMessageSendToMetaobjectAnnotation();
+				messageSendToAnnotation = this
+						.parseMessageSendToAnnotation();
 			}
 
-			if ( messageSendToMetaobjectAnnotation != null )
-				if ( !messageSendToMetaobjectAnnotation
+			if ( messageSendToAnnotation != null )
+				if ( !messageSendToAnnotation
 						.action(compilationUnit.getProgram(), unionExpr) ) {
 				error2(first, "No action associated to message '"
-						+ messageSendToMetaobjectAnnotation.getMessage() + "'");
+						+ messageSendToAnnotation.getMessage() + "'");
 				}
 
 			return unionExpr;
@@ -6121,7 +6135,7 @@ public final class Compiler implements Cloneable {
 					}
 				}
 
-				identExpr = new ExprIdentStar(identOne);
+				identExpr = new ExprIdentStar(currentMethod, identOne);
 			}
 			else {
 				final List<Symbol> identSymbolArray = new ArrayList<Symbol>();
@@ -6136,7 +6150,7 @@ public final class Compiler implements Cloneable {
 					identSymbolArray.add(symbol);
 					next();
 				}
-				identExpr = new ExprIdentStar(identSymbolArray, symbol);
+				identExpr = new ExprIdentStar(identSymbolArray, symbol, currentMethod);
 			}
 			if ( symbol.token == Token.LT_NOT_PREC_SPACE ) {
 
@@ -6155,16 +6169,16 @@ public final class Compiler implements Cloneable {
 				if ( arrayOfTypeList.size() == 0 ) error2(
 						identExpr.getFirstSymbol(),
 						"Missing parameter for generic prototype instantiation. Something like 'Stack<>'");
-				MessageSendToMetaobjectAnnotation messageSendToMetaobjectAnnotation = null;
+				MessageSendToAnnotation messageSendToAnnotation = null;
 				if ( symbol.token == Token.DOT_OCTOTHORPE ) {
 					// if ( symbol.token == Token.CYANSYMBOL ) {
-					messageSendToMetaobjectAnnotation = this
-							.parseMessageSendToMetaobjectAnnotation();
+					messageSendToAnnotation = this
+							.parseMessageSendToAnnotation();
 				}
 				ExprGenericPrototypeInstantiation gpi;
 				identExpr = gpi = new ExprGenericPrototypeInstantiation(
 						(ExprIdentStar) identExpr, arrayOfTypeList,
-						currentProgramUnit, messageSendToMetaobjectAnnotation);
+						currentPrototype, messageSendToAnnotation, currentMethod);
 
 				final Tuple2<Symbol, String> tss = checkExprGenericPrototypeInstantiation(
 						gpi);
@@ -6172,35 +6186,35 @@ public final class Compiler implements Cloneable {
 					this.error2(tss.f1, tss.f2);
 				}
 
-				if ( messageSendToMetaobjectAnnotation != null )
-					if ( !messageSendToMetaobjectAnnotation.action(
+				if ( messageSendToAnnotation != null )
+					if ( !messageSendToAnnotation.action(
 							compilationUnit.getProgram(),
 							(ExprGenericPrototypeInstantiation) identExpr) ) {
 					error2(identExpr.getFirstSymbol(),
 							"No action associated to message '"
-									+ messageSendToMetaobjectAnnotation
+									+ messageSendToAnnotation
 											.getMessage()
 									+ "'");
 					}
 			}
 			else {
 				if ( identExpr instanceof ExprIdentStar ) {
-					MessageSendToMetaobjectAnnotation messageSendToMetaobjectAnnotation = null;
+					MessageSendToAnnotation messageSendToAnnotation = null;
 					if ( symbol.token == Token.DOT_OCTOTHORPE ) {
 						// if ( symbol.token == Token.CYANSYMBOL ) {
-						messageSendToMetaobjectAnnotation = this
-								.parseMessageSendToMetaobjectAnnotation();
+						messageSendToAnnotation = this
+								.parseMessageSendToAnnotation();
 					}
 					((ExprIdentStar) identExpr)
-							.setMessageSendToMetaobjectAnnotation(
-									messageSendToMetaobjectAnnotation);
-					if ( messageSendToMetaobjectAnnotation != null ) {
-						if ( !messageSendToMetaobjectAnnotation.action(
+							.setMessageSendToAnnotation(
+									messageSendToAnnotation);
+					if ( messageSendToAnnotation != null ) {
+						if ( !messageSendToAnnotation.action(
 								compilationUnit.getProgram(),
 								(ExprIdentStar) identExpr) ) {
 							error2(identExpr.getFirstSymbol(),
 									"No action associated to message '"
-											+ messageSendToMetaobjectAnnotation
+											+ messageSendToAnnotation
 													.getMessage()
 											+ "'");
 						}
@@ -6222,7 +6236,7 @@ public final class Compiler implements Cloneable {
 											+ "interface. It cannot be a generic prototype");
 						}
 						identExpr = new ExprJavaArrayType(
-								(ExprIdentStar) identExpr, numDimensions);
+								(ExprIdentStar) identExpr, numDimensions, currentMethod);
 					}
 				}
 
@@ -6250,13 +6264,13 @@ public final class Compiler implements Cloneable {
 				error2(symbol, "letter, number, or '_' after ')'");
 			}
 			next();
-			return new ExprTypeof(typeofSymbol, exprType);
+			return new ExprTypeof(typeofSymbol, exprType, currentMethod);
 		default:
 			if ( isBasicType(symbol.token) || symbol.token == Token.STRING
 					|| symbol.token == Token.DYN ) {
 				final Symbol s = symbol;
 				next();
-				identExpr = new ExprIdentStar(s);
+				identExpr = new ExprIdentStar(currentMethod, s);
 
 				return checkAttachedAnnotations(identExpr);
 			}
@@ -6316,7 +6330,7 @@ public final class Compiler implements Cloneable {
 	/**
 	 * the current symbol is Token.DOT_OCTOTHORPE
 	 */
-	private MessageSendToMetaobjectAnnotation parseMessageSendToMetaobjectAnnotation() {
+	private MessageSendToAnnotation parseMessageSendToAnnotation() {
 
 		// # added
 		next();
@@ -6326,10 +6340,10 @@ public final class Compiler implements Cloneable {
 							+ foundSuch());
 		}
 		// # end added
-		MessageSendToMetaobjectAnnotation messageSendToMetaobjectAnnotation;
+		MessageSendToAnnotation messageSendToAnnotation;
 		final String messageName = symbol.getSymbolString();
 		final Symbol firstSymbol = symbol;
-		messageSendToMetaobjectAnnotation = new MessageSendToMetaobjectAnnotation(
+		messageSendToAnnotation = new MessageSendToAnnotation(
 				messageName);
 		if ( !MetaInfoServer.metaobjectAnnotationMethodNameSet
 				.contains(messageName) ) {
@@ -6350,7 +6364,7 @@ public final class Compiler implements Cloneable {
 																	// ==
 																	// Token.CYANSYMBOL
 																	// ) {
-					messageSendToMetaobjectAnnotation
+					messageSendToAnnotation
 							.addExpr(symbol.getSymbolString());
 					++numParam;
 					next();
@@ -6384,7 +6398,7 @@ public final class Compiler implements Cloneable {
 			 */
 		}
 
-		return messageSendToMetaobjectAnnotation;
+		return messageSendToAnnotation;
 	}
 
 	/**
@@ -6412,7 +6426,7 @@ public final class Compiler implements Cloneable {
 	 */
 	static public Expr parseSingleTypeFromString(String typeAsString,
 			Symbol symUsedInError, String message,
-			CompilationUnitSuper compUnit, ProgramUnit currentPU
+			CompilationUnitSuper compUnit, Prototype currentPU
 	// , Compiler compiler
 	) {
 
@@ -6426,7 +6440,7 @@ public final class Compiler implements Cloneable {
 		 *
 		 * ExprGenericPrototypeInstantiation gpi = new
 		 * ExprGenericPrototypeInstantiation( typeIdent, realTypeListList,
-		 * env.getCurrentProgramUnit()); return
+		 * env.getCurrentPrototype()); return
 		 * CompilerManager.createGenericPrototype(gpi, env); *
 		 */
 
@@ -6436,9 +6450,9 @@ public final class Compiler implements Cloneable {
 		lexerFromString = comp.lexer;
 //		lexerFromString = new Lexer(sourceCode, compUnit,
 //				new HashSet<meta.CompilationInstruction>(), comp);
-		Expr programUnitAsExpr = null;
+		Expr prototypeAsExpr = null;
 		try {
-			programUnitAsExpr = singleTypeFromStringRec(symUsedInError,
+			prototypeAsExpr = singleTypeFromStringRec(symUsedInError,
 					compUnit, currentPU, message);
 		}
 		catch (final CompileErrorException cee) {
@@ -6451,7 +6465,7 @@ public final class Compiler implements Cloneable {
 			 */
 			throw new CompileErrorException(cee.getMessage());
 		}
-		return programUnitAsExpr;
+		return prototypeAsExpr;
 	}
 
 	/**
@@ -6471,7 +6485,7 @@ public final class Compiler implements Cloneable {
 
 	static public Type singleTypeFromString(String typeAsString,
 			Symbol symUsedInError, String message, CompilationUnit compUnit,
-			ProgramUnit currentPU, Env env) {
+			Prototype currentPU, Env env) {
 
 		Type p = null;
 		try {
@@ -6499,7 +6513,7 @@ public final class Compiler implements Cloneable {
 	 */
 	static public Type singleTypeFromStringThrow(String typeAsString,
 			Symbol symUsedInError, String message, CompilationUnit compUnit,
-			ProgramUnit currentPU, Env env) {
+			Prototype currentPU, Env env) {
 
 		/*
 		 * Symbol sym = this.getFirstSymbol();
@@ -6511,7 +6525,7 @@ public final class Compiler implements Cloneable {
 		 *
 		 * ExprGenericPrototypeInstantiation gpi = new
 		 * ExprGenericPrototypeInstantiation( typeIdent, realTypeListList,
-		 * env.getCurrentProgramUnit()); return
+		 * env.getCurrentPrototype()); return
 		 * CompilerManager.createGenericPrototype(gpi, env); *
 		 */
 
@@ -6522,9 +6536,9 @@ public final class Compiler implements Cloneable {
 
 //		lexerFromString = new Lexer(typeAsString.toCharArray(), compUnit,
 //				new HashSet<meta.CompilationInstruction>(), null);
-		Expr programUnitAsExpr = null;
+		Expr prototypeAsExpr = null;
 		try {
-			programUnitAsExpr = singleTypeFromStringRec(symUsedInError,
+			prototypeAsExpr = singleTypeFromStringRec(symUsedInError,
 					compUnit, currentPU, message);
 		}
 		catch (final CompileErrorException cee) {
@@ -6537,12 +6551,12 @@ public final class Compiler implements Cloneable {
 			 */
 			throw new CompileErrorException(cee.getMessage());
 		}
-		if ( programUnitAsExpr instanceof ExprGenericPrototypeInstantiation ) {
+		if ( prototypeAsExpr instanceof ExprGenericPrototypeInstantiation ) {
 			return CompilerManager.createGenericPrototype(
-					(ExprGenericPrototypeInstantiation) programUnitAsExpr, env);
+					(ExprGenericPrototypeInstantiation) prototypeAsExpr, env);
 		}
-		else if ( programUnitAsExpr instanceof ExprIdentStar ) {
-			final ExprIdentStar idStar = (ExprIdentStar) programUnitAsExpr;
+		else if ( prototypeAsExpr instanceof ExprIdentStar ) {
+			final ExprIdentStar idStar = (ExprIdentStar) prototypeAsExpr;
 			final List<Symbol> symList = idStar.getIdentSymbolArray();
 			final int size = symList.size();
 			String packageName = "";
@@ -6558,9 +6572,9 @@ public final class Compiler implements Cloneable {
 				return Type.Dyn;
 			}
 
-			ProgramUnit pu;
+			Prototype pu;
 			if ( packageName.length() == 0 ) {
-				pu = env.searchVisibleProgramUnit(prototypeName, symUsedInError,
+				pu = env.searchVisiblePrototype(prototypeName, symUsedInError,
 						true);
 			}
 			else {
@@ -6610,7 +6624,7 @@ public final class Compiler implements Cloneable {
 	 * @return
 	 */
 	static public Expr singleTypeFromStringRec(Symbol symUsedInError,
-			CompilationUnitSuper compUnit, ProgramUnit currentPU,
+			CompilationUnitSuper compUnit, Prototype currentPU,
 			String errorMessage) {
 		Symbol identOne;
 
@@ -6627,7 +6641,7 @@ public final class Compiler implements Cloneable {
 			identOne = lexerFromString.symbol;
 			lexerFromString.next();
 			if ( lexerFromString.symbol.token != Token.PERIOD ) {
-				identExpr = new ExprIdentStar(identOne);
+				identExpr = new ExprIdentStar(null, identOne);
 			}
 			else {
 				final List<Symbol> identSymbolArray = new ArrayList<Symbol>();
@@ -6643,7 +6657,7 @@ public final class Compiler implements Cloneable {
 					identSymbolArray.add(lexerFromString.symbol);
 					lexerFromString.next();
 				}
-				identExpr = new ExprIdentStar(identSymbolArray, null);
+				identExpr = new ExprIdentStar(identSymbolArray, null, null);
 			}
 			if ( lexerFromString.symbol.token == Token.LT_NOT_PREC_SPACE ) {
 
@@ -6665,7 +6679,7 @@ public final class Compiler implements Cloneable {
 				ExprGenericPrototypeInstantiation gpi;
 				identExpr = gpi = new ExprGenericPrototypeInstantiation(
 						(ExprIdentStar) identExpr, arrayOfTypeList, currentPU,
-						null);
+						null, null);
 
 				final Tuple2<Symbol, String> tss = checkExprGenericPrototypeInstantiation(
 						gpi);
@@ -6680,7 +6694,7 @@ public final class Compiler implements Cloneable {
 					|| lexerFromString.symbol.token == Token.DYN ) {
 				final Symbol s = lexerFromString.symbol;
 				lexerFromString.next();
-				return new ExprIdentStar(s);
+				return new ExprIdentStar(null, s);
 			}
 			else {
 				staticError(symUsedInError,
@@ -6721,7 +6735,7 @@ public final class Compiler implements Cloneable {
 
 		aTypeList.add(t);
 		while (symbol.token == Token.COMMA) {
-			if ( this.currentProgramUnit != null &&  this.currentProgramUnit.getOuterObject() == null ) {
+			if ( this.currentPrototype != null &&  this.currentPrototype.getOuterObject() == null ) {
 				lexer.checkWhiteSpaceParenthesisAfter(symbol, ",");
 			}
 			next();
@@ -6739,7 +6753,7 @@ public final class Compiler implements Cloneable {
 	}
 
 	private static List<Expr> typeListFromString(Symbol symUsedInError,
-			CompilationUnitSuper compUnit, ProgramUnit currentPU,
+			CompilationUnitSuper compUnit, Prototype currentPU,
 			String errorMessage) {
 
 		final List<Expr> aTypeList = new ArrayList<Expr>();
@@ -6762,8 +6776,8 @@ public final class Compiler implements Cloneable {
 	}
 
 	public void slotDec(ObjectDec currentObject,
-			List<AnnotationAt> nonAttachedMetaobjectAnnotationList,
-			List<AnnotationAt> attachedMetaobjectAnnotationList,
+			List<AnnotationAt> nonAttachedAnnotationList,
+			List<AnnotationAt> attachedAnnotationList,
 			Symbol firstSlotSymbol, boolean compilerCreatedMethod) {
 
 		boolean isFinal = false;
@@ -6789,8 +6803,8 @@ public final class Compiler implements Cloneable {
 			if ( visibility == null ) visibility = Token.PRIVATE;
 
 			objectVariableDec(currentObject, visibility,
-					nonAttachedMetaobjectAnnotationList,
-					attachedMetaobjectAnnotationList, firstSlotSymbol, false,
+					nonAttachedAnnotationList,
+					attachedAnnotationList, firstSlotSymbol, false,
 					true);
 
 		}
@@ -6802,8 +6816,8 @@ public final class Compiler implements Cloneable {
 						|| symbol.token == Token.DYN ) {
 					if ( visibility == null ) visibility = Token.PRIVATE;
 					objectVariableDec(currentObject, visibility,
-							nonAttachedMetaobjectAnnotationList,
-							attachedMetaobjectAnnotationList, firstSlotSymbol,
+							nonAttachedAnnotationList,
+							attachedAnnotationList, firstSlotSymbol,
 							true, true);
 				}
 				else {
@@ -6821,15 +6835,15 @@ public final class Compiler implements Cloneable {
 						if ( symbol.token == Token.VAR ) {
 							next();
 							objectVariableDec(currentObject, visibility,
-									nonAttachedMetaobjectAnnotationList,
-									attachedMetaobjectAnnotationList,
+									nonAttachedAnnotationList,
+									attachedAnnotationList,
 									firstSlotSymbol, true, false);
 						}
 						else {
 							if ( symbol.token == Token.LET ) next();
 							objectVariableDec(currentObject, visibility,
-									nonAttachedMetaobjectAnnotationList,
-									attachedMetaobjectAnnotationList,
+									nonAttachedAnnotationList,
+									attachedAnnotationList,
 									firstSlotSymbol, true, false);
 						}
 
@@ -6841,8 +6855,8 @@ public final class Compiler implements Cloneable {
 				if ( visibility == null ) visibility = Token.PRIVATE;
 				next();
 				objectVariableDec(currentObject, visibility,
-						nonAttachedMetaobjectAnnotationList,
-						attachedMetaobjectAnnotationList, firstSlotSymbol,
+						nonAttachedAnnotationList,
+						attachedAnnotationList, firstSlotSymbol,
 						false, false);
 				break;
 			case IDENTCOLON:
@@ -6873,8 +6887,8 @@ public final class Compiler implements Cloneable {
 			case ABSTRACT:
 				if ( visibility == null ) visibility = Token.PUBLIC;
 				methodDec(currentObject, visibility, isFinal,
-						nonAttachedMetaobjectAnnotationList,
-						attachedMetaobjectAnnotationList,
+						nonAttachedAnnotationList,
+						attachedAnnotationList,
 						compilerCreatedMethod);
 				break;
 			case IDENT:
@@ -6882,8 +6896,8 @@ public final class Compiler implements Cloneable {
 				if ( visibility == null ) visibility = Token.PRIVATE;
 				if ( symbol.token == Token.LET ) next();
 				objectVariableDec(currentObject, visibility,
-						nonAttachedMetaobjectAnnotationList,
-						attachedMetaobjectAnnotationList, firstSlotSymbol,
+						nonAttachedAnnotationList,
+						attachedAnnotationList, firstSlotSymbol,
 						false, true);
 
 				break;
@@ -6906,8 +6920,8 @@ public final class Compiler implements Cloneable {
 	 */
 
 	private void objectVariableDec(ObjectDec currentObject, Token visibility,
-			List<AnnotationAt> nonAttachedMetaobjectAnnotationList,
-			List<AnnotationAt> attachedMetaobjectAnnotationList,
+			List<AnnotationAt> nonAttachedAnnotationList,
+			List<AnnotationAt> attachedAnnotationList,
 			Symbol firstSymbol, boolean shared, boolean isReadonly) {
 		Expr typeInDec = null;
 		Expr expr = null;
@@ -6970,8 +6984,8 @@ public final class Compiler implements Cloneable {
 
 				instVarDec = new FieldDec(currentObject, variableSymbol,
 						typeInDec, expr, visibility, shared,
-						nonAttachedMetaobjectAnnotationList,
-						attachedMetaobjectAnnotationList, firstSymbol,
+						nonAttachedAnnotationList,
+						attachedAnnotationList, firstSymbol,
 						isReadonly, cyanMetaobjectContextStack);
 
 				final CyanMetaobjectMacro cyanMacro = metaObjectMacroTable
@@ -6981,8 +6995,8 @@ public final class Compiler implements Cloneable {
 							"This field has the name of a macro keyword of a macro imported by this compilation unit");
 				}
 
-				if ( attachedMetaobjectAnnotationList != null ) {
-					for (final AnnotationAt annotation : attachedMetaobjectAnnotationList) {
+				if ( attachedAnnotationList != null ) {
+					for (final AnnotationAt annotation : attachedAnnotationList) {
 						if ( annotation.getCyanMetaobject().mayBeAttachedTo(
 								AttachedDeclarationKind.FIELD_DEC) ) {
 							annotation.setDeclaration(instVarDec.getI());
@@ -7003,7 +7017,7 @@ public final class Compiler implements Cloneable {
 
 						final CyanMetaobject cyanMetaobject = annotation
 								.getCyanMetaobject();
-						actionCompilerInfo_dpa(cyanMetaobject);
+						actionCompilerInfo_parsing(cyanMetaobject);
 
 					}
 				}
@@ -7032,13 +7046,13 @@ public final class Compiler implements Cloneable {
 					"; expected. A ';' should appear after a field receives a value in an expression");
 		}
 
-		if ( attachedMetaobjectAnnotationList != null ) {
+		if ( attachedAnnotationList != null ) {
 			if ( numVariableInThisDeclaration > 1 ) {
 				this.error2(firstSymbol,
 						"A metaobject annotation cannot be attached to a list of fields. Use one annotation for each variable");
 			}
 
-			for (final AnnotationAt annotation : attachedMetaobjectAnnotationList) {
+			for (final AnnotationAt annotation : attachedAnnotationList) {
 				if ( annotation.getCyanMetaobject()
 						.shouldBeAttachedToSomething() ) {
 					if ( !annotation.getCyanMetaobject().mayBeAttachedTo(
@@ -7076,14 +7090,14 @@ public final class Compiler implements Cloneable {
 
 	private void methodDec(ObjectDec currentObject, Token visibility,
 			boolean isFinal,
-			List<AnnotationAt> nonAttachedMetaobjectAnnotationList,
-			List<AnnotationAt> attachedMetaobjectAnnotationList,
+			List<AnnotationAt> nonAttachedAnnotationList,
+			List<AnnotationAt> attachedAnnotationList,
 			boolean compilerCreatedMethod) {
 
 		currentMethod = new MethodDec(currentObject, visibility,
-				isFinal || this.currentProgramUnit.getIsFinal(),
-				nonAttachedMetaobjectAnnotationList,
-				attachedMetaobjectAnnotationList, methodNumber++,
+				isFinal || this.currentPrototype.getIsFinal(),
+				nonAttachedAnnotationList,
+				attachedAnnotationList, methodNumber++,
 				compilerCreatedMethod,
 //						|| !this.cyanMetaobjectContextStack.isEmpty(),
 				cyanMetaobjectContextStack);
@@ -7091,8 +7105,8 @@ public final class Compiler implements Cloneable {
 		functionStack.clear();
 		this.parameterDecStack.clear();
 
-		if ( attachedMetaobjectAnnotationList != null ) {
-			for (final AnnotationAt annotation : attachedMetaobjectAnnotationList) {
+		if ( attachedAnnotationList != null ) {
+			for (final AnnotationAt annotation : attachedAnnotationList) {
 				if ( annotation.getCyanMetaobject()
 						.shouldBeAttachedToSomething() ) {
 					if ( !annotation.getCyanMetaobject().mayBeAttachedTo(
@@ -7110,7 +7124,7 @@ public final class Compiler implements Cloneable {
 		}
 
 		// List<AnnotationAt>
-		// attachedMetaobjectAnnotationList = null;
+		// attachedAnnotationList = null;
 
 		MethodSignature ms = null;
 		if ( symbol.token == Token.OVERRIDE ) {
@@ -7124,8 +7138,8 @@ public final class Compiler implements Cloneable {
 			next();
 
 		}
-		if ( attachedMetaobjectAnnotationList != null ) {
-			for (final AnnotationAt annotation : attachedMetaobjectAnnotationList) {
+		if ( attachedAnnotationList != null ) {
+			for (final AnnotationAt annotation : attachedAnnotationList) {
 				if ( annotation.getCyanMetaobject()
 						.mayBeAttachedTo(AttachedDeclarationKind.METHOD_DEC) ) {
 					annotation.setDeclaration(currentMethod == null ? null : currentMethod.getI());
@@ -7170,7 +7184,7 @@ public final class Compiler implements Cloneable {
 						symbol.getLineNumber(), symbol.getColumnNumber()));
 		}
 
-		if ( isFinal && this.currentProgramUnit.getIsFinal() ) {
+		if ( isFinal && this.currentPrototype.getIsFinal() ) {
 			error2(false, symbol,
 					"This prototype is final (it was not declared with 'open'). "
 							+ "Therefore it cannot have a 'final' method");
@@ -7179,11 +7193,11 @@ public final class Compiler implements Cloneable {
 		try {
 			this.prohibitTypeof = true;
 
-			if ( this.currentProgramUnit.getIsFinal()
+			if ( this.currentPrototype.getIsFinal()
 					&& visibility == Token.PROTECTED ) {
 				this.error2(symbol,
 						"Invalid 'protected' visibility. Prototype '"
-								+ this.currentProgramUnit.getName()
+								+ this.currentPrototype.getName()
 								+ "' is final, its declaration was not preceded by 'open'. "
 								+ "Therefore it cannot be inherited and visibility 'protected' for methods does not make sense");
 			}
@@ -7255,7 +7269,7 @@ public final class Compiler implements Cloneable {
 						"'initOnce' methods should be 'private'");
 			}
 			if ( currentMethod.getIsFinal()
-					&& !this.currentProgramUnit.getIsFinal()
+					&& !this.currentPrototype.getIsFinal()
 					|| currentMethod.isAbstract()
 					|| currentMethod.isIndexingMethod() )
 				error2(ms.getFirstSymbol(),
@@ -7345,13 +7359,13 @@ public final class Compiler implements Cloneable {
 			}
 		}
 
-		if ( currentMethod.getAttachedMetaobjectAnnotationList() != null ) {
+		if ( currentMethod.getAttachedAnnotationList() != null ) {
 			for (final Annotation annotation : this.currentMethod
-					.getAttachedMetaobjectAnnotationList()) {
+					.getAttachedAnnotationList()) {
 
 				final CyanMetaobject cyanMetaobject = annotation
 						.getCyanMetaobject();
-				actionCompilerInfo_dpa(cyanMetaobject);
+				actionCompilerInfo_parsing(cyanMetaobject);
 			}
 		}
 
@@ -7374,7 +7388,7 @@ public final class Compiler implements Cloneable {
 		boolean isInitOnce = name.equals("initOnce");
 		if ( isInit || isInitOnce || name.equals("new")
 				|| name.equals("new:") ) {
-			if ( currentProgramUnit instanceof InterfaceDec ) {
+			if ( currentPrototype instanceof InterfaceDec ) {
 				error(true, symbol,
 						"Methods 'init', 'init:', and 'initOnce' cannot be declared in interfaces",
 						"init",
@@ -7662,7 +7676,7 @@ public final class Compiler implements Cloneable {
 								+ foundSuch());
 					}
 					else {
-						e = new ExprSelfPeriodIdent(selfSymbol, symbol);
+						e = new ExprSelfPeriodIdent(selfSymbol, symbol, currentMethod);
 						next();
 					}
 				}
@@ -7675,7 +7689,7 @@ public final class Compiler implements Cloneable {
 							+ foundSuch());
 			next();
 
-			final StatementAssignmentList assignmentList = new StatementAssignmentList();
+			final StatementAssignmentList assignmentList = new StatementAssignmentList(currentMethod);
 			assignmentList.add(e);
 			// Tuple2<Expr, Boolean> t = exprBasicTypeLiteral_Ident();
 			/*
@@ -7723,7 +7737,7 @@ public final class Compiler implements Cloneable {
 				}
 				skipTo(Token.SEMICOLON, Token.END, Token.PUBLIC, Token.PRIVATE,
 						Token.PROTECTED, Token.FUNC, Token.OVERLOAD);
-				lastStatement = new StatementNull(symbol);
+				lastStatement = new StatementNull(symbol, currentMethod);
 				if ( symbol.token == Token.SEMICOLON )
 					next();
 				else if ( !startExpr(symbol) ) {
@@ -7790,7 +7804,7 @@ public final class Compiler implements Cloneable {
 						skipTo(Token.SEMICOLON, Token.END, Token.PUBLIC,
 								Token.PRIVATE, Token.PROTECTED, Token.FUNC,
 								Token.OVERLOAD);
-						lastStatement = new StatementNull(symbol);
+						lastStatement = new StatementNull(symbol, currentMethod);
 						if ( symbol.token == Token.SEMICOLON )
 							next();
 						else if ( !startExpr(symbol) ) {
@@ -7829,13 +7843,13 @@ public final class Compiler implements Cloneable {
 					.getColumnNumber();
 			int lineNumber = statList.get(0).getFirstSymbol().getLineNumber();
 			for (final Statement s : statList) {
-				if ( s instanceof ast.StatementMetaobjectAnnotation ) {
+				if ( s instanceof ast.StatementAnnotation ) {
 					/**
 					 * metaobjects CyanMetaobjectCompilationContextPush are
 					 * allowed to be non-indented
 					 */
-					final StatementMetaobjectAnnotation annotation = (StatementMetaobjectAnnotation) s;
-					if ( annotation.getMetaobjectAnnotation()
+					final StatementAnnotation annotation = (StatementAnnotation) s;
+					if ( annotation.getAnnotation()
 							.getCyanMetaobject() instanceof meta.cyanLang.CyanMetaobjectCompilationContextPush )
 						continue;
 				}
@@ -7846,7 +7860,7 @@ public final class Compiler implements Cloneable {
 				final Symbol firstSymbol = s.getFirstSymbolMayBeAnnotation();
 				if ( firstSymbol.getColumnNumber() != columnNumber
 						&& firstSymbol.getLineNumber() != lineNumber
-						&& !s.getProducedByMetaobjectAnnotation() ) {
+						&& !s.getCreatedByMetaobjects() ) {
 					columnNumber = statList.get(0).getFirstSymbol()
 							.getColumnNumber();
 					this.error2(s.getFirstSymbol(),
@@ -7867,9 +7881,9 @@ public final class Compiler implements Cloneable {
 					for (int j = i + 1; j < statList.size(); ++j) {
 						final Statement other = statList.get(j);
 						if ( !(other instanceof StatementNull)
-								&& !(other instanceof StatementMetaobjectAnnotation
-										&& ((StatementMetaobjectAnnotation) other)
-												.getMetaobjectAnnotation()
+								&& !(other instanceof StatementAnnotation
+										&& ((StatementAnnotation) other)
+												.getAnnotation()
 												.getCyanMetaobject() instanceof CyanMetaobjectCompilationContextPop) ) {
 							foundNonNullStatement = true;
 							break;
@@ -7909,7 +7923,7 @@ public final class Compiler implements Cloneable {
 			}
 			final Symbol breakSymbol = symbol;
 			next();
-			ret = new StatementBreak(breakSymbol);
+			ret = new StatementBreak(breakSymbol, currentMethod);
 			break;
 		case PLUSPLUS:
 			final Symbol plusPlus = symbol;
@@ -7925,7 +7939,7 @@ public final class Compiler implements Cloneable {
 						"'++' is an operator that can only be applied to identifiers (fields, variables)");
 			}
 			final ExprIdentStar id = (ExprIdentStar) idExpr;
-			ret = new StatementPlusPlusIdent(plusPlus, id);
+			ret = new StatementPlusPlusIdent(plusPlus, id, currentMethod);
 			break;
 		case MINUSMINUS:
 			final Symbol minusMinus = symbol;
@@ -7943,7 +7957,7 @@ public final class Compiler implements Cloneable {
 						"'++' is an operator that can only be applied to identifiers (fields, variables)");
 			}
 			final ExprIdentStar id2 = (ExprIdentStar) idExpr2;
-			ret = new StatementMinusMinusIdent(minusMinus, id2);
+			ret = new StatementMinusMinusIdent(minusMinus, id2, currentMethod);
 			break;
 		case VAR:
 			ret = localVariableDec(false);
@@ -7996,7 +8010,7 @@ public final class Compiler implements Cloneable {
 
 				// metaobject has no type, it is a statement
 
-				final AnnotationAt regularMetaobjectAnnotation = annotation(
+				final AnnotationAt regularAnnotation = annotation(
 						cyanMetaobject, metaobjectName, false);
 
 				if ( cyanMetaobject.mayBeAttachedTo(
@@ -8010,10 +8024,10 @@ public final class Compiler implements Cloneable {
 							this.error2(symbol,
 									"Annotations can be attached to just one declaration");
 						}
-						localVarDecList.setBeforeMetaobjectAnnotation(
-								regularMetaobjectAnnotation);
+						localVarDecList.setBeforeAnnotation(
+								regularAnnotation);
 						StatementLocalVariableDec slv = localVarDecList.getLocalVariableDecList().get(0);
-						regularMetaobjectAnnotation.setDeclaration(
+						regularAnnotation.setDeclaration(
 								slv == null ? null : slv.getI());
 						break;
 					case LET:
@@ -8023,20 +8037,20 @@ public final class Compiler implements Cloneable {
 							this.error2(symbol,
 									"Annotations can be attached to just one declaration");
 						}
-						localVarDecList.setBeforeMetaobjectAnnotation(
-								regularMetaobjectAnnotation);
+						localVarDecList.setBeforeAnnotation(
+								regularAnnotation);
 						slv = localVarDecList.getLocalVariableDecList().get(0);
-						regularMetaobjectAnnotation.setDeclaration(
+						regularAnnotation.setDeclaration(
 								slv == null ? null : slv.getI());
 						break;
 					default:
-						ret = new StatementMetaobjectAnnotation(
-								regularMetaobjectAnnotation);
+						ret = new StatementAnnotation(
+								regularAnnotation, currentMethod);
 					}
 				}
 				else {
-					ret = new StatementMetaobjectAnnotation(
-							regularMetaobjectAnnotation);
+					ret = new StatementAnnotation(
+							regularAnnotation, currentMethod);
 				}
 
 			}
@@ -8109,7 +8123,7 @@ public final class Compiler implements Cloneable {
 		case SEMICOLON:
 			final Symbol s = symbol;
 			next();
-			ret = new StatementNull(s);
+			ret = new StatementNull(s, currentMethod);
 			break;
 		default:
 
@@ -8119,13 +8133,13 @@ public final class Compiler implements Cloneable {
 				if ( cyanMacro != null ) {
 					final AnnotationMacroCall mCall = macroCall(cyanMacro,
 							true);
-					ret = mCall != null ? mCall : new ExprNonExpression();
+					ret = mCall != null ? mCall : new ExprNonExpression(currentMethod);
 					/*
 					 * if ( ! compInstSet.contains(saci.CompilationInstruction.
-					 * dpa_actions) ) { this.error(true, symbol,
+					 * parsing_actions) ) { this.error(true, symbol,
 					 * "macro call in a compiler step that does not allow macros"
 					 * , symbol.getSymbolString(), ErrorKind.
-					 * dpa_compilation_phase_literal_objects_and_macros_are_not_allowed
+					 * parsing_compilation_phase_literal_objects_and_macros_are_not_allowed
 					 * ); ret = new ExprNonExpression(); } else { ret =
 					 * macroCall(cyanMacro, false); }
 					 */
@@ -8150,7 +8164,7 @@ public final class Compiler implements Cloneable {
 				else {
 					final AnnotationMacroCall mCall = macroCall(cyanMacro,
 							true);
-					ret = mCall != null ? mCall : new ExprNonExpression();
+					ret = mCall != null ? mCall : new ExprNonExpression(currentMethod);
 				}
 
 			}
@@ -8172,10 +8186,10 @@ public final class Compiler implements Cloneable {
 		if ( symbol.token == Token.METAOBJECT_ANNOTATION ) {
 			if ( symbol.getSymbolString()
 					.equals(MetaHelper.popCompilationContextName) ) {
-				if ( ret.getAfterMetaobjectAnnotation() == null ) {
+				if ( ret.getAfterAnnotation() == null ) {
 					final AnnotationAt annotation = annotation(
 							false);
-					ret.setAfterMetaobjectAnnotation(annotation);
+					ret.setAfterAnnotation(annotation);
 				}
 			}
 		}
@@ -8191,7 +8205,7 @@ public final class Compiler implements Cloneable {
 		}
 
 
-		ret.setProducedByMetaobjectAnnotation(
+		ret.setCreatedByMetaobjects(
 				!this.cyanMetaobjectContextStack.empty());
 		return ret;
 	}
@@ -8209,6 +8223,7 @@ public final class Compiler implements Cloneable {
 		try {
 			lexer.pushMacroKeywords(cyanMacro);
 			ret = macroCallAux(cyanMacro, inExpr);
+			cyanMacro.setAnnotation(ret.getI());
 		}
 		finally {
 			lexer.popMacroKeywords(cyanMacro);
@@ -8221,7 +8236,7 @@ public final class Compiler implements Cloneable {
 	private AnnotationMacroCall macroCallAux(CyanMetaobjectMacro cyanMacro,
 			boolean inExpr) {
 
-		if ( !compInstSet.contains(meta.CompilationInstruction.dpa_actions) ) {
+		if ( !compInstSet.contains(meta.CompilationInstruction.parsing_actions) ) {
 			/*
 			 * found a macro in a compiler step that does not allow macros. See
 			 * the Figure in Chapter "Metaobjects" of the Cyan manual
@@ -8229,29 +8244,29 @@ public final class Compiler implements Cloneable {
 			this.error(true, symbol,
 					"macro call in a compiler step that does not allow macros",
 					symbol.getSymbolString(),
-					ErrorKind.dpa_compilation_phase_literal_objects_and_macros_are_not_allowed);
+					ErrorKind.parsing_compilation_phase_literal_objects_and_macros_are_not_allowed);
 			return null;
 		}
 
 		final Symbol startSymbol = symbol;
-		final CompilerMacro_dpa compilerMacro_dpa = new CompilerMacro_dpa(this);
-		// CompilationUnit compilationUnit, ProgramUnit programUnit, Symbol
+		final CompilerMacro_parsing compilerMacro_parsing = new CompilerMacro_parsing(this);
+		// CompilationUnit compilationUnit, Prototype prototype, Symbol
 		// firstSymbol
 		cyanMacro = cyanMacro.myClone();
 		final AnnotationMacroCall cyanMetaobjectMacroCall = new AnnotationMacroCall(
-				cyanMacro, this.compilationUnit, this.currentProgramUnit,
-				startSymbol, inExpr);
-		compilerMacro_dpa.setCyanMetaobjectMacro(cyanMetaobjectMacroCall);
+				cyanMacro, this.compilationUnit, this.currentPrototype,
+				startSymbol, inExpr, currentMethod);
+		compilerMacro_parsing.setCyanMetaobjectMacro(cyanMetaobjectMacroCall);
 
-		// // cyanMacro.setMetaobjectAnnotation(cyanMetaobjectMacroCall, 0);
+		// // cyanMacro.setAnnotation(cyanMetaobjectMacroCall, 0);
 
 		_CyanMetaobjectMacro other = (_CyanMetaobjectMacro ) cyanMacro.getMetaobjectInCyan();
 		try {
 			if ( other == null ) {
-				cyanMacro.dpa_parseMacro(compilerMacro_dpa);
+				cyanMacro.parsing_parseMacro(compilerMacro_parsing);
 			}
 			else {
-				other._dpa__parseMacro_1(compilerMacro_dpa);
+				other._parsing__parseMacro_1(compilerMacro_parsing);
 			}
 		}
 		catch (final error.CompileErrorException e) {
@@ -8259,7 +8274,7 @@ public final class Compiler implements Cloneable {
 		}
 		catch (final NoClassDefFoundError e) {
 			error2(meta.GetHiddenItem.getHiddenSymbol(
-					cyanMacro.getMetaobjectAnnotation().getFirstSymbol()),
+					cyanMacro.getAnnotation().getFirstSymbol()),
 					e.getMessage() + " "
 							+ NameServer.messageClassNotFoundException);
 		}
@@ -8272,42 +8287,44 @@ public final class Compiler implements Cloneable {
 		}
 
 		cyanMetaobjectMacroCall
-				.setExprStatList(compilerMacro_dpa.getExprStatList());
+				.setExprStatList(compilerMacro_parsing.getExprStatList());
 
 		cyanMetaobjectMacroCall.setLastSymbolMacroCall(meta.GetHiddenItem
-				.getHiddenSymbol(compilerMacro_dpa.getLastSymbol()));
+				.getHiddenSymbol(compilerMacro_parsing.getLastSymbol()));
 
-		this.copyLexerData(compilerMacro_dpa.compiler);
+		this.copyLexerData(compilerMacro_parsing.compiler);
 		cyanMetaobjectMacroCall.setNextSymbol(symbol);
 
-		if ( currentProgramUnit != null ) {
-			currentProgramUnit.addMetaobjectAnnotation(cyanMetaobjectMacroCall);
-			cyanMetaobjectMacroCall.setProgramUnit(currentProgramUnit);
-			cyanMetaobjectMacroCall.setMetaobjectAnnotationNumber(
-					currentProgramUnit.getIncMetaobjectAnnotationNumber());
+		if ( currentPrototype != null ) {
+			currentPrototype.addAnnotation(cyanMetaobjectMacroCall);
+			cyanMetaobjectMacroCall.setPrototype(currentPrototype);
+			cyanMetaobjectMacroCall.setAnnotationNumber(
+					currentPrototype.getIncAnnotationNumber());
 		}
 		cyanMetaobjectMacroCall.setCompilationUnit(compilationUnit);
 
-		if ( (cyanMacro instanceof IActionNewPrototypes_dpa || (other != null && other instanceof _IActionNewPrototypes__dpa))
-				&& (this.currentProgramUnit == null
-						|| !this.currentProgramUnit.isGeneric())
+		if ( (cyanMacro instanceof IActionNewPrototypes_parsing
+				|| (other != null && other instanceof _IActionNewPrototypes__parsing)
+				)
+				&& (this.currentPrototype == null
+						|| !this.currentPrototype.isGeneric())
 				&& this.compilationStep == CompilationStep.step_1 ) {
-			// this.compInstSet.contains(CompilationInstruction.dpa_actions) ) {
-			final ICompilerAction_dpa compilerAction_dpa1 = new Compiler_dpa(
+			// this.compInstSet.contains(CompilationInstruction.parsing_actions) ) {
+			final ICompilerAction_parsing compilerAction_dpa1 = new Compiler_parsing(
 					this, lexer, null);
 
 			List<Tuple2<String, StringBuffer>> prototypeNameCodeList = null;
 			try {
 
 				if ( other == null ) {
-					final IActionNewPrototypes_dpa actionNewPrototype = (IActionNewPrototypes_dpa) cyanMacro;
+					final IActionNewPrototypes_parsing actionNewPrototype = (IActionNewPrototypes_parsing) cyanMacro;
 					prototypeNameCodeList = actionNewPrototype
-							.dpa_NewPrototypeList(compilerAction_dpa1);
+							.parsing_NewPrototypeList(compilerAction_dpa1);
 				}
 				else {
-					_IActionNewPrototypes__dpa anp = (_IActionNewPrototypes__dpa ) other;
+					_IActionNewPrototypes__parsing anp = (_IActionNewPrototypes__parsing ) other;
 					_Array_LT_GP__Tuple_LT_GP_CyString_GP_CyString_GT__GT array =
-							anp._dpa__NewPrototypeList_1(compilerAction_dpa1);
+							anp._parsing__NewPrototypeList_1(compilerAction_dpa1);
 					int size = array._size().n;
 					if ( size > 0 ) {
 						prototypeNameCodeList = new ArrayList<>();
@@ -8340,16 +8357,22 @@ public final class Compiler implements Cloneable {
 				metaobjectError(cyanMacro, cyanMetaobjectMacroCall);
 			}
 			if ( prototypeNameCodeList != null ) {
+				CyanPackage currentCyanPackage = this.compilationUnit
+						.getCyanPackage();
+
 				for (final Tuple2<String, StringBuffer> prototypeNameCode : prototypeNameCodeList) {
+					String prototypeName = prototypeNameCode.f1;
 					final Tuple2<CompilationUnit, String> t = this.project
 							.getCompilerManager().createNewPrototype(
-									prototypeNameCode.f1, prototypeNameCode.f2,
+									prototypeName, prototypeNameCode.f2,
 									this.compilationUnit.getCompilerOptions(),
 									this.compilationUnit.getCyanPackage());
 					if ( t != null && t.f2 != null ) {
 						this.error2(cyanMetaobjectMacroCall.getFirstSymbol(),
 								t.f2);
 					}
+					currentCyanPackage.addPrototypeNameAnnotationInfo(prototypeName,
+							cyanMetaobjectMacroCall);
 				}
 			}
 
@@ -8421,7 +8444,7 @@ public final class Compiler implements Cloneable {
 
 			final StatementLocalVariableDec localVariableDec = new StatementLocalVariableDec(
 					variableSymbol, typeInDec, e, currentMethod,
-					functionStack.size() + 1, true);
+					functionStack.size() + 1, true, currentMethod);
 
 			final CyanMetaobjectMacro cyanMacro = metaObjectMacroTable
 					.get(variableSymbol.getSymbolString());
@@ -8511,7 +8534,7 @@ public final class Compiler implements Cloneable {
 		}
 
 		return new StatementCast(castSymbol, castRecordList, castStatementList,
-				elseStatementList, rightCBEndsIf, lastElse);
+				elseStatementList, rightCBEndsIf, lastElse, currentMethod);
 	}
 
 	/**
@@ -8671,7 +8694,7 @@ public final class Compiler implements Cloneable {
 			}
 		}
 		return new StatementIf(ifSymbol, ifExprList, ifStatementList,
-				elseStatementList, rightCBEndsIf, lastElse);
+				elseStatementList, rightCBEndsIf, lastElse, currentMethod);
 
 	}
 
@@ -8712,7 +8735,7 @@ public final class Compiler implements Cloneable {
 
 		}
 		return new StatementWhile(whileSymbol, booleanExpr, statementList,
-				rightCBEndsIf);
+				rightCBEndsIf, currentMethod);
 	}
 
 	private StatementRepeat repeatStatement() {
@@ -8746,7 +8769,7 @@ public final class Compiler implements Cloneable {
 		final Expr booleanExpr = expr();
 
 		return new StatementRepeat(repeatSymbol, booleanExpr, statementList,
-				untilSymbol);
+				untilSymbol, currentMethod);
 	}
 
 	private StatementFor forStatement() {
@@ -8810,7 +8833,7 @@ public final class Compiler implements Cloneable {
 
 		final StatementLocalVariableDec localVariableDec = new StatementLocalVariableDec(
 				variableSymbol, null, null, currentMethod,
-				functionStack.size() + 1, true);
+				functionStack.size() + 1, true, currentMethod);
 
 		final CyanMetaobjectMacro cyanMacro = metaObjectMacroTable
 				.get(variableSymbol.getSymbolString());
@@ -8868,7 +8891,7 @@ public final class Compiler implements Cloneable {
 		}
 
 		return new StatementFor(forSymbol, typeInDec, localVariableDec, forExpr,
-				statementList, rightCBEndsIf);
+				statementList, rightCBEndsIf, currentMethod);
 	}
 
 	/*
@@ -8882,7 +8905,7 @@ public final class Compiler implements Cloneable {
 		final Symbol typeSymbol = symbol;
 		next();
 		final Expr expr = expr();
-		final StatementType statementType = new StatementType(typeSymbol, expr);
+		final StatementType statementType = new StatementType(typeSymbol, expr, currentMethod);
 		if ( this.symbol.token != Token.CASE ) {
 			this.error2(this.symbol,
 					"'case' expected after the expression of 'type'");
@@ -8902,7 +8925,7 @@ public final class Compiler implements Cloneable {
 				next();
 				localVariableDec = new StatementLocalVariableDec(
 						(SymbolIdent) idSymbol, null, null, currentMethod,
-						functionStack.size() + 1, true);
+						functionStack.size() + 1, true, currentMethod);
 
 				final CyanMetaobjectMacro cyanMacro = metaObjectMacroTable
 						.get(idSymbol.getSymbolString());
@@ -9027,7 +9050,7 @@ public final class Compiler implements Cloneable {
 	private StatementLocalVariableDecList localVariableDec(boolean isReadonly) {
 		Expr typeInDec = null;
 		final StatementLocalVariableDecList localVariableDecList = new StatementLocalVariableDecList(
-				symbol);
+				symbol, currentMethod);
 		SymbolIdent variableSymbol;
 		next();
 
@@ -9113,7 +9136,7 @@ public final class Compiler implements Cloneable {
 		}
 		/*
 		 * if ( annotation != null ) {
-		 * localVariableDecList.setBeforeMetaobjectAnnotation(annotation);
+		 * localVariableDecList.setBeforeAnnotation(annotation);
 		 * annotation.setDeclaration(localVariableDecList); }
 		 */
 		return localVariableDecList;
@@ -9149,7 +9172,7 @@ public final class Compiler implements Cloneable {
 
 		final StatementLocalVariableDec localVariableDec = new StatementLocalVariableDec(
 				variableSymbol, typeInDec, expr, currentMethod,
-				functionStack.size() + 1, isReadonly);
+				functionStack.size() + 1, isReadonly, currentMethod);
 
 		final CyanMetaobjectMacro cyanMacro = metaObjectMacroTable
 				.get(variableSymbol.getSymbolString());
@@ -9197,7 +9220,7 @@ public final class Compiler implements Cloneable {
 					"Return of a function with '^'. But this statement is not inside a function. ",
 					true);
 			return new StatementReturnFunction(returnSymbol, returnedExpr,
-					null);
+					null, currentMethod);
 		}
 
 		/*
@@ -9210,7 +9233,7 @@ public final class Compiler implements Cloneable {
 		 */
 
 		final StatementReturnFunction statementReturnFunction = new StatementReturnFunction(
-				returnSymbol, returnedExpr, functionStack.peek());
+				returnSymbol, returnedExpr, functionStack.peek(), currentMethod);
 		functionStack.peek()
 				.addStatementReturnFunction(statementReturnFunction);
 		return statementReturnFunction;
@@ -9236,7 +9259,7 @@ public final class Compiler implements Cloneable {
 			stat = e;
 		else {
 			checkIfAssignable(e);
-			assignmentList = new StatementAssignmentList();
+			assignmentList = new StatementAssignmentList(currentMethod);
 			assignmentList.add(e);
 			if ( symbol.token == Token.COMMA ) {
 				while (symbol.token == Token.COMMA) {
@@ -9262,10 +9285,10 @@ public final class Compiler implements Cloneable {
 		if ( symbol.token == Token.METAOBJECT_ANNOTATION ) {
 			if ( symbol.getSymbolString()
 					.equals(MetaHelper.popCompilationContextName) ) {
-				if ( stat.getAfterMetaobjectAnnotation() == null ) {
+				if ( stat.getAfterAnnotation() == null ) {
 					final AnnotationAt annotation = annotation(
 							false);
-					stat.setAfterMetaobjectAnnotation(annotation);
+					stat.setAfterAnnotation(annotation);
 				}
 			}
 		}
@@ -9308,7 +9331,7 @@ public final class Compiler implements Cloneable {
 			symbolOperator = (SymbolOperator) symbol;
 			next();
 			final Expr rightExpr = exprXor();
-			leftExpr = new ExprBooleanOr(leftExpr, symbolOperator, rightExpr);
+			leftExpr = new ExprBooleanOr(leftExpr, symbolOperator, rightExpr, currentMethod);
 
 		}
 		leftExpr.setLastSymbol(previousSymbol);
@@ -9329,7 +9352,7 @@ public final class Compiler implements Cloneable {
 			final Expr rightExpr = exprAnd();
 			leftExpr = new ExprMessageSendWithKeywordsToExpr(leftExpr,
 					new MessageBinaryOperator(symbolOperator, rightExpr),
-					symbol);
+					symbol, currentMethod);
 
 		}
 		return leftExpr;
@@ -9344,7 +9367,7 @@ public final class Compiler implements Cloneable {
 			symbolOperator = (SymbolOperator) symbol;
 			next();
 			final Expr rightExpr = exprEqGt();
-			leftExpr = new ExprBooleanAnd(leftExpr, symbolOperator, rightExpr);
+			leftExpr = new ExprBooleanAnd(leftExpr, symbolOperator, rightExpr, currentMethod);
 
 		}
 		return leftExpr;
@@ -9361,7 +9384,7 @@ public final class Compiler implements Cloneable {
 			final Expr rightExpr = exprBinExclamation();
 			leftExpr = new ExprMessageSendWithKeywordsToExpr(leftExpr,
 					new MessageBinaryOperator(symbolOperator, rightExpr),
-					symbol);
+					symbol, currentMethod);
 
 		}
 		return leftExpr;
@@ -9379,7 +9402,7 @@ public final class Compiler implements Cloneable {
 			final Expr rightExpr = exprRel();
 			leftExpr = new ExprMessageSendWithKeywordsToExpr(leftExpr,
 					new MessageBinaryOperator(symbolOperator, rightExpr),
-					symbol);
+					symbol, currentMethod);
 
 		}
 		return leftExpr;
@@ -9435,7 +9458,7 @@ public final class Compiler implements Cloneable {
 			final Expr rightExpr = exprMSNonUnary();
 			leftExpr = new ExprMessageSendWithKeywordsToExpr(leftExpr,
 					new MessageBinaryOperator(symbolOperator, rightExpr),
-					symbol);
+					symbol, currentMethod);
 
 		}
 		return leftExpr;
@@ -9451,8 +9474,8 @@ public final class Compiler implements Cloneable {
 			next();
 			messageWithkeywords = messageSendNonUnary();
 			final ExprMessageSendWithKeywordsToSuper msSuper = new ExprMessageSendWithKeywordsToSuper(
-					superSymbol, messageWithkeywords, symbol);
-			this.currentProgramUnit.addMessageSendWithkeywordsToSuper(msSuper);
+					superSymbol, messageWithkeywords, symbol, currentMethod);
+			this.currentPrototype.addMessageSendWithkeywordsToSuper(msSuper);
 			return msSuper;
 		}
 		else {
@@ -9462,7 +9485,7 @@ public final class Compiler implements Cloneable {
 				// message send with keywords to "self"
 				messageWithkeywords = messageSendNonUnary();
 				return new ExprMessageSendWithKeywordsToExpr(null,
-						messageWithkeywords, symbol);
+						messageWithkeywords, symbol, currentMethod);
 			}
 			else {
 				final Expr e = exprOrGt();
@@ -9472,7 +9495,7 @@ public final class Compiler implements Cloneable {
 								&& canStartMessageSendNonUnary(next(0)) ) {
 					messageWithkeywords = messageSendNonUnary();
 					return new ExprMessageSendWithKeywordsToExpr(e,
-							messageWithkeywords, symbol);
+							messageWithkeywords, symbol, currentMethod);
 				}
 				return e;
 			}
@@ -9492,7 +9515,7 @@ public final class Compiler implements Cloneable {
 			final Expr rightExpr = exprBinPlusPlus_MinusMinus();
 			leftExpr = new ExprMessageSendWithKeywordsToExpr(leftExpr,
 					new MessageBinaryOperator(symbolOperator, rightExpr),
-					symbol);
+					symbol, currentMethod);
 
 		}
 		return leftExpr;
@@ -9510,7 +9533,7 @@ public final class Compiler implements Cloneable {
 			final Expr rightExpr = exprInter();
 			leftExpr = new ExprMessageSendWithKeywordsToExpr(leftExpr,
 					new MessageBinaryOperator(symbolOperator, rightExpr),
-					symbol);
+					symbol, currentMethod);
 
 		}
 		return leftExpr;
@@ -9530,7 +9553,7 @@ public final class Compiler implements Cloneable {
 			final Expr rightExpr = exprAdd();
 			leftExpr = new ExprMessageSendWithKeywordsToExpr(leftExpr,
 					new MessageBinaryOperator(symbolOperator, rightExpr),
-					symbol);
+					symbol, currentMethod);
 
 		}
 		return leftExpr;
@@ -9549,7 +9572,7 @@ public final class Compiler implements Cloneable {
 			final Expr rightExpr = exprMult();
 			leftExpr = new ExprMessageSendWithKeywordsToExpr(leftExpr,
 					new MessageBinaryOperator(symbolOperator, rightExpr),
-					symbol);
+					symbol, currentMethod);
 
 		}
 		return leftExpr;
@@ -9569,7 +9592,7 @@ public final class Compiler implements Cloneable {
 			final Expr rightExpr = exprBit();
 			leftExpr = new ExprMessageSendWithKeywordsToExpr(leftExpr,
 					new MessageBinaryOperator(symbolOperator, rightExpr),
-					symbol);
+					symbol, currentMethod);
 
 		}
 		return leftExpr;
@@ -9587,7 +9610,7 @@ public final class Compiler implements Cloneable {
 			final Expr rightExpr = exprShift();
 			leftExpr = new ExprMessageSendWithKeywordsToExpr(leftExpr,
 					new MessageBinaryOperator(symbolOperator, rightExpr),
-					symbol);
+					symbol, currentMethod);
 			/*
 			 * switch ( symbolOperator.token ) { case BITAND: leftExpr = new
 			 * ExprBitAnd(leftExpr, symbolOperator, exprShift(firstExpr));
@@ -9619,7 +9642,7 @@ public final class Compiler implements Cloneable {
 			final Expr rightExpr = exprColonColonOp();
 			leftExpr = new ExprMessageSendWithKeywordsToExpr(leftExpr,
 					new MessageBinaryOperator(symbolOperator, rightExpr),
-					symbol);
+					symbol, currentMethod);
 
 		}
 		return leftExpr;
@@ -9639,7 +9662,7 @@ public final class Compiler implements Cloneable {
 			final Expr rightExpr = exprDotOp();
 			leftExpr = new ExprMessageSendWithKeywordsToExpr(leftExpr,
 					new MessageBinaryOperator(symbolOperator, rightExpr),
-					symbol);
+					symbol, currentMethod);
 
 		}
 		return leftExpr;
@@ -9663,7 +9686,7 @@ public final class Compiler implements Cloneable {
 			final Expr rightExpr = exprUnaryUnMS2();
 			leftExpr = new ExprMessageSendWithKeywordsToExpr(leftExpr,
 					new MessageBinaryOperator(symbolOperator, rightExpr),
-					symbol);
+					symbol, currentMethod);
 
 		}
 		return leftExpr;
@@ -9689,7 +9712,7 @@ public final class Compiler implements Cloneable {
 				++numUnarySends;
 			}
 			ExprMessageSendUnaryChainToExpr chain = new ExprMessageSendUnaryChainToExpr(
-					e);
+					e, currentMethod);
 
 			int numBackquotes = 0;
 			while (symbol.token == Token.IDENT || symbol.token == Token.INTER_ID
@@ -9778,7 +9801,7 @@ public final class Compiler implements Cloneable {
 						|| symbol.token == Token.INTER_DOT_ID
 						|| symbol.token == Token.BACKQUOTE
 								&& next(0).token == Token.IDENT ) {
-					chain = new ExprMessageSendUnaryChainToExpr(chain);
+					chain = new ExprMessageSendUnaryChainToExpr(chain, currentMethod);
 				}
 
 				++numUnarySends;
@@ -9824,10 +9847,10 @@ public final class Compiler implements Cloneable {
 				}
 			}
 			next();
-			e = new ExprIndexed(e, indexOfExpr, firstIndexOperator);
+			e = new ExprIndexed(e, indexOfExpr, firstIndexOperator, currentMethod);
 		}
 		if ( unarySymbolOperator != null ) {
-			e = new ExprUnary(unarySymbolOperator, e);
+			e = new ExprUnary(unarySymbolOperator, e, currentMethod);
 		}
 		/*
 		 * if ( mayBeMessageSendWithkeywords &&
@@ -9841,7 +9864,7 @@ public final class Compiler implements Cloneable {
 
 	private Expr exprPrimary() {
 
-		AnnotationAt regularMetaobjectAnnotation;
+		AnnotationAt regularAnnotation;
 		Symbol receiverSymbol, selfSymbol;
 		switch (symbol.token) {
 		case SELF:
@@ -9863,12 +9886,12 @@ public final class Compiler implements Cloneable {
 					// ExprFunction function = functionIter.next();
 					// function.addPossiblyAcccessedIdentifier(exprIdentStar);
 					// }
-					e = new ExprSelfPeriodIdent(selfSymbol, symbol);
+					e = new ExprSelfPeriodIdent(selfSymbol, symbol, currentMethod);
 					next();
 				}
 			}
 			else
-				e = new ExprSelf(selfSymbol, currentProgramUnit);
+				e = new ExprSelf(selfSymbol, currentPrototype, currentMethod);
 			return e;
 
 		case SUPER:
@@ -9884,7 +9907,7 @@ public final class Compiler implements Cloneable {
 							&& next(0).token == Token.IDENT ) {
 				ExprMessageSendUnaryChain chain;
 				chain = new ExprMessageSendUnaryChainToSuper(receiverSymbol,
-						symbol);
+						symbol, currentMethod);
 
 				if ( symbol.token == Token.BACKQUOTE ) {
 					chain.setBackQuote(true);
@@ -9971,12 +9994,12 @@ public final class Compiler implements Cloneable {
 								+ foundSuch());
 					}
 					else {
-						e = new ExprSelf__PeriodIdent(selfSymbol, symbol);
+						e = new ExprSelf__PeriodIdent(selfSymbol, symbol, currentMethod);
 						next();
 					}
 				}
 				else
-					e = new ExprSelf__(selfSymbol);
+					e = new ExprSelf__(selfSymbol, currentMethod);
 				return e;
 			}
 			else {
@@ -10017,18 +10040,18 @@ public final class Compiler implements Cloneable {
 				error2(symbol, "letter, number, or '_' after ')'");
 			}
 			next();
-			return new ExprTypeof(typeofSymbol, exprType);
+			return new ExprTypeof(typeofSymbol, exprType, currentMethod);
 
 		case METAOBJECT_ANNOTATION:
 			/*
 			 * The grammar for this expression may be one of the following, in
-			 * which metaobjectAnnotation is a regular metaobject annotation, it
+			 * which annotation is a regular metaobject annotation, it
 			 * is not an annotation of markDeletedCode or
 			 * pushCompilationContext.
 			 *
-			 * metaobjectAnnotation metaobjectAnnotation markDeletedCode
+			 * annotation annotation markDeletedCode
 			 * pushCompilationContext code popCompilationContext
-			 * metaobjectAnnotation pushCompilationContext code
+			 * annotation pushCompilationContext code
 			 * popCompilationContext markDeletedCode pushCompilationContext code
 			 * popCompilationContext pushCompilationContext code
 			 * popCompilationContext
@@ -10038,13 +10061,13 @@ public final class Compiler implements Cloneable {
 			 * EXTREMELY redundant code. I know that. It will be correctly some
 			 * day. Maybe never.
 			 */
-			regularMetaobjectAnnotation = annotation(true);
+			regularAnnotation = annotation(true);
 
-			AnnotationAt nextMetaobjectAnnotation = null,
+			AnnotationAt nextAnnotation = null,
 					markDeletedCode = null, pushAnnotation = null,
 					popAnnotation = null;
 
-			final CyanMetaobjectAtAnnot cyanMetaobject = regularMetaobjectAnnotation
+			final CyanMetaobjectAtAnnot cyanMetaobject = regularAnnotation
 					.getCyanMetaobject();
 			if ( cyanMetaobject instanceof CyanMetaobjectCompilationMarkDeletedCode
 					|| cyanMetaobject instanceof CyanMetaobjectCompilationContextPush ) {
@@ -10061,8 +10084,8 @@ public final class Compiler implements Cloneable {
 					 * popCompilationContext
 					 */
 
-					markDeletedCode = regularMetaobjectAnnotation;
-					regularMetaobjectAnnotation = null;
+					markDeletedCode = regularAnnotation;
+					regularAnnotation = null;
 
 					if ( symbol.token != Token.METAOBJECT_ANNOTATION ) {
 						this.error2(symbol, "An annotation of metaobject '"
@@ -10104,7 +10127,7 @@ public final class Compiler implements Cloneable {
 						}
 						return new ExprSurroundedByContext(null,
 								markDeletedCode, pushAnnotation, insideExpr,
-								popAnnotation);
+								popAnnotation, currentMethod);
 					}
 
 				}
@@ -10112,8 +10135,8 @@ public final class Compiler implements Cloneable {
 					/*
 					 * pushCompilationContext code popCompilationContext
 					 */
-					pushAnnotation = regularMetaobjectAnnotation;
-					regularMetaobjectAnnotation = null;
+					pushAnnotation = regularAnnotation;
+					regularAnnotation = null;
 
 					final Expr insideExpr = expr();
 
@@ -10137,43 +10160,43 @@ public final class Compiler implements Cloneable {
 							return null;
 						}
 						return new ExprSurroundedByContext(null, null,
-								pushAnnotation, insideExpr, popAnnotation);
+								pushAnnotation, insideExpr, popAnnotation, currentMethod);
 					}
 
 				}
 			}
 			else {
 				/*
-				 * metaobjectAnnotation metaobjectAnnotation markDeletedCode
+				 * annotation annotation markDeletedCode
 				 * pushCompilationContext code popCompilationContext
-				 * metaobjectAnnotation pushCompilationContext code
+				 * annotation pushCompilationContext code
 				 * popCompilationContext
 				 *
 				 */
 				if ( symbol.token != Token.METAOBJECT_ANNOTATION ) {
 					/*
-					 * metaobjectAnnotation
+					 * annotation
 					 */
-					return regularMetaobjectAnnotation;
+					return regularAnnotation;
 				}
 				else {
 					/*
-					 * metaobjectAnnotation markDeletedCode
+					 * annotation markDeletedCode
 					 * pushCompilationContext code popCompilationContext
-					 * metaobjectAnnotation pushCompilationContext code
+					 * annotation pushCompilationContext code
 					 * popCompilationContext
 					 *
 					 */
-					nextMetaobjectAnnotation = annotation(true);
-					if ( nextMetaobjectAnnotation
+					nextAnnotation = annotation(true);
+					if ( nextAnnotation
 							.getCyanMetaobject() instanceof CyanMetaobjectCompilationMarkDeletedCode ) {
 						/*
-						 * metaobjectAnnotation markDeletedCode
+						 * annotation markDeletedCode
 						 * pushCompilationContext code popCompilationContext
 						 *
 						 */
 
-						markDeletedCode = nextMetaobjectAnnotation;
+						markDeletedCode = nextAnnotation;
 						if ( symbol.token != Token.METAOBJECT_ANNOTATION ) {
 							this.error2(symbol, "An annotation of metaobject '"
 									+ MetaHelper.pushCompilationContextName
@@ -10213,19 +10236,19 @@ public final class Compiler implements Cloneable {
 								return null;
 							}
 							return new ExprSurroundedByContext(
-									regularMetaobjectAnnotation,
+									regularAnnotation,
 									markDeletedCode, pushAnnotation, insideExpr,
-									popAnnotation);
+									popAnnotation, currentMethod);
 						}
 					}
-					else if ( nextMetaobjectAnnotation
+					else if ( nextAnnotation
 							.getCyanMetaobject() instanceof CyanMetaobjectCompilationContextPush ) {
 						/*
-						 * metaobjectAnnotation pushCompilationContext code
+						 * annotation pushCompilationContext code
 						 * popCompilationContext
 						 *
 						 */
-						pushAnnotation = nextMetaobjectAnnotation;
+						pushAnnotation = nextAnnotation;
 
 						final Expr insideExpr = expr();
 
@@ -10249,13 +10272,13 @@ public final class Compiler implements Cloneable {
 								return null;
 							}
 							return new ExprSurroundedByContext(
-									regularMetaobjectAnnotation, null,
-									pushAnnotation, insideExpr, popAnnotation);
+									regularAnnotation, null,
+									pushAnnotation, insideExpr, popAnnotation, currentMethod);
 						}
 
 					}
 					else {
-						this.error2(nextMetaobjectAnnotation.getFirstSymbol(),
+						this.error2(nextAnnotation.getFirstSymbol(),
 								"An annotation of metaobject '"
 										+ MetaHelper.pushCompilationContextName
 										+ "' was expected. Probably this is error was caused by incorrect use of metaobject annotations such as "
@@ -10288,7 +10311,7 @@ public final class Compiler implements Cloneable {
 				next();
 			}
 			exprPar = new ExprWithParenthesis(leftParSymbol, exprPar,
-					rightParSymbol);
+					rightParSymbol, currentMethod);
 			return exprPar;
 
 		case NULL:
@@ -10297,7 +10320,7 @@ public final class Compiler implements Cloneable {
 			if ( isBasicType(symbol.token) || symbol.token == Token.STRING ) {
 				final Symbol s = symbol;
 				next();
-				Expr retExpr = new ExprIdentStar(s);
+				Expr retExpr = new ExprIdentStar(currentMethod, s);
 
 				if ( symbol.token == Token.LEFTPAR ) {
 					/*
@@ -10316,7 +10339,7 @@ public final class Compiler implements Cloneable {
 
 					next();
 					retExpr = new ExprObjectCreation(retExpr, exprArray,
-							rightParSymbol
+							rightParSymbol, currentMethod
 							);
 				}
 				return retExpr;
@@ -10377,20 +10400,20 @@ public final class Compiler implements Cloneable {
 			if ( cyanMacro != null ) {
 				final AnnotationMacroCall mCall = macroCall(cyanMacro,
 						true);
-				return mCall != null ? mCall : new ExprNonExpression();
+				return mCall != null ? mCall : new ExprNonExpression(currentMethod);
 				/*
 				 * if ( !
-				 * compInstSet.contains(saci.CompilationInstruction.dpa_actions)
+				 * compInstSet.contains(saci.CompilationInstruction.parsing_actions)
 				 * ) { this.error(true, symbol,
 				 * "macro call in a compiler step that does not allow macros",
 				 * identOne.getSymbolString(), ErrorKind.
-				 * dpa_compilation_phase_literal_objects_and_macros_are_not_allowed
+				 * parsing_compilation_phase_literal_objects_and_macros_are_not_allowed
 				 * ); return new ExprNonExpression(); } else { return
 				 * macroCall(cyanMacro, true); }
 				 */
 			}
 
-			identExpr = new ExprIdentStar(identOne);
+			identExpr = new ExprIdentStar(currentMethod, identOne);
 			/** it is a parameter, local variable, field, unary method */
 			final VariableDecInterface localVarParameter = searchIdent(
 					identOne.getSymbolString());
@@ -10416,7 +10439,7 @@ public final class Compiler implements Cloneable {
 				identSymbolArray.add(symbol);
 				next();
 			}
-			identExpr = new ExprIdentStar(identSymbolArray, symbol);
+			identExpr = new ExprIdentStar(identSymbolArray, symbol, currentMethod);
 		}
 
 		if ( symbol.token == Token.LT_NOT_PREC_SPACE ) {
@@ -10434,51 +10457,51 @@ public final class Compiler implements Cloneable {
 				arrayOfTypeList.add(aTypeList);
 			}
 
-			MessageSendToMetaobjectAnnotation messageSendToMetaobjectAnnotation = null;
+			MessageSendToAnnotation messageSendToAnnotation = null;
 			if ( symbol.token == Token.DOT_OCTOTHORPE ) {
 				// if ( symbol.token == Token.CYANSYMBOL ) {
-				messageSendToMetaobjectAnnotation = this
-						.parseMessageSendToMetaobjectAnnotation();
+				messageSendToAnnotation = this
+						.parseMessageSendToAnnotation();
 			}
 
 			ExprGenericPrototypeInstantiation gpi;
 			identExpr = gpi = new ExprGenericPrototypeInstantiation(
 					(ExprIdentStar) identExpr, arrayOfTypeList,
-					currentProgramUnit, messageSendToMetaobjectAnnotation);
+					currentPrototype, messageSendToAnnotation, currentMethod);
 
 			final Tuple2<Symbol, String> tss = checkExprGenericPrototypeInstantiation(
 					gpi);
 			if ( tss != null ) {
 				this.error2(tss.f1, tss.f2);
 			}
-			if ( messageSendToMetaobjectAnnotation != null )
-				if ( !messageSendToMetaobjectAnnotation.action(
+			if ( messageSendToAnnotation != null )
+				if ( !messageSendToAnnotation.action(
 						compilationUnit.getProgram(),
 						(ExprGenericPrototypeInstantiation) identExpr) ) {
 				error2(identExpr.getFirstSymbol(),
 						"No action associated to message '"
-								+ messageSendToMetaobjectAnnotation.getMessage()
+								+ messageSendToAnnotation.getMessage()
 								+ "'");
 				}
 		}
 		else {
 			if ( identExpr instanceof ExprIdentStar ) {
-				MessageSendToMetaobjectAnnotation messageSendToMetaobjectAnnotation = null;
+				MessageSendToAnnotation messageSendToAnnotation = null;
 				if ( symbol.token == Token.DOT_OCTOTHORPE ) {
 					// if ( symbol.token == Token.CYANSYMBOL ) {
-					messageSendToMetaobjectAnnotation = this
-							.parseMessageSendToMetaobjectAnnotation();
+					messageSendToAnnotation = this
+							.parseMessageSendToAnnotation();
 				}
 				((ExprIdentStar) identExpr)
-						.setMessageSendToMetaobjectAnnotation(
-								messageSendToMetaobjectAnnotation);
-				if ( messageSendToMetaobjectAnnotation != null ) {
-					if ( !messageSendToMetaobjectAnnotation.action(
+						.setMessageSendToAnnotation(
+								messageSendToAnnotation);
+				if ( messageSendToAnnotation != null ) {
+					if ( !messageSendToAnnotation.action(
 							compilationUnit.getProgram(),
 							(ExprIdentStar) identExpr) ) {
 						error2(identExpr.getFirstSymbol(),
 								"No action associated to message '"
-										+ messageSendToMetaobjectAnnotation
+										+ messageSendToAnnotation
 												.getMessage()
 										+ "'");
 					}
@@ -10502,7 +10525,7 @@ public final class Compiler implements Cloneable {
 
 			next();
 			identExpr = new ExprObjectCreation(identExpr, exprArray,
-					      rightParSymbol);
+					      rightParSymbol, currentMethod);
 		}
 
 		return identExpr;
@@ -10607,39 +10630,39 @@ public final class Compiler implements Cloneable {
 
 		switch (symbol.token) {
 		case BYTELITERAL:
-			ret = new ExprLiteralByte(symbol);
+			ret = new ExprLiteralByte(symbol, currentMethod);
 			next();
 			break;
 		case SHORTLITERAL:
-			ret = new ExprLiteralShort(symbol);
+			ret = new ExprLiteralShort(symbol, currentMethod);
 			next();
 			break;
 		case INTLITERAL:
-			ret = new ExprLiteralInt(symbol);
+			ret = new ExprLiteralInt(symbol, currentMethod);
 			next();
 			break;
 		case LONGLITERAL:
-			ret = new ExprLiteralLong(symbol);
+			ret = new ExprLiteralLong(symbol, currentMethod);
 			next();
 			break;
 		case FLOATLITERAL:
-			ret = new ExprLiteralFloat(symbol);
+			ret = new ExprLiteralFloat(symbol, currentMethod);
 			next();
 			break;
 		case DOUBLELITERAL:
-			ret = new ExprLiteralDouble(symbol);
+			ret = new ExprLiteralDouble(symbol, currentMethod);
 			next();
 			break;
 		case CHARLITERAL:
-			ret = new ExprLiteralChar(symbol);
+			ret = new ExprLiteralChar(symbol, currentMethod);
 			next();
 			break;
 		case FALSE:
-			ret = new ExprLiteralBooleanFalse(symbol);
+			ret = new ExprLiteralBooleanFalse(symbol, currentMethod);
 			next();
 			break;
 		case TRUE:
-			ret = new ExprLiteralBooleanTrue(symbol);
+			ret = new ExprLiteralBooleanTrue(symbol, currentMethod);
 			next();
 			break;
 		case LITERALSTRING:
@@ -10647,7 +10670,7 @@ public final class Compiler implements Cloneable {
 			// multiple lines """
 
 			ExprLiteralString els;
-			ret = els = new ExprLiteralString(symbol);
+			ret = els = new ExprLiteralString(symbol, currentMethod);
 			if ( els.getVarNameList() != null ) {
 				for (final String varName : els.getVarNameList()) {
 					/**
@@ -10667,7 +10690,7 @@ public final class Compiler implements Cloneable {
 			next();
 			break;
 		case NIL:
-			ret = new ExprLiteralNil(symbol);
+			ret = new ExprLiteralNil(symbol, currentMethod);
 			next();
 			break;
 		case LEFTSB:
@@ -10728,10 +10751,10 @@ public final class Compiler implements Cloneable {
 			endSymbol = symbol;
 			next();
 			if ( foundLiteralArray ) {
-				ret = new ExprLiteralArray(startSymbol, endSymbol, exprList);
+				ret = new ExprLiteralArray(startSymbol, endSymbol, exprList, currentMethod);
 			}
 			else {
-				ret = new ExprLiteralMap(startSymbol, endSymbol, exprList);
+				ret = new ExprLiteralMap(startSymbol, endSymbol, exprList, currentMethod);
 			}
 			break;
 		case LEFTSB_DOT:
@@ -10796,7 +10819,7 @@ public final class Compiler implements Cloneable {
 			endSymbol = symbol;
 			next();
 			ret = new ExprLiteralTuple(startSymbol, endSymbol, exprList,
-					namedTuple);
+					namedTuple, currentMethod);
 			break;
 		case LEFTCB:
 			// found the declaration of a function
@@ -10806,7 +10829,7 @@ public final class Compiler implements Cloneable {
 
 			AnnotationLiteralObject annotation = null;
 			if ( !compInstSet
-					.contains(meta.CompilationInstruction.dpa_actions) ) {
+					.contains(meta.CompilationInstruction.parsing_actions) ) {
 				/*
 				 * found a literal object in a compiler step that does not allow
 				 * literal objects. See the Figure in Chapter "Metaobjects" of
@@ -10815,8 +10838,8 @@ public final class Compiler implements Cloneable {
 				this.error(true, symbol,
 						"Literal object in a compiler step that does not allow literal objects",
 						symbol.getSymbolString(),
-						ErrorKind.dpa_compilation_phase_literal_objects_and_macros_are_not_allowed);
-				ret = new ExprNonExpression();
+						ErrorKind.parsing_compilation_phase_literal_objects_and_macros_are_not_allowed);
+				ret = new ExprNonExpression(currentMethod);
 			}
 			else {
 				CyanMetaobjectLiteralObject cyanMetaobject = null;
@@ -10849,25 +10872,25 @@ public final class Compiler implements Cloneable {
 					}
 
 					// //
-					// cyanMetaobject.setMetaobjectAnnotation(metaobjectAnnotation,
+					// cyanMetaobject.setAnnotation(annotation,
 					// 0);
 					annotation.setOriginalCode(
 							symbolLiteralObject.getSymbolString());
 					ret = annotation;
 
 //					_CyanMetaobject other = cyanMetaobject.getMetaobjectInCyan();
-//					if ( !(cyanMetaobject instanceof IParseWithoutCyanCompiler_dpa ||
-//							(other != null && other instanceof _IParseWithoutCyanCompiler__dpa) ) ) {
+//					if ( !(cyanMetaobject instanceof IParseWithoutCyanCompiler_parsing ||
+//							(other != null && other instanceof _IParseWithoutCyanCompiler__parsing) ) ) {
 //						this.error(true, symbolLiteralObject,
 //								"Internal error: the Cyan metaobject should implement interface '" +
-//										IParseWithoutCyanCompiler_dpa.class.getName() + "'",
+//										IParseWithoutCyanCompiler_parsing.class.getName() + "'",
 //								symbolLiteralObject.getSymbolString(),
 //								ErrorKind.internal_error);
 //						ret = new ExprNonExpression();
 //					}
 //					else {
 //
-//						final ICompilerAction_dpa compilerAction = new CompilerAction_dpa(
+//						final ICompilerAction_parsing compilerAction = new CompilerAction_parsing(
 //								this);
 //
 //						try {
@@ -10877,8 +10900,8 @@ public final class Compiler implements Cloneable {
 //									CyanMetaobjectLiteralObject cyanMetaobjectFinal = cyanMetaobject;
 //									moPackage.addPackageMetaToClassPath_and_Run(
 //											() -> {
-//												((IParseWithoutCyanCompiler_dpa) cyanMetaobjectFinal)
-//												.dpa_parse(compilerAction,
+//												((IParseWithoutCyanCompiler_parsing) cyanMetaobjectFinal)
+//												.parsing_parse(compilerAction,
 //													symbolLiteralObject
 //															.getUsefulString());
 //
@@ -10886,14 +10909,14 @@ public final class Compiler implements Cloneable {
 //											);
 //								}
 //								else {
-//									((IParseWithoutCyanCompiler_dpa) cyanMetaobject)
-//									.dpa_parse(compilerAction,
+//									((IParseWithoutCyanCompiler_parsing) cyanMetaobject)
+//									.parsing_parse(compilerAction,
 //										symbolLiteralObject
 //												.getUsefulString());
 //								}
 //							}
 //							else {
-//								((_IParseWithoutCyanCompiler__dpa) cyanMetaobject)
+//								((_IParseWithoutCyanCompiler__parsing) cyanMetaobject)
 //								     ._dpa__parse_2(compilerAction,
 //										   new CyString(symbolLiteralObject
 //												.getUsefulString()));
@@ -10930,7 +10953,7 @@ public final class Compiler implements Cloneable {
 					cyanMetaobject = annotation
 							.getCyanMetaobjectLiteralObject();
 					// //
-					// cyanMetaobject.setMetaobjectAnnotation(metaobjectAnnotation,
+					// cyanMetaobject.setAnnotation(annotation,
 					// 0);
 					ret = annotation;
 
@@ -10942,17 +10965,19 @@ public final class Compiler implements Cloneable {
 					}
 
 					_CyanMetaobject other = cyanMetaobject.getMetaobjectInCyan();
-					if ( !(cyanMetaobject instanceof IParseWithCyanCompiler_dpa || (
-							(other != null && other instanceof _IParseWithCyanCompiler__dpa)) ) ){
+					if ( !(cyanMetaobject instanceof IParseWithCyanCompiler_parsing
+							|| (
+							(other != null && other instanceof _IParseWithCyanCompiler__parsing))
+							)) {
 						this.error(true, symbolLiteralObject,
-								"Internal error: the Cyan metaobject should implement interface 'IParseWithCyanCompiler_dpa'",
+								"Internal error: the Cyan metaobject should implement interface 'IParseWithCyanCompiler_parsing'",
 								symbolLiteralObject.getSymbolString(),
 								ErrorKind.internal_error);
 
 					}
 					else {
 						next();
-						final Compiler_dpa compiler_dpa = new Compiler_dpa(this,
+						final Compiler_parsing compiler_parsing = new Compiler_parsing(this,
 								lexer, symbolLiteralObject.getSymbolString());
 						/*
 						 * the errors found in the compilation are introduced in
@@ -10962,11 +10987,11 @@ public final class Compiler implements Cloneable {
 
 						try {
 							if ( other == null ) {
-								((IParseWithCyanCompiler_dpa) cyanMetaobject)
-								.dpa_parse(compiler_dpa);
+								((IParseWithCyanCompiler_parsing) cyanMetaobject)
+								.parsing_parse(compiler_parsing);
 							}
 							else {
-								((_IParseWithCyanCompiler__dpa) other)._dpa__parse_1(compiler_dpa);
+								((_IParseWithCyanCompiler__parsing) other)._parsing__parse_1(compiler_parsing);
 							}
 						}
 						catch (final error.CompileErrorException e) {
@@ -10982,11 +11007,11 @@ public final class Compiler implements Cloneable {
 						}
 						finally {
 							this.metaobjectError(cyanMetaobject, annotation);
-							this.copyLexerData(compiler_dpa.compiler);
+							this.copyLexerData(compiler_parsing.compiler);
 						}
 
 						annotation.setExprStatList(
-								compiler_dpa.getExprStatList());
+								compiler_parsing.getExprStatList());
 
 						if ( symbol.token == Token.RIGHTCHAR_SEQUENCE ) {
 							next();
@@ -11013,48 +11038,50 @@ public final class Compiler implements Cloneable {
 				else {
 					this.error(true, symbol, "Literal object '"
 							+ symbol.getSymbolString() + "' has a Java class "
-							+ " that does not implement either 'IParseWithoutCyanCompiler_dpa' or 'IParseWithCyanCompiler_dpa'",
+							+ " that does not implement either 'IParseWithoutCyanCompiler_parsing' or 'IParseWithCyanCompiler_parsing'",
 							null, ErrorKind.metaobject_error);
 
-					ret = new ExprNonExpression();
+					ret = new ExprNonExpression(currentMethod);
 				}
 				if ( annotation != null ) {
 					annotation.setLastSymbol(previousSymbol);
 					annotation.setNextSymbol(symbol);
 
-					if ( currentProgramUnit != null ) {
-						currentProgramUnit.addMetaobjectAnnotation(annotation);
-						annotation.setProgramUnit(currentProgramUnit);
-						annotation.setMetaobjectAnnotationNumber(
-								currentProgramUnit
-										.getIncMetaobjectAnnotationNumber());
+					if ( currentPrototype != null ) {
+						currentPrototype.addAnnotation(annotation);
+						annotation.setPrototype(currentPrototype);
+						annotation.setAnnotationNumber(
+								currentPrototype
+										.getIncAnnotationNumber());
 					}
 					annotation.setCompilationUnit(compilationUnit);
 
 					_CyanMetaobject other = cyanMetaobject != null ? cyanMetaobject.getMetaobjectInCyan() : null;
 
 					if ( cyanMetaobject != null
-							&& (cyanMetaobject instanceof IActionNewPrototypes_dpa
-									|| (other != null && other instanceof _IActionNewPrototypes__dpa))
-							&& (this.currentProgramUnit == null
-									|| !this.currentProgramUnit.isGeneric())
+							&&
+							(cyanMetaobject instanceof IActionNewPrototypes_parsing
+									|| (other != null && other instanceof _IActionNewPrototypes__parsing)
+									)
+							&& (this.currentPrototype == null
+									|| !this.currentPrototype.isGeneric())
 							&& this.compilationStep == CompilationStep.step_1 ) {
-						// this.compInstSet.contains(CompilationInstruction.dpa_actions)
+						// this.compInstSet.contains(CompilationInstruction.parsing_actions)
 						// ) {
-						final ICompilerAction_dpa compilerAction_dpa1 = new Compiler_dpa(
+						final ICompilerAction_parsing compilerAction_dpa1 = new Compiler_parsing(
 								this, lexer, null);
 
 						List<Tuple2<String, StringBuffer>> prototypeNameCodeList = null;
 						try {
 							if ( other == null ) {
-								final IActionNewPrototypes_dpa actionNewPrototype = (IActionNewPrototypes_dpa) cyanMetaobject;
+								final IActionNewPrototypes_parsing actionNewPrototype = (IActionNewPrototypes_parsing) cyanMetaobject;
 								prototypeNameCodeList = actionNewPrototype
-										.dpa_NewPrototypeList(compilerAction_dpa1);
+										.parsing_NewPrototypeList(compilerAction_dpa1);
 							}
 							else {
-								_IActionNewPrototypes__dpa anp = (_IActionNewPrototypes__dpa ) other;
+								_IActionNewPrototypes__parsing anp = (_IActionNewPrototypes__parsing ) other;
 								_Array_LT_GP__Tuple_LT_GP_CyString_GP_CyString_GT__GT array =
-										anp._dpa__NewPrototypeList_1(compilerAction_dpa1);
+										anp._parsing__NewPrototypeList_1(compilerAction_dpa1);
 								int size = array._size().n;
 								if ( size > 0 ) {
 									prototypeNameCodeList = new ArrayList<>();
@@ -11085,21 +11112,25 @@ public final class Compiler implements Cloneable {
 						finally {
 							metaobjectError(cyanMetaobject, annotation);
 						}
+						CyanPackage currentCyanPackage = this.compilationUnit
+								.getCyanPackage();
 						if ( prototypeNameCodeList != null ) {
 							for (final Tuple2<String, StringBuffer> prototypeNameCode : prototypeNameCodeList) {
+								String prototypeName = prototypeNameCode.f1;
 								final Tuple2<CompilationUnit, String> t = this.project
 										.getCompilerManager()
 										.createNewPrototype(
-												prototypeNameCode.f1,
+												prototypeName,
 												prototypeNameCode.f2,
 												this.compilationUnit
 														.getCompilerOptions(),
-												this.compilationUnit
-														.getCyanPackage());
+														currentCyanPackage);
 								if ( t != null && t.f2 != null ) {
 									this.error2(annotation.getFirstSymbol(),
 											t.f2);
 								}
+								currentCyanPackage.addPrototypeNameAnnotationInfo(prototypeName, annotation);
+
 							}
 						}
 
@@ -11152,7 +11183,7 @@ public final class Compiler implements Cloneable {
 		if ( isBasicType(symbol.token) ) {
 			final Symbol s = symbol;
 			next();
-			ret = new ExprAnyLiteralIdent(new ExprIdentStar(s));
+			ret = new ExprAnyLiteralIdent(new ExprIdentStar(currentMethod, s), currentMethod);
 		}
 		else {
 			Symbol prefix = null;
@@ -11171,53 +11202,53 @@ public final class Compiler implements Cloneable {
 			switch (symbol.token) {
 			case IDENT:
 				foundIdent = true;
-				ret = new ExprAnyLiteralIdent(ident());
+				ret = new ExprAnyLiteralIdent(ident(), currentMethod);
 				break;
 			case IDENTCOLON:
 				foundIdent = true;
-				ret = new ExprAnyLiteralIdent(identColon());
+				ret = new ExprAnyLiteralIdent(identColon(), currentMethod);
 				break;
 			case BYTELITERAL:
-				ret = new ExprLiteralByte(symbol, prefix);
+				ret = new ExprLiteralByte(symbol, prefix, currentMethod);
 				next();
 				break;
 			case SHORTLITERAL:
-				ret = new ExprLiteralShort(symbol, prefix);
+				ret = new ExprLiteralShort(symbol, prefix, currentMethod);
 				next();
 				break;
 			case INTLITERAL:
-				ret = new ExprLiteralInt(symbol, prefix);
+				ret = new ExprLiteralInt(symbol, prefix, currentMethod);
 				next();
 				break;
 			case LONGLITERAL:
-				ret = new ExprLiteralLong(symbol, prefix);
+				ret = new ExprLiteralLong(symbol, prefix, currentMethod);
 				next();
 				break;
 			case FLOATLITERAL:
-				ret = new ExprLiteralFloat(symbol, prefix);
+				ret = new ExprLiteralFloat(symbol, prefix, currentMethod);
 				next();
 				break;
 			case DOUBLELITERAL:
-				ret = new ExprLiteralDouble(symbol, prefix);
+				ret = new ExprLiteralDouble(symbol, prefix, currentMethod);
 				next();
 				break;
 			case CHARLITERAL:
-				ret = new ExprLiteralChar(symbol);
+				ret = new ExprLiteralChar(symbol, currentMethod);
 				next();
 				break;
 			case FALSE:
-				ret = new ExprLiteralBooleanFalse(symbol);
+				ret = new ExprLiteralBooleanFalse(symbol, currentMethod);
 				next();
 				break;
 			case TRUE:
-				ret = new ExprLiteralBooleanTrue(symbol);
+				ret = new ExprLiteralBooleanTrue(symbol, currentMethod);
 				next();
 				break;
 			case LITERALSTRING:
 				// this rule represents both strings of the kind "hello" or """
 				// multiple lines """
 				ExprLiteralString els;
-				ret = els = new ExprLiteralString(symbol);
+				ret = els = new ExprLiteralString(symbol, currentMethod);
 				if ( els.getVarNameList() != null ) {
 					for (final String varName : els.getVarNameList()) {
 						/**
@@ -11237,7 +11268,7 @@ public final class Compiler implements Cloneable {
 				next();
 				break;
 			case NIL:
-				ret = new ExprLiteralNil(symbol);
+				ret = new ExprLiteralNil(symbol, currentMethod);
 				next();
 				break;
 
@@ -11322,10 +11353,10 @@ public final class Compiler implements Cloneable {
 				next();
 				if ( foundLiteralArray ) {
 					ret = new ExprLiteralArray(startSymbol, endSymbol,
-							exprList);
+							exprList, currentMethod);
 				}
 				else {
-					ret = new ExprLiteralMap(startSymbol, endSymbol, exprList);
+					ret = new ExprLiteralMap(startSymbol, endSymbol, exprList, currentMethod);
 				}
 
 				/*
@@ -11387,14 +11418,14 @@ public final class Compiler implements Cloneable {
 				endSymbol = symbol;
 				next();
 				ret = new ExprLiteralTuple(startSymbol, endSymbol, exprList,
-						false);
+						false, currentMethod);
 				break;
 
 			default:
 				if ( Character.isAlphabetic(symbol.toString().charAt(0)) ) {
 					final Symbol s = symbol;
 					next();
-					ret = new ExprAnyLiteralIdent(new ExprIdentStar(s));
+					ret = new ExprAnyLiteralIdent(new ExprIdentStar(currentMethod, s), currentMethod);
 				}
 				else {
 					error2(symbol,
@@ -11430,7 +11461,7 @@ public final class Compiler implements Cloneable {
 			next();
 		}
 		else
-			aFunctionDec = new ExprFunctionRegular(startSymbol);
+			aFunctionDec = new ExprFunctionRegular(startSymbol, currentMethod);
 
 		aFunctionDec.setFunctionLevel(functionStack.size());
 
@@ -11450,11 +11481,11 @@ public final class Compiler implements Cloneable {
 				: NameServer.functionProtoName) + functionCounter++
 				+ NameServer.endsInnerProtoName);
 
-		if ( currentProgramUnit != null ) {
-			aFunctionDec.setNumber(currentProgramUnit.getNextFunctionNumber());
-			currentProgramUnit.addNextFunctionNumber();
+		if ( currentPrototype != null ) {
+			aFunctionDec.setNumber(currentPrototype.getNextFunctionNumber());
+			currentPrototype.addNextFunctionNumber();
 
-			((ObjectDec) currentProgramUnit).addToBeCreatedFunction(aFunctionDec);
+			((ObjectDec) currentPrototype).addToBeCreatedFunction(aFunctionDec);
 		}
 		else {
 			// parsing statements to be interpreted
@@ -11491,7 +11522,7 @@ public final class Compiler implements Cloneable {
 		aFunctionDec.setStatementList(statementList);
 		aFunctionDec.setSelfType(selfType);
 		aFunctionDec.setCurrentMethod(currentMethod);
-		aFunctionDec.setCurrentProgramUnit(currentProgramUnit);
+		aFunctionDec.setCurrentPrototype(currentPrototype);
 		return aFunctionDec;
 	}
 
@@ -11535,12 +11566,12 @@ public final class Compiler implements Cloneable {
 						"Illegal anonymous function: a single keyword 'even:' without parameters");
 			}
 			exprFunction = new ExprFunctionWithKeywords(startSymbol,
-					keywordWithParametersList);
+					keywordWithParametersList, currentMethod);
 
 		}
 		else {
 			final ExprFunctionRegular aFunctionDec = new ExprFunctionRegular(
-					startSymbol);
+					startSymbol, currentMethod);
 			if ( symbol.token != Token.RETURN_ARROW ) {
 				parameterDecListFunction(aFunctionDec.getParameterList());
 			}
@@ -11765,7 +11796,7 @@ public final class Compiler implements Cloneable {
 
 			if ( name.equals("new") && !this.parsingPackageInterfaces ) {
 				if ( cyanMetaobjectContextStack.empty()
-						&& !this.currentProgramUnit.isInnerPrototype() ) {
+						&& !this.currentPrototype.isInnerPrototype() ) {
 					this.error2(symbol, "'new' cannot be user-declared");
 				}
 			}
@@ -11808,7 +11839,7 @@ public final class Compiler implements Cloneable {
 			if ( keywordList.size() == 1 ) {
 				if ( keywordList.get(0).getName().equals("new:") && !this.parsingPackageInterfaces ) {
 					if ( cyanMetaobjectContextStack.empty()
-							&& !this.currentProgramUnit.isInnerPrototype() ) {
+							&& !this.currentPrototype.isInnerPrototype() ) {
 						this.error2(symbol, "'new:' cannot be user-declared");
 					}
 				}
@@ -12062,8 +12093,8 @@ public final class Compiler implements Cloneable {
 	 */
 
 	public boolean equalToFormalGenericParameter(String ident) {
-		if ( currentProgramUnit != null && this.currentProgramUnit.isGeneric() ) {
-			for (final List<GenericParameter> genericParameterList : currentProgramUnit
+		if ( currentPrototype != null && this.currentPrototype.isGeneric() ) {
+			for (final List<GenericParameter> genericParameterList : currentPrototype
 					.getGenericParameterListList()) {
 				for (final GenericParameter genericParameter : genericParameterList) {
 					if ( ident.compareTo(genericParameter.getName()) == 0 )
@@ -12164,7 +12195,7 @@ public final class Compiler implements Cloneable {
 
 	}
 
-	public static boolean startProgramUnit(Token t) {
+	public static boolean startPrototype(Token t) {
 		return t == Token.METAOBJECT_ANNOTATION || t == Token.PUBLIC
 				|| t == Token.PRIVATE || t == Token.PROTECTED
 				|| t == Token.MIXIN || t == Token.OBJECT
@@ -12384,7 +12415,7 @@ public final class Compiler implements Cloneable {
 
 	}
 
-	public void errorInsideMetaobjectAnnotation(
+	public void errorInsideAnnotation(
 			Annotation metaobjectAnnotation, int lineNumber,
 			int columnNumber, String message) {
 		final CyanMetaobject metaobject = metaobjectAnnotation
@@ -12551,12 +12582,12 @@ public final class Compiler implements Cloneable {
 		for (final String field : errorKind.getFieldList()) {
 			switch (field) {
 			case "implementedInterfaces":
-				if ( currentProgramUnit != null
-						&& currentProgramUnit instanceof ObjectDec
-						&& ((ObjectDec) currentProgramUnit)
+				if ( currentPrototype != null
+						&& currentPrototype instanceof ObjectDec
+						&& ((ObjectDec) currentPrototype)
 								.getSuperobjectExpr() != null ) {
-					final ObjectDec currentProto = (ObjectDec) currentProgramUnit;
-					final List<Expr> exprList = currentProto
+					final ObjectDec currentObject = (ObjectDec) currentPrototype;
+					final List<Expr> exprList = currentObject
 							.getInterfaceList();
 					int sizeExprList = exprList.size();
 					String s = "";
@@ -12571,13 +12602,13 @@ public final class Compiler implements Cloneable {
 				break;
 
 			case "supertype":
-				if ( currentProgramUnit != null
-						&& currentProgramUnit instanceof ObjectDec
-						&& ((ObjectDec) currentProgramUnit)
+				if ( currentPrototype != null
+						&& currentPrototype instanceof ObjectDec
+						&& ((ObjectDec) currentPrototype)
 								.getSuperobjectExpr() != null ) {
 					sielCode.add(
 							"supertype = \""
-									+ ((ObjectDec) currentProgramUnit)
+									+ ((ObjectDec) currentPrototype)
 											.getSuperobjectExpr().asString()
 									+ "\"");
 					error2(null, "Internal error in Compiler::error: field '"
@@ -12588,7 +12619,7 @@ public final class Compiler implements Cloneable {
 				sielCode.add("identifier = \"" + identifier + "\"");
 				break;
 			case "statementText":
-				if ( !(currentProgramUnit instanceof InterfaceDec) ) {
+				if ( !(currentPrototype instanceof InterfaceDec) ) {
 					sielCode.add("statementText = \""
 							+ lexer.stringStatementFromTo(
 									this.startSymbolCurrentStatement, sym)
@@ -12602,7 +12633,7 @@ public final class Compiler implements Cloneable {
 				}
 				break;
 			case "prototypeName":
-				sielCode.add("prototypeName = \"" + currentProgramUnit.getName()
+				sielCode.add("prototypeName = \"" + currentPrototype.getName()
 						+ "\"");
 				break;
 			case "interfaceName":
@@ -12668,12 +12699,12 @@ public final class Compiler implements Cloneable {
 		this.compilationUnit = compilationUnit;
 	}
 
-	public void setProgramUnit(ProgramUnit programUnit) {
-		this.currentProgramUnit = programUnit;
+	public void setPrototype(Prototype prototype) {
+		this.currentPrototype = prototype;
 	}
 
-	public ProgramUnit getCurrentProgramUnit() {
-		return currentProgramUnit;
+	public Prototype getCurrentPrototype() {
+		return currentPrototype;
 	}
 
 	public MethodDec getCurrentMethod() {
@@ -12720,9 +12751,9 @@ public final class Compiler implements Cloneable {
 		sizeCleanSymbolList = 0;
 		for (int i = 0; i < sizeSymbolList; ++i) {
 			final Symbol sym = symbolList[i];
-			if ( sym instanceof lexer.SymbolCyanMetaobjectAnnotation ) {
-				final SymbolCyanMetaobjectAnnotation symMetaobjectAnnotation = (SymbolCyanMetaobjectAnnotation) sym;
-				if ( symMetaobjectAnnotation.getCyanMetaobjectAnnotation()
+			if ( sym instanceof lexer.SymbolCyanAnnotation ) {
+				final SymbolCyanAnnotation symAnnotation = (SymbolCyanAnnotation) sym;
+				if ( symAnnotation.getCyanAnnotation()
 						.getCyanMetaobject() instanceof meta.cyanLang.CyanMetaobjectCompilationContextPush ) {
 					insidePushCompilationContext = true;
 				}
@@ -12731,9 +12762,9 @@ public final class Compiler implements Cloneable {
 				cleanSymbolList[sizeCleanSymbolList] = sym;
 				++sizeCleanSymbolList;
 			}
-			if ( sym instanceof lexer.SymbolCyanMetaobjectAnnotation ) {
-				final SymbolCyanMetaobjectAnnotation symMetaobjectAnnotation = (SymbolCyanMetaobjectAnnotation) sym;
-				if ( symMetaobjectAnnotation.getCyanMetaobjectAnnotation()
+			if ( sym instanceof lexer.SymbolCyanAnnotation ) {
+				final SymbolCyanAnnotation symAnnotation = (SymbolCyanAnnotation) sym;
+				if ( symAnnotation.getCyanAnnotation()
 						.getCyanMetaobject() instanceof meta.cyanLang.CyanMetaobjectCompilationContextPop ) {
 					insidePushCompilationContext = false;
 				}
@@ -12755,8 +12786,8 @@ public final class Compiler implements Cloneable {
 		return compilationUnit;
 	}
 
-	public void addToListAfter_afti(CyanMetaobject annotation) {
-		this.project.getProgram().addToListAfter_afti(annotation);
+	public void addToListAfter_afterResTypes(CyanMetaobject annotation) {
+		this.project.getProgram().addToListAfter_afterResTypes(annotation);
 	}
 
 	private void thrownException(Annotation annotation,
@@ -12773,13 +12804,13 @@ public final class Compiler implements Cloneable {
 
 	}
 
-	public ProgramUnit searchPackagePrototype(String packageNameInstantiation,
+	public Prototype searchPackagePrototype(String packageNameInstantiation,
 			String prototypeNameInstantiation) {
 		final CyanPackage cyanPackage = this.getProject()
 				.searchPackage(packageNameInstantiation);
 		if ( cyanPackage == null ) return null;
-		final ProgramUnit pu = cyanPackage
-				.searchPublicNonGenericProgramUnit(prototypeNameInstantiation);
+		final Prototype pu = cyanPackage
+				.searchPublicNonGenericPrototype(prototypeNameInstantiation);
 
 		return pu;
 	}
@@ -12864,7 +12895,7 @@ public final class Compiler implements Cloneable {
 	/**
 	 * the current program unit (object or interface) being compiled
 	 */
-	private ProgramUnit									currentProgramUnit;
+	private Prototype									currentPrototype;
 
 	/**
 	 * a stack of prototypes. When the compiler starts to analyze a prototype it
@@ -12883,7 +12914,7 @@ public final class Compiler implements Cloneable {
 	 * number of public or protected prototypes (objects or interfaces) in the
 	 * current source file
 	 */
-	private int											numPublicPackageProgramUnits;
+	private int											numPublicPackagePrototypes;
 
 	/**
 	 * a stack of functions. In point 1 below there will be two functions in the
@@ -12985,7 +13016,7 @@ public final class Compiler implements Cloneable {
 	 */
 	private boolean										hasAdded_pp_new_Methods;
 	/**
-	 * true if the compiler has added code in dpa actions
+	 * true if the compiler has added code in parsing actions
 	 */
 	private boolean										hasMade_dpa_actions;
 	/**

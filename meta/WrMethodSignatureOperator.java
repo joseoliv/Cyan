@@ -38,15 +38,7 @@ public class WrMethodSignatureOperator extends WrMethodSignature {
 
     @Override
     public void addDocumentText(String doc, String docKind, WrEnv env) {
-    	if ( env.getCurrentProgramUnit().hidden != hidden.getMethod().getDeclaringObject() ) {
-    		throw new MetaSecurityException();
-    	}
-    	CompilationStep step = env.getCompilationStep();
-    	if ( step != CompilationStep.step_1 &&
-       		 step != CompilationStep.step_4 &&
-       		 step != CompilationStep.step_7 ) {
-    		throw new MetaSecurityException();
-    	}
+    	securityCheck(env);
 
 
         hidden.addDocumentText(doc, docKind);
@@ -54,7 +46,16 @@ public class WrMethodSignatureOperator extends WrMethodSignature {
 
     @Override
     public void addFeature(Tuple2<String, WrExprAnyLiteral> feature, WrEnv env) {
-    	if ( env.getCurrentProgramUnit().hidden != hidden.getMethod().getDeclaringObject() ) {
+    	securityCheck(env);
+
+    	hidden.addFeature(feature);
+    }
+
+	/**
+	   @param env
+	 */
+	private void securityCheck(WrEnv env) {
+		if ( env.getCurrentPrototype().hidden != hidden.getMethod().getDeclaringObject() ) {
     		throw new MetaSecurityException();
     	}
 
@@ -64,44 +65,35 @@ public class WrMethodSignatureOperator extends WrMethodSignature {
               	 step != CompilationStep.step_7 ) {
     		throw new MetaSecurityException();
     	}
-
-    	hidden.addFeature(feature);
-    }
+	}
 
     @Override
     public void addDocumentExample(String example, String exampleKind, WrEnv env) {
-    	if ( env.getCurrentProgramUnit().hidden != hidden.getMethod().getDeclaringObject() ) {
-    		throw new MetaSecurityException();
-    	}
-
-    	CompilationStep step = env.getCompilationStep();
-    	if ( step != CompilationStep.step_1 &&
-            	 step != CompilationStep.step_4 &&
-             	 step != CompilationStep.step_7 ) {
-    		throw new MetaSecurityException();
-    	}
-
-
+    	securityCheck(env);
         hidden.addDocumentExample(example, exampleKind);
     }
 
     @Override
     public List<Tuple2<String, String>> getDocumentTextList(WrEnv env) {
+    	checkGetInfo(env);
         return hidden.getDocumentTextList();
     }
 
     @Override
     public List<Tuple2<String, String>> getDocumentExampleList(WrEnv env) {
+    	checkGetInfo(env);
         return hidden.getDocumentExampleList();
     }
 
 
     @Override
     public List<Tuple2<String, WrExprAnyLiteral>> getFeatureList(WrEnv env) {
+    	checkGetInfo(env);
         return hidden.getFeatureList();
     }
     @Override
     public List<WrExprAnyLiteral> searchFeature(String name, WrEnv env) {
+    	checkGetInfo(env);
 
         return hidden.searchFeature(name);
     }

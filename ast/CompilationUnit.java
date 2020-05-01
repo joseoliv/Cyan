@@ -16,13 +16,13 @@ import error.ErrorKind;
 import error.UnitError;
 import lexer.Symbol;
 import meta.IAction_cge;
-import meta.ICompiler_afti;
-import meta.ICompiler_dsa;
+import meta.ICompiler_afterResTypes;
+import meta.ICompiler_semAn;
 import meta.MetaHelper;
 import meta.Token;
 import meta.Tuple3;
 import meta.WrCompilationUnit;
-import saci.CompilerManager_afti;
+import saci.CompilerManager_afterResTypes;
 import saci.CompilerOptions;
 import saci.CyanEnv;
 import saci.Env;
@@ -55,11 +55,11 @@ public class CompilationUnit extends CompilationUnitSuper implements ASTNode, Cl
 		this.cyanPackage = cyanPackage;
 
 		// this.fullFileNamePath = this.packageCanonicalPath + this.filename;
-		programUnitList = new ArrayList<ProgramUnit>();
+		prototypeList = new ArrayList<Prototype>();
 
 		importPackageList = null;
 		importedPackageNameList = null;
-		conflictProgramUnitTable = null;
+		conflictPrototypeTable = null;
 		importedCyanPackageSet = null;
 
 		hasGenericPrototype = false;
@@ -70,7 +70,7 @@ public class CompilationUnit extends CompilationUnitSuper implements ASTNode, Cl
 		interfaceCompilationUnit = null;
 		lineMessageList = new ArrayList<>();
 		isInterfaceAsObject = false;
-		nonAttachedMetaobjectAnnotationListBeforePackage = null;
+		nonAttachedAnnotationListBeforePackage = null;
 		prototypeIsNotGeneric = true;
 		genericAndParsed = false;
 	}
@@ -87,7 +87,7 @@ public class CompilationUnit extends CompilationUnitSuper implements ASTNode, Cl
 
 		visitor.preVisit(this);
 
-		for ( ProgramUnit pu : this.programUnitList ) {
+		for ( Prototype pu : this.prototypeList ) {
 			pu.accept(visitor);
 		}
 		visitor.visit(this);
@@ -100,7 +100,7 @@ public class CompilationUnit extends CompilationUnitSuper implements ASTNode, Cl
 			super.reset();
 			importPackageList = null;
 			importedPackageNameList = null;
-			conflictProgramUnitTable = null;
+			conflictPrototypeTable = null;
 			importedCyanPackageSet = null;
 
 			hasGenericPrototype = false;
@@ -110,7 +110,7 @@ public class CompilationUnit extends CompilationUnitSuper implements ASTNode, Cl
 			lineMessageList.clear();
 
 			if ( ! this.parsed ) {
-				programUnitList.clear();
+				prototypeList.clear();
 			}
 			alreadyCalcInterfaceTypes = false;
 			alreadyCalcInternalTypes = false;
@@ -124,7 +124,7 @@ public class CompilationUnit extends CompilationUnitSuper implements ASTNode, Cl
 			importedPackageNameList.add(e.getName());
 
 		// no conflicts yet
-		conflictProgramUnitTable = new HashMap<>();
+		conflictPrototypeTable = new HashMap<>();
 	}
 
 	public List<ExprIdentStar> getImportPackageList() {
@@ -169,9 +169,9 @@ public class CompilationUnit extends CompilationUnitSuper implements ASTNode, Cl
 	}
 
 	public void genCompiledInterfaces(StringBuffer sb) {
-		for ( ProgramUnit programUnit : programUnitList ) {
-			if ( ! programUnit.getSimpleName().endsWith("__") ) {
-				programUnit.genCompiledInterfaces(sb);
+		for ( Prototype prototype : prototypeList ) {
+			if ( ! prototype.getSimpleName().endsWith("__") ) {
+				prototype.genCompiledInterfaces(sb);
 			}
 		}
 
@@ -186,8 +186,8 @@ public class CompilationUnit extends CompilationUnitSuper implements ASTNode, Cl
 
 	public void genCyan(PWInterface pw, CyanEnv cyanEnv) {
 
-		if ( nonAttachedMetaobjectAnnotationListBeforePackage != null ) {
-			for ( AnnotationAt annotation : nonAttachedMetaobjectAnnotationListBeforePackage ) {
+		if ( nonAttachedAnnotationListBeforePackage != null ) {
+			for ( AnnotationAt annotation : nonAttachedAnnotationListBeforePackage ) {
 				annotation.genCyan(pw, false, cyanEnv, true);
 			}
 		}
@@ -230,7 +230,7 @@ public class CompilationUnit extends CompilationUnitSuper implements ASTNode, Cl
 			// genCyan is being called to create an instance of a generic prototype
 			// currently only one program unit can be generic in a compilation unit.
 			// So the next "for" is unnecessary
-			for ( ProgramUnit pu : programUnitList )
+			for ( Prototype pu : prototypeList )
 				if ( pu.isGeneric() ) {
 					   // getGenericParameterListList() returns something like <Int, Int><Boolean>
 					for ( List<GenericParameter> genParamList : pu.getGenericParameterListList() )
@@ -281,8 +281,8 @@ public class CompilationUnit extends CompilationUnitSuper implements ASTNode, Cl
 		}
 		pw.println("");
 
-		for ( ProgramUnit programUnit : programUnitList )
-			programUnit.genCyan(pw, cyanEnv, true);
+		for ( Prototype prototype : prototypeList )
+			prototype.genCyan(pw, cyanEnv, true);
 	}
 
 
@@ -290,8 +290,8 @@ public class CompilationUnit extends CompilationUnitSuper implements ASTNode, Cl
 
 		env.setCurrentCompilationUnit(this);
 
-		if ( nonAttachedMetaobjectAnnotationListBeforePackage != null ) {
-			for ( AnnotationAt annotation : nonAttachedMetaobjectAnnotationListBeforePackage ) {
+		if ( nonAttachedAnnotationListBeforePackage != null ) {
+			for ( AnnotationAt annotation : nonAttachedAnnotationListBeforePackage ) {
 				if ( annotation.getCyanMetaobject() instanceof IAction_cge ) {
 					env.error(annotation.getFirstSymbol(), "Metaobject '" + annotation.getCyanMetaobject().getName() + "' implements interface "
 							+ " IAction_cge. It cannot be called before 'package'");
@@ -331,22 +331,22 @@ public class CompilationUnit extends CompilationUnitSuper implements ASTNode, Cl
 		}
 
 
-		for ( ProgramUnit programUnit : programUnitList ) {
+		for ( Prototype prototype : prototypeList ) {
 			pw.println("");
-			programUnit.genJava(pw, env);
-			//SerializeManager.writeJSON(programUnit, nameSerializedFile);
+			prototype.genJava(pw, env);
+			//SerializeManager.writeJSON(prototype, nameSerializedFile);
 		}
 		env.atEndOfCurrentCompilationUnit();
 	}
 
 
 
-	public void addProgramUnit(ProgramUnit programUnit) {
-		programUnitList.add(programUnit);
+	public void addPrototype(Prototype prototype) {
+		prototypeList.add(prototype);
 	}
 
-	public List<ProgramUnit> getProgramUnitList() {
-		return programUnitList;
+	public List<Prototype> getPrototypeList() {
+		return prototypeList;
 	}
 
 	/**
@@ -358,9 +358,9 @@ public class CompilationUnit extends CompilationUnitSuper implements ASTNode, Cl
 		return this.getPublicPrototype().getName();
 	}
 
-	public ProgramUnit getPublicPrototype() {
+	public Prototype getPublicPrototype() {
 		if ( publicPrototype == null ) {
-			for ( ProgramUnit p : programUnitList )
+			for ( Prototype p : prototypeList )
 				if ( p.getVisibility() == Token.PUBLIC ) {
 					publicPrototype = p;
 					return p;
@@ -369,11 +369,11 @@ public class CompilationUnit extends CompilationUnitSuper implements ASTNode, Cl
 		return publicPrototype;
 	}
 
-	public boolean removePrototype(ProgramUnit toBeRemoved) {
-		for (int i = 0; i < this.programUnitList.size(); ++i) {
-			ProgramUnit p = this.programUnitList.get(i);
+	public boolean removePrototype(Prototype toBeRemoved) {
+		for (int i = 0; i < this.prototypeList.size(); ++i) {
+			Prototype p = this.prototypeList.get(i);
 			if ( p == toBeRemoved ) {
-				programUnitList.remove(i);
+				prototypeList.remove(i);
 				return true;
 			}
 		}
@@ -392,7 +392,8 @@ public class CompilationUnit extends CompilationUnitSuper implements ASTNode, Cl
 	 * @param e
 	 */
 	@SuppressWarnings("resource")
-	public CompilationUnit createInstanceGenericPrototype(ExprGenericPrototypeInstantiation e, Env env) {
+	public CompilationUnit createInstanceGenericPrototype(
+			ExprGenericPrototypeInstantiation e, Env env) {
 		String fileName = null;
 		String newFileName = null;
 		String packageCanonicalPath1 = null;
@@ -407,13 +408,13 @@ public class CompilationUnit extends CompilationUnitSuper implements ASTNode, Cl
 
 		FileOutputStream fos = null;
 
-		ProgramUnit programUnit = null;
-		for ( ProgramUnit pu : this.getProgramUnitList() )
+		Prototype prototype = null;
+		for ( Prototype pu : this.getPrototypeList() )
 			if ( pu.getVisibility() == Token.PUBLIC ) {
-				programUnit = pu;
+				prototype = pu;
 				break;
 			}
-		if ( programUnit == null ) return null;
+		if ( prototype == null ) return null;
 
 		PrintWriter printWriter = null;
 		newFileName = fileName = getFullFileNamePath();
@@ -429,6 +430,8 @@ public class CompilationUnit extends CompilationUnitSuper implements ASTNode, Cl
 			packageCanonicalPath1 = dirName + File.separator;
 			newFileName = packageCanonicalPath1 + cyanSourceFileName;
 		}
+		String prototypeNameInstantiation1 = null;
+		String packageNameInstantiation1 = null;
 
 		try {
 
@@ -439,25 +442,31 @@ public class CompilationUnit extends CompilationUnitSuper implements ASTNode, Cl
 			//if ( newFileName.contains("G1") )
 				//System.gc();
 
-			ProgramUnit currentProgramUnit = env.getCurrentProgramUnit();
-			String prototypeNameInstantiation1;
-			String packageNameInstantiation1;
+			Prototype currentPrototype = env.getCurrentPrototype();
 
-			if ( currentProgramUnit == null ) {
+			if ( currentPrototype == null ) {
 				// env.error(e.getFirstSymbol(),  "Prototype instantiation outside a prototype");
 				// return null;
 				prototypeNameInstantiation1 = env.getProject().getProjectName();
 				packageNameInstantiation1 = "";
 			}
 			else {
-				prototypeNameInstantiation1 = currentProgramUnit.getNameWithOuter();
-				packageNameInstantiation1 = currentProgramUnit.getCompilationUnit().getPackageName();
+				prototypeNameInstantiation1 = currentPrototype.getNameWithOuter();
+				packageNameInstantiation1 = currentPrototype.getCompilationUnit().getPackageName();
 			}
 
 
-			CyanEnv cyanEnv = new CyanEnv(programUnit, e, env, packageNameInstantiation1, prototypeNameInstantiation1);
+			CyanEnv cyanEnv = new CyanEnv(prototype, e, env, packageNameInstantiation1,
+					prototypeNameInstantiation1);
 
 			genCyan(pw, cyanEnv);
+			//#$
+//			Program p = env.getProject().getProgram();
+//			Prototype originProgUnit = env.getCurrentCompilationUnit().getPublicPrototype();
+//			p.addInstantiatedPrototypeName_to_WhereInfo(
+//					originProgUnit.getFullName(),
+//					packageNameInstantiation1, prototypeNameInstantiation1,
+//					e.getFirstSymbol().getLineNumber(), e.getFirstSymbol().getColumnNumber());
 
 			// System.out.println("Creating: " + newFileName + " ");
 		}
@@ -498,6 +507,14 @@ public class CompilationUnit extends CompilationUnitSuper implements ASTNode, Cl
 				getCompilerOptions(),
 				null
 				);
+
+		//#$ {
+
+		compilationUnit.setPackageNameInstantiation(packageNameInstantiation1);
+		compilationUnit.setPrototypeNameInstantiation(prototypeNameInstantiation1);
+		compilationUnit.setLineNumberInstantiation(e.getFirstSymbol().getLineNumber());
+		compilationUnit.setColumnNumberInstantiation(e.getFirstSymbol().getColumnNumber());
+		//#$  }
 
 		return compilationUnit;
 
@@ -596,9 +613,9 @@ public class CompilationUnit extends CompilationUnitSuper implements ASTNode, Cl
 			pw.println("import " + expr.getName());
 		}
 		pw.println("");
-		for ( ProgramUnit programUnit : this.getProgramUnitList() )
-			if ( programUnit instanceof InterfaceDec )
-				((InterfaceDec) programUnit).genCyanProtoInterface(pw);
+		for ( Prototype prototype : this.getPrototypeList() )
+			if ( prototype instanceof InterfaceDec )
+				((InterfaceDec) prototype).genCyanProtoInterface(pw);
 	}
 
 
@@ -636,29 +653,29 @@ public class CompilationUnit extends CompilationUnitSuper implements ASTNode, Cl
 	}
 
 
-	public void calcInternalTypes(ICompiler_dsa compiler_dsa, Env env) {
+	public void calcInternalTypes(ICompiler_semAn compiler_semAn, Env env) {
 
 		if ( ! alreadyCalcInternalTypes ) {
 			alreadyCalcInternalTypes = true;
 			env.atBeginningOfCurrentCompilationUnit(this);
-			if ( nonAttachedMetaobjectAnnotationListBeforePackage != null ) {
-				for ( AnnotationAt annotation : nonAttachedMetaobjectAnnotationListBeforePackage ) {
+			if ( nonAttachedAnnotationListBeforePackage != null ) {
+				for ( AnnotationAt annotation : nonAttachedAnnotationListBeforePackage ) {
 					annotation.calcInternalTypes(env);
 				}
 			}
 
-			meta.GetHiddenItem.getHiddenEnv(compiler_dsa.getEnv())
+			meta.GetHiddenItem.getHiddenEnv(compiler_semAn.getEnv())
 			     .atBeginningOfCurrentCompilationUnit(this);
-			// compiler_dsa.getEnv().atBeginningOfCurrentCompilationUnit(this);
+			// compiler_semAn.getEnv().atBeginningOfCurrentCompilationUnit(this);
 
-			for ( ProgramUnit programUnit : programUnitList )
-				programUnit.calcInternalTypes(compiler_dsa, env);
+			for ( Prototype prototype : prototypeList )
+				prototype.calcInternalTypes(compiler_semAn, env);
 
 
 
 			checkErrorMessages(env);
-			//compiler_dsa.getEnv().atEndOfCurrentCompilationUnit();
-			meta.GetHiddenItem.getHiddenEnv(compiler_dsa.getEnv())
+			//compiler_semAn.getEnv().atEndOfCurrentCompilationUnit();
+			meta.GetHiddenItem.getHiddenEnv(compiler_semAn.getEnv())
 			    .atEndOfCurrentCompilationUnit();
 
 			env.atEndOfCurrentCompilationUnit();
@@ -671,16 +688,16 @@ public class CompilationUnit extends CompilationUnitSuper implements ASTNode, Cl
 			importedPackageNameList.add(e.getName());
 
 		// no conflicts yet
-		conflictProgramUnitTable = new HashMap<>();
+		conflictPrototypeTable = new HashMap<>();
 		prepareCompilationUnit(env);
 		/*
 		 * inserts all generic parameters as prototypes in the package of this compilation unit
 		 */
-		ProgramUnit publicPU = this.getPublicPrototype();
-		List<ProgramUnit> puList = new ArrayList<>();
+		Prototype publicPU = this.getPublicPrototype();
+		List<Prototype> puList = new ArrayList<>();
 		for ( List<GenericParameter> gpList : this.getPublicPrototype().getGenericParameterListList() ) {
 			for ( GenericParameter gp : gpList ) {
-				ProgramUnit obj = publicPU.clone(); // new ObjectDec(null, Token.PUBLIC, null, null,);
+				Prototype obj = publicPU.clone(); // new ObjectDec(null, Token.PUBLIC, null, null,);
 				if ( obj == null ) {
 					env.error(publicPU.getFirstSymbol(), "Internal error: cannot clone this object");
 					return ;
@@ -689,7 +706,7 @@ public class CompilationUnit extends CompilationUnitSuper implements ASTNode, Cl
 				puList.add( obj );
 			}
 		}
-		env.setProgramUnitForGenericPrototypeList(puList);
+		env.setPrototypeForGenericPrototypeList(puList);
 	}
 
 	public void prepareCompilationUnit(Env env) {
@@ -727,7 +744,7 @@ public class CompilationUnit extends CompilationUnitSuper implements ASTNode, Cl
 			}
 		}
 
-		String publicProgramUnitNameThisCompilationUnit = this.getPublicPrototype().getSymbol().getSymbolString();
+		String publicPrototypeNameThisCompilationUnit = this.getPublicPrototype().getSymbol().getSymbolString();
 
 		  // import package of this compilation unit
 		importedCyanPackageSet.add(this.cyanPackage);
@@ -735,7 +752,7 @@ public class CompilationUnit extends CompilationUnitSuper implements ASTNode, Cl
 		CyanPackage cyanLangPackage = project.getCyanLangPackage();
 		importedCyanPackageSet.add(cyanLangPackage);
 
-		HashMap<String, String> importedProgramUnitSet = new HashMap<String, String>();
+		HashMap<String, String> importedPrototypeSet = new HashMap<String, String>();
 		for ( CyanPackage cp : importedCyanPackageSet ) {
 			Set<String> onePackageRawPrototypeNameSet = new HashSet<String>();
 			/*
@@ -743,25 +760,25 @@ public class CompilationUnit extends CompilationUnitSuper implements ASTNode, Cl
 			 * Currently every compilation unit has just one program unit
 			 */
 			for ( CompilationUnit compUnit : cp.getCompilationUnitList() ) {
-				for ( ProgramUnit programUnit : compUnit.getProgramUnitList() ) {
-					if ( programUnit.getVisibility() == Token.PUBLIC ) {
-						String puName = programUnit.getSymbol().getSymbolString();
+				for ( Prototype prototype : compUnit.getPrototypeList() ) {
+					if ( prototype.getVisibility() == Token.PUBLIC ) {
+						String puName = prototype.getSymbol().getSymbolString();
 						onePackageRawPrototypeNameSet.add(puName);
 					}
 				}
 			}
 			for ( String rawPrototypeName : onePackageRawPrototypeNameSet ) {
-				String oldPackageName = importedProgramUnitSet.put(rawPrototypeName, cp.getPackageName() );
+				String oldPackageName = importedPrototypeSet.put(rawPrototypeName, cp.getPackageName() );
 				if ( oldPackageName != null ) {
-					/* importedProgramUnitSet already contains a program unit with this name
+					/* importedPrototypeSet already contains a program unit with this name
 					 * That is ok if this program unit is not the public program unit of
 					 * this compilation unit.
 					 * */
-					if ( ! rawPrototypeName.equals(publicProgramUnitNameThisCompilationUnit) ) {
-						if ( this.conflictProgramUnitTable == null ) {
-							this.conflictProgramUnitTable = new HashMap<>();
+					if ( ! rawPrototypeName.equals(publicPrototypeNameThisCompilationUnit) ) {
+						if ( this.conflictPrototypeTable == null ) {
+							this.conflictPrototypeTable = new HashMap<>();
 						}
-						this.conflictProgramUnitTable.put(rawPrototypeName, oldPackageName + ", " + cp.getPackageName());
+						this.conflictPrototypeTable.put(rawPrototypeName, oldPackageName + ", " + cp.getPackageName());
 					}
 				}
 
@@ -784,12 +801,12 @@ public class CompilationUnit extends CompilationUnitSuper implements ASTNode, Cl
 			boolean allowCreationOfPrototypesInLastCompilerPhases = env.getAllowCreationOfPrototypesInLastCompilerPhases();
 			try {
 
-				for ( ProgramUnit programUnit : programUnitList ) {
+				for ( Prototype prototype : prototypeList ) {
 					if ( this.cyanPackage.getPackageName().equals(MetaHelper.cyanLanguagePackageName) ) {
 						env.setAllowCreationOfPrototypesInLastCompilerPhases(true);
 					}
-					if ( programUnit.getPrototypeIsNotGeneric() )
-					    programUnit.calcInterfaceTypes(env);
+					if ( prototype.getPrototypeIsNotGeneric() )
+					    prototype.calcInterfaceTypes(env);
 				}
 			}
 			catch (NullPointerException e ) {
@@ -871,18 +888,18 @@ public class CompilationUnit extends CompilationUnitSuper implements ASTNode, Cl
 
 
 
-	public void afti_actions(ICompiler_afti compiler_afti, CompilerManager_afti compilerManager) {
+	public void afterResTypes_actions(ICompiler_afterResTypes compiler_afterResTypes, CompilerManager_afterResTypes compilerManager) {
 
-		Env env = meta.GetHiddenItem.getHiddenEnv(compiler_afti.getEnv());
+		Env env = meta.GetHiddenItem.getHiddenEnv(compiler_afterResTypes.getEnv());
 
 		env.atBeginningOfCurrentCompilationUnit(this);
 
 
-		for ( ProgramUnit programUnit : programUnitList ) {
-			if ( programUnit.getPrototypeIsNotGeneric() ) {
-			    // programUnit.afti_actions(compiler_afti, compilerManager);
+		for ( Prototype prototype : prototypeList ) {
+			if ( prototype.getPrototypeIsNotGeneric() ) {
+			    // prototype.afterResTypes_actions(compiler_afterResTypes, compilerManager);
 				try {
-				    programUnit.afti_actions(compiler_afti, compilerManager);
+				    prototype.afterResTypes_actions(compiler_afterResTypes, compilerManager);
 				}
 				catch ( CompileErrorException e ) {
 
@@ -893,40 +910,40 @@ public class CompilationUnit extends CompilationUnitSuper implements ASTNode, Cl
 	}
 
 
-//	public void ati3_check(ICompiler_afti compiler_afti) {
-//		// Env env = (Env ) compiler_afti.getEnv();
-//		Env env = meta.GetHiddenItem.getHiddenEnv(compiler_afti.getEnv());
+//	public void ati3_check(ICompiler_afterResTypes compiler_afterResTypes) {
+//		// Env env = (Env ) compiler_afterResTypes.getEnv();
+//		Env env = meta.GetHiddenItem.getHiddenEnv(compiler_afterResTypes.getEnv());
 //		env.atBeginningOfCurrentCompilationUnit(this);
 //
 //
-//		for ( ProgramUnit programUnit : programUnitList ) {
-//			if ( programUnit.getPrototypeIsNotGeneric() )
-//			    programUnit.ati3_check(compiler_afti, env);
+//		for ( Prototype prototype : prototypeList ) {
+//			if ( prototype.getPrototypeIsNotGeneric() )
+//			    prototype.ati3_check(compiler_afterResTypes, env);
 //		}
 //		env.atEndOfCurrentCompilationUnit();
 //
 //	}
 
 
-	public void afsa_checkDeclaration(ICompiler_dsa compiler_dsa) {
-		// compiler_dsa.getEnv().atBeginningOfCurrentCompilationUnit(this);
+	public void afterSemAn_checkDeclaration(ICompiler_semAn compiler_semAn) {
+		// compiler_semAn.getEnv().atBeginningOfCurrentCompilationUnit(this);
 
-		Env env = meta.GetHiddenItem.getHiddenEnv(compiler_dsa.getEnv());
+		Env env = meta.GetHiddenItem.getHiddenEnv(compiler_semAn.getEnv());
         env.atBeginningOfCurrentCompilationUnit(this);
 
 
 
-		for ( ProgramUnit programUnit : programUnitList ) {
-			if ( programUnit.getPrototypeIsNotGeneric() ) {
-				env.atBeginningOfObjectDec(programUnit);
-			    programUnit.afsa_checkDeclaration(compiler_dsa, env);
-			    if ( !NameServer.isPrototypeFromInterface(programUnit.getName()) ) {
-				    programUnit.afsa_check(compiler_dsa, env);
+		for ( Prototype prototype : prototypeList ) {
+			if ( prototype.getPrototypeIsNotGeneric() ) {
+				env.atBeginningOfObjectDec(prototype);
+			    prototype.afterSemAn_checkDeclaration(compiler_semAn, env);
+			    if ( !NameServer.isPrototypeFromInterface(prototype.getName()) ) {
+				    prototype.afterSemAn_check(compiler_semAn, env);
 			    }
 			    env.atEndOfObjectDec();
 			}
 		}
-		// compiler_dsa.getEnv().atEndOfCurrentCompilationUnit();
+		// compiler_semAn.getEnv().atEndOfCurrentCompilationUnit();
 
 		env.atEndOfCurrentCompilationUnit();
 
@@ -971,8 +988,8 @@ public class CompilationUnit extends CompilationUnitSuper implements ASTNode, Cl
 		this.interfaceCompilationUnit = interfaceCompilationUnit;
 	}
 
-	public HashMap<String, String> getConflictProgramUnitTable() {
-		return conflictProgramUnitTable;
+	public HashMap<String, String> getConflictPrototypeTable() {
+		return conflictPrototypeTable;
 	}
 
 	public Set<CyanPackage> getImportedCyanPackageSet() {
@@ -1000,13 +1017,13 @@ public class CompilationUnit extends CompilationUnitSuper implements ASTNode, Cl
 		this.isInterfaceAsObject = isInterfaceAsObject;
 	}
 
-	public List<AnnotationAt> getNonAttachedMetaobjectAnnotationListBeforePackage() {
-		return nonAttachedMetaobjectAnnotationListBeforePackage;
+	public List<AnnotationAt> getNonAttachedAnnotationListBeforePackage() {
+		return nonAttachedAnnotationListBeforePackage;
 	}
 
-	public void setNonAttachedMetaobjectAnnotationListBeforePackage(
-			List<AnnotationAt> nonAttachedMetaobjectAnnotationListBeforePackage) {
-		this.nonAttachedMetaobjectAnnotationListBeforePackage = nonAttachedMetaobjectAnnotationListBeforePackage;
+	public void setNonAttachedAnnotationListBeforePackage(
+			List<AnnotationAt> nonAttachedAnnotationListBeforePackage) {
+		this.nonAttachedAnnotationListBeforePackage = nonAttachedAnnotationListBeforePackage;
 	}
 
 
@@ -1123,7 +1140,7 @@ public class CompilationUnit extends CompilationUnitSuper implements ASTNode, Cl
 
 	/**
 	 * true if this compilation unit has already been parsed and it is
-	 * not generic. If 'parsed' is true after phase afti, the AST objects
+	 * not generic. If 'parsed' is true after phase AF_RES_TYPES, the AST objects
 	 * for ObjectDec and InterfaceDec will be reused.
 	 */
 	public boolean getParsed() {
@@ -1170,13 +1187,13 @@ public class CompilationUnit extends CompilationUnitSuper implements ASTNode, Cl
 	 * list of the program units of this compilation unit: all objects or
 	 * interfaces declared in file "filename".
 	 */
-	private List<ProgramUnit> programUnitList;
+	private List<Prototype> prototypeList;
 
 	/* Map with conflicts of program units. It consists of the name of the prototype
 	 * and a string. This string contains the names, separated by spaces, of the
 	 * packages that define the prototype and that are imported by this compilation unit.
 	 */
-	private HashMap<String, String> conflictProgramUnitTable;
+	private HashMap<String, String> conflictPrototypeTable;
 
 	/*
 	 * true if there is a declaration of an instantiation of  generic prototype in this compilation unit
@@ -1189,7 +1206,7 @@ public class CompilationUnit extends CompilationUnitSuper implements ASTNode, Cl
 	/**
 	 * the public prototype of this compilation unit
 	 */
-	public ProgramUnit publicPrototype;
+	public Prototype publicPrototype;
 
 	/**
 	 * true if this compilation unit was created by the compiler from an interface.
@@ -1265,7 +1282,7 @@ public class CompilationUnit extends CompilationUnitSuper implements ASTNode, Cl
 	/**
 	 * list of metaobject annotations before keyword 'package'
 	 */
-	List<AnnotationAt> nonAttachedMetaobjectAnnotationListBeforePackage;
+	List<AnnotationAt> nonAttachedAnnotationListBeforePackage;
 
 	/**
 	 * set of JVM packages imported by this compilation unit
@@ -1283,7 +1300,7 @@ public class CompilationUnit extends CompilationUnitSuper implements ASTNode, Cl
 
 	/**
 	 * true if this compilation unit has already been parsed and it is
-	 * not generic. If 'parsed' is true after phase afti, the AST objects
+	 * not generic. If 'parsed' is true after phase AF_RES_TYPES, the AST objects
 	 * for ObjectDec and InterfaceDec will be reused.
 	 */
 	private boolean parsed;

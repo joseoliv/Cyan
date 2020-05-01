@@ -5,8 +5,8 @@ import java.util.List;
 import java.util.HashSet;
 import meta.AnnotationArgumentsKind;
 import meta.CyanMetaobjectAtAnnot;
-import meta.IAction_dpa;
-import meta.ICompilerAction_dpa;
+import meta.IAction_parsing;
+import meta.ICompilerAction_parsing;
 
 /**
  * This metaobject create the methods for the CatchExit prototype
@@ -14,19 +14,19 @@ import meta.ICompilerAction_dpa;
  */
 
 public class CyanMetaobjectCreateCatchExit extends CyanMetaobjectAtAnnot 
-	implements IAction_dpa {
+	implements IAction_parsing {
 
 		public CyanMetaobjectCreateCatchExit() { 
 			super("createCatchExit", AnnotationArgumentsKind.ZeroParameters);
 		}
 
 		@Override
-		public StringBuffer dpa_codeToAdd(ICompilerAction_dpa compiler) {
+		public StringBuffer parsing_codeToAdd(ICompilerAction_parsing compiler) {
 			
 			StringBuffer s = new StringBuffer();
 			
 			if ( ! compiler.getCurrentPrototypeId().equals("CatchExit") ) {
-				compiler.error(this.getMetaobjectAnnotation().getFirstSymbol(), "Metaobject '" + getName() + 
+				compiler.error(this.getAnnotation().getFirstSymbol(), "Metaobject '" + getName() + 
 						"' should only be used in prototype CatchExit");
 				return null;
 			}
@@ -34,16 +34,16 @@ public class CyanMetaobjectCreateCatchExit extends CyanMetaobjectAtAnnot
 			
 			List<List<String>> strListList = compiler.getGenericPrototypeArgListList();
 			/* if ( strListList == null || ! compiler.getCurrentPrototypeName().startsWith("Union") ) {
-				compiler.error(this.getMetaobjectAnnotation().getFirstSymbol(), "Metaobject '" + getName() + 
+				compiler.error(this.getAnnotation().getFirstSymbol(), "Metaobject '" + getName() + 
 						"' should only be used in a generic prototype", 
-						this.getMetaobjectAnnotation().getFirstSymbol().getSymbolString(), ErrorKind.metaobject_error);
+						this.getAnnotation().getFirstSymbol().getSymbolString(), ErrorKind.metaobject_error);
 				return null;
 			}
 			*/
 			
 			int sizeListList = strListList.size();
 			if ( sizeListList != 1 ) {
-				compiler.error(this.getMetaobjectAnnotation().getFirstSymbol(), 
+				compiler.error(this.getAnnotation().getFirstSymbol(), 
 						"Prototype 'CatchExit' should have just one pair of '<' and '>' with parameters (like 'CatchExit<Exception1, Exception2>')");
 				return null;
 			}
@@ -54,7 +54,7 @@ public class CyanMetaobjectCreateCatchExit extends CyanMetaobjectAtAnnot
 			for ( String protoName : strList ) {
 				s.append("    func eval: " + protoName + " e { exit: e prototypeName }\n ");
 				if ( set.contains(protoName) ) {
-					compiler.error(this.getMetaobjectAnnotation().getFirstSymbol(), 
+					compiler.error(this.getAnnotation().getFirstSymbol(), 
 							"Prototype '" + protoName + "' has been used twice in the instantiation of 'CatchExit'");
 				}
 				set.add(protoName);

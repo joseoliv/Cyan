@@ -6,7 +6,7 @@ package meta.cyanLang;
 import java.util.List;
 import meta.AnnotationArgumentsKind;
 import meta.CyanMetaobjectAtAnnot;
-import meta.ICompilerAction_dpa;
+import meta.ICompilerAction_parsing;
 
 /**
  * This metaobject is related to a feature that has not yet been added to the Cyan language, Context Functions.
@@ -14,7 +14,7 @@ import meta.ICompilerAction_dpa;
 
  */
 public class CyanMetaobjectCreateContextFunction extends CyanMetaobjectAtAnnot
-    implements meta.IAction_dpa {
+    implements meta.IAction_parsing {
 
 
 
@@ -23,12 +23,12 @@ public class CyanMetaobjectCreateContextFunction extends CyanMetaobjectAtAnnot
 	}
 
 	@Override
-	public StringBuffer dpa_codeToAdd(ICompilerAction_dpa compiler) {
+	public StringBuffer parsing_codeToAdd(ICompilerAction_parsing compiler) {
 		StringBuffer s = new StringBuffer();
 
 		List<List<String>> strListList = compiler.getGenericPrototypeArgListList();
 		if ( strListList == null ) {
-			compiler.error(this.getMetaobjectAnnotation().getFirstSymbol(), "Metaobject '" + getName() + "' should only be used in a generic prototype");
+			compiler.error(this.getAnnotation().getFirstSymbol(), "Metaobject '" + getName() + "' should only be used in a generic prototype");
 			return null;
 		}
 
@@ -37,7 +37,7 @@ public class CyanMetaobjectCreateContextFunction extends CyanMetaobjectAtAnnot
 
 
 		if ( strListList.size() < 1 ) {
-			compiler.error(this.getMetaobjectAnnotation().getFirstSymbol(), "This metaobject should only be used in generic prototype cyan.lang.ContextObject");
+			compiler.error(this.getAnnotation().getFirstSymbol(), "This metaobject should only be used in generic prototype cyan.lang.ContextObject");
 			return s;
 		}
 

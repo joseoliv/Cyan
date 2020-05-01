@@ -25,11 +25,13 @@ import saci.TupleTwo;
 public class ExprGenericPrototypeInstantiation extends Expr implements IReceiverCompileTimeMessageSend {
 
 	public ExprGenericPrototypeInstantiation( ExprIdentStar typeIdent, List<List<Expr>> realTypeListList,
-			                ProgramUnit programUnit, MessageSendToMetaobjectAnnotation messageSendToMetaobjectAnnotation) {
+			                Prototype prototype,
+			                MessageSendToAnnotation messageSendToAnnotation, MethodDec method) {
+		super(method);
 		this.typeIdent = typeIdent;
 		this.realTypeListList = realTypeListList;
-		this.programUnit = programUnit;
-		this.messageSendToMetaobjectAnnotation = messageSendToMetaobjectAnnotation;
+		this.prototype = prototype;
+		this.messageSendToAnnotation = messageSendToAnnotation;
 		compilationUnit = null;
 		nameWithPackageAndType = null;
 		annotationToTypeList = null;
@@ -93,8 +95,8 @@ public class ExprGenericPrototypeInstantiation extends Expr implements IReceiver
 			}
 			pw.print(">");
 		}
-		if ( messageSendToMetaobjectAnnotation != null ) {
-			messageSendToMetaobjectAnnotation.genCyan(pw);
+		if ( messageSendToAnnotation != null ) {
+			messageSendToAnnotation.genCyan(pw);
 		}
 	}
 
@@ -152,13 +154,13 @@ public class ExprGenericPrototypeInstantiation extends Expr implements IReceiver
 	}
 
 
-	public void setProgramUnit(ProgramUnit programUnit) {
-		this.programUnit = programUnit;
+	public void setPrototype(Prototype prototype) {
+		this.prototype = prototype;
 	}
 
 
-	public ProgramUnit getProgramUnit() {
-		return programUnit;
+	public Prototype getPrototype() {
+		return prototype;
 	}
 
 
@@ -271,7 +273,7 @@ public class ExprGenericPrototypeInstantiation extends Expr implements IReceiver
 			if ( indexOfDot < 0 ) {
 				  // no package preceding the name. It should be a prototype visible in
 				  // this compilation unit
-				ProgramUnit pu3 = env.searchVisibleProgramUnit(name, this.getFirstSymbol(), true);
+				Prototype pu3 = env.searchVisiblePrototype(name, this.getFirstSymbol(), true);
 				if ( pu3 == null ) {
 					TypeJavaRef javaClass = env.searchVisibleJavaClass(name);
 					if ( javaClass == null ) {
@@ -301,7 +303,7 @@ public class ExprGenericPrototypeInstantiation extends Expr implements IReceiver
 				// package name
 				prototypeName = name.substring(indexOfDot + 1);
 				packageName = name.substring(0, indexOfDot);
-				ProgramUnit pu4 = env.searchPackagePrototype(packageName, prototypeName);
+				Prototype pu4 = env.searchPackagePrototype(packageName, prototypeName);
 				if ( pu4 == null ) {
 					prototypeName = prototypeName.substring(0, prototypeName.indexOf('<'));
 					TypeJavaRef javaClass = env.searchPackageJavaClass(packageName, prototypeName);
@@ -373,7 +375,7 @@ public class ExprGenericPrototypeInstantiation extends Expr implements IReceiver
 			  // no package preceding the name. It should be a prototype of package cyan.lang
 
 
-			ProgramUnit pu3 = env.getProject().getCyanLangPackage().searchPublicNonGenericProgramUnit(name); // env.searchVisibleProgramUnit(name, this.getFirstSymbol(), true);
+			Prototype pu3 = env.getProject().getCyanLangPackage().searchPublicNonGenericPrototype(name); // env.searchVisiblePrototype(name, this.getFirstSymbol(), true);
 			if ( pu3 == null ) {
 				if ( name.equals(MetaHelper.dynName) )
 					return new saci.TupleTwo<String, CompilationUnit>(name, null);
@@ -395,7 +397,7 @@ public class ExprGenericPrototypeInstantiation extends Expr implements IReceiver
 			// package name
 			prototypeName = name.substring(indexOfDot + 1);
 			packageName = name.substring(0, indexOfDot);
-			ProgramUnit pu4 = env.searchPackagePrototype(packageName, prototypeName);
+			Prototype pu4 = env.searchPackagePrototype(packageName, prototypeName);
 			if ( pu4 == null ) {
 				return null;
 			}
@@ -495,7 +497,7 @@ public class ExprGenericPrototypeInstantiation extends Expr implements IReceiver
 							}
 							else if ( ! precededByPackage ) {
 
-								ProgramUnit pu = env.searchVisibleProgramUnit(realParameterName, e.getFirstSymbol(), false);
+								Prototype pu = env.searchVisiblePrototype(realParameterName, e.getFirstSymbol(), false);
 								if ( pu != null  ) {
 									CompilationUnit cunit = pu.getCompilationUnit();
 									packageName = cunit.getPackageName() + ".";
@@ -617,7 +619,7 @@ public class ExprGenericPrototypeInstantiation extends Expr implements IReceiver
 						}
 						else if ( ! precededByPackage ) {
 
-							ProgramUnit pu = env.searchVisibleProgramUnit(realParameterName, e.getFirstSymbol(), false);
+							Prototype pu = env.searchVisiblePrototype(realParameterName, e.getFirstSymbol(), false);
 							if ( pu != null  ) {
 								CompilationUnit cunit = pu.getCompilationUnit();
 								packageName = cunit.getPackageName() + ".";
@@ -660,7 +662,7 @@ public class ExprGenericPrototypeInstantiation extends Expr implements IReceiver
 					 */
 					if ( ! program.isInPackageCyanLang(genParamName) && ! genParamName.equals(MetaHelper.dynName) ) {
 						if ( genProtoInst.getTypeIdent().getIdentSymbolArray().size() == 1) {
-							ProgramUnit pu = env.searchVisibleProgramUnit(genParamName, genProtoInst.getTypeIdent().getFirstSymbol(), false);
+							Prototype pu = env.searchVisiblePrototype(genParamName, genProtoInst.getTypeIdent().getFirstSymbol(), false);
 							if ( pu != null ) {
 								CompilationUnit cunit = pu.getCompilationUnit();
 								packageName = cunit.getPackageName() + ".";
@@ -800,26 +802,26 @@ public class ExprGenericPrototypeInstantiation extends Expr implements IReceiver
 			return;
 		}
 
-		if ( this.messageSendToMetaobjectAnnotation != null && env.getCompInstSet().contains(CompilationInstruction.dsa_actions) ) {
+		if ( this.messageSendToAnnotation != null && env.getCompInstSet().contains(CompilationInstruction.semAn_actions) ) {
 			/*
 			 * the compilation unit of this generic prototype instantiation should be written to a file.
 			 */
-			switch ( messageSendToMetaobjectAnnotation.getMessage() ) {
+			switch ( messageSendToAnnotation.getMessage() ) {
 			case "writeCode" :
 				if ( compilationUnit == null ) {
 					saci.TupleTwo<String, Type> t = ifPrototypeReturnsNameWithPackageAndType(env);
 					if ( t != null ) {
-						if ( t.f2.getInsideType() instanceof ProgramUnit ) {
-							compilationUnit = ((ProgramUnit ) t.f2).getCompilationUnit();
+						if ( t.f2.getInsideType() instanceof Prototype ) {
+							compilationUnit = ((Prototype ) t.f2).getCompilationUnit();
 
 						}
 					}
 				}
 				if ( compilationUnit != null ) {
 					boolean addToWrite = false;
-					List<String> strList = messageSendToMetaobjectAnnotation.getParamList();
+					List<String> strList = messageSendToAnnotation.getParamList();
 					if ( strList != null) {
-						if ( strList.get(0).equals("dsa") ) {
+						if ( strList.get(0).equals("SEM_AN") ) {
 							addToWrite = true;
 					    }
 					}
@@ -841,7 +843,7 @@ public class ExprGenericPrototypeInstantiation extends Expr implements IReceiver
 		else
 			javaName = NameServer.getJavaNameQualifiedIdentifier(this.identSymbolArray) + ".prototype";
 		*/
-		if ( type.getInsideType() instanceof ProgramUnit && this.annotationToTypeList != null ) {
+		if ( type.getInsideType() instanceof Prototype && this.annotationToTypeList != null ) {
 			// something like     Char@letter
 			TypeWithAnnotations twa;
 			type = twa = new TypeWithAnnotations(type, annotationToTypeList);
@@ -849,21 +851,21 @@ public class ExprGenericPrototypeInstantiation extends Expr implements IReceiver
 
 		}
 
-		if ( type instanceof ProgramUnit ) {
-			ProgramUnit programUnitGenProto = (ProgramUnit ) type;
+		if ( type instanceof Prototype ) {
+			Prototype prototypeGenProto = (Prototype ) type;
 			if ( env.peekCheckUsePossiblyNonInitializedPrototype()
-					&& !(programUnitGenProto instanceof InterfaceDec)
+					&& !(prototypeGenProto instanceof InterfaceDec)
 					&& ! env.getIsArgumentToIsA() ) {
-				ProgramUnit thisProgramUnit = (ProgramUnit ) type;
+				Prototype thisPrototype = (Prototype ) type;
 				List<MethodSignature> initMSList =
-						thisProgramUnit.searchMethodPrivateProtectedPublicPackage("init", env);
+						thisPrototype.searchMethodPrivateProtectedPublicPackage("init", env);
 				if ( (initMSList == null || initMSList.size() == 0) && type != Type.Nil ) {
 					/*
 					 * It is illegal to use a prototype that does not have an
 					 * 'init' method
 					 */
 					initMSList =
-							thisProgramUnit.searchMethodPrivateProtectedPublicPackage("new", env);
+							thisPrototype.searchMethodPrivateProtectedPublicPackage("new", env);
 					if ( (initMSList == null || initMSList.size() == 0) ) {
 						env.error(getFirstSymbol(), "Prototype '" + this.getName() + "' does "
 								+ "not have an 'init' method. Therefore its fields may not have"
@@ -872,11 +874,12 @@ public class ExprGenericPrototypeInstantiation extends Expr implements IReceiver
 					}
 				}
 			}
-			ProgramUnit currentProgramUnit = env.getCurrentProgramUnit();
-			MethodDec currentMethod = env.getCurrentMethod();
-			if ( currentMethod != null && currentProgramUnit != null &&
-					currentMethod.getName().equals("init") &&
-					name.equals(currentProgramUnit.getName()) ) {
+			Prototype currentPrototype = env.getCurrentPrototype();
+			//TODO  remove declaration of currentMethod1, use this.currentMethod instead
+			MethodDec currentMethod1 = env.getCurrentMethod();
+			if ( currentMethod1 != null && currentPrototype != null &&
+					currentMethod1.getName().equals("init") &&
+					name.equals(currentPrototype.getName()) ) {
 				env.error(getFirstSymbol(), "Prototype '" + name + "' "
 						+ "uses itself in its 'init' method. However, fields from "
 						+ "the prototype, considered as an object, are "
@@ -887,9 +890,6 @@ public class ExprGenericPrototypeInstantiation extends Expr implements IReceiver
 			}
 
 		}
-
-
-
 		super.calcInternalTypes(env);
 
 	}
@@ -1021,16 +1021,16 @@ public class ExprGenericPrototypeInstantiation extends Expr implements IReceiver
 	 *       Stack<Person>
 	 * does not identify completely "Stack" and "Person". A program may have
 	 * two or more "Stack" and two or more "Person" objects. However, they must be
-	 * in different packages. Through the field programUnit one can
-	 * discover, using the list of imported packages (programUnit.getCompilationUnit().getImportPackageList()),
+	 * in different packages. Through the field prototype one can
+	 * discover, using the list of imported packages (prototype.getCompilationUnit().getImportPackageList()),
 	 * where is each object (Stack and Person).
 	 */
-	private ProgramUnit programUnit;
+	private Prototype prototype;
 
 	/**
-	 * the message send that follows the generic prototype instantiation. See comments on ast#MessageSendToMetaobjectAnnotation
+	 * the message send that follows the generic prototype instantiation. See comments on ast#MessageSendToAnnotation
 	 */
-	private MessageSendToMetaobjectAnnotation messageSendToMetaobjectAnnotation;
+	private MessageSendToAnnotation messageSendToAnnotation;
 	/**
 	 * the compilation Unit in which the prototype of this generic prototype instantiation is
 	 */

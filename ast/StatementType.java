@@ -15,8 +15,8 @@ import saci.Env;
 public class StatementType extends Statement {
 
 
-	public StatementType(Symbol typeSymbol, Expr expr) {
-		super();
+	public StatementType(Symbol typeSymbol, Expr expr, MethodDec method) {
+		super(method);
 		this.typeSymbol = typeSymbol;
 		this.expr = expr;
 		this.caseList = new ArrayList<>();
@@ -101,7 +101,7 @@ public class StatementType extends Statement {
 
 		Type typeOfExpr = expr.getType();
 
-		if ( !(typeOfExpr.getInsideType() instanceof ProgramUnit) && typeOfExpr.getInsideType() != Type.Dyn ) {
+		if ( !(typeOfExpr.getInsideType() instanceof Prototype) && typeOfExpr.getInsideType() != Type.Dyn ) {
 			env.error(expr.getFirstSymbol(), "The type of the 'type' expression should be a prototype");
 		}
 
@@ -618,7 +618,7 @@ public class StatementType extends Statement {
 
 				 */
 				if ( isUnion ) {
-					ProgramUnit proto = (ObjectDec ) typeOfExpr;
+					Prototype proto = (ObjectDec ) typeOfExpr;
 
 					for ( List<GenericParameter> gpList : proto.getGenericParameterListList() ) {
 						for ( GenericParameter gp :  gpList ) {
@@ -667,7 +667,7 @@ public class StatementType extends Statement {
 		Type typeOfExpr = expr.getType();
 
 		if ( isUnion ) {
-			ProgramUnit proto = (ObjectDec ) typeOfExpr;
+			Prototype proto = (ObjectDec ) typeOfExpr;
 
 			for ( List<GenericParameter> gpList : proto.getGenericParameterListList() ) {
 				for ( GenericParameter gp :  gpList ) {

@@ -81,12 +81,12 @@ public class TypeJavaClass extends TypeJavaRef {
 		else if ( this.getFullName().equals("java.lang.Object") ) {
 			return true;
 		}
-		else if ( other.getInsideType() instanceof ProgramUnit ) {
+		else if ( other.getInsideType() instanceof Prototype ) {
 			/*
 			 * assignment of the type
 			 *     Java = Cyan
 			 */
-			ProgramUnit cyanType = (ProgramUnit) other;
+			Prototype cyanType = (Prototype) other;
 			String cyanTypeName = cyanType.getName();
 			String javaTypeName = getName();
 			String cyanNameFromWrapper = null;

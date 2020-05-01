@@ -25,25 +25,27 @@ import saci.Env;
 
 abstract public class Annotation extends Expr {
 
-	public Annotation( CompilationUnitSuper compilationUnit, boolean inExpr ) {
+	public Annotation( CompilationUnitSuper compilationUnit,
+			boolean inExpr, MethodDec method) {
+		super(method);
 		this.compilationUnit = compilationUnit;
 		this.inExpr = inExpr;
 		metaobjectAnnotationNumberByKind = -1;
 		exprStatList = null;
-		codeMetaobjectAnnotationParseWithCompiler = null;
+		codeAnnotationParseWithCompiler = null;
 		insideProjectFile = false;
 		localVariableNameList = null;
 	}
 
 	@Override
 	public WrAnnotation getI() {
-		if ( iCyanMetaobjectAnnotation == null ) {
-			iCyanMetaobjectAnnotation = new WrAnnotation(this);
+		if ( iCyanAnnotation == null ) {
+			iCyanAnnotation = new WrAnnotation(this);
 		}
-		return iCyanMetaobjectAnnotation;
+		return iCyanAnnotation;
 	}
 
-	private WrAnnotation iCyanMetaobjectAnnotation = null;
+	private WrAnnotation iCyanAnnotation = null;
 
 	@Override
 	public void accept(ASTVisitor visitor) {
@@ -61,9 +63,9 @@ abstract public class Annotation extends Expr {
 	/**
 	 * get the postfix associated to this metaobject annotation. For example, we can have<br>
 	 * <code>
-	 * var g = {@literal @}graph#afti{* 1:2, 2:3 *}<br>
+	 * var g = {@literal @}graph#afterResTypes{* 1:2, 2:3 *}<br>
 	 * </code><br>
-	 * The postfix is "afti".
+	 * The postfix is "AF_RES_TYPES".
 	 */
 	abstract public CompilerPhase getPostfix();
 
@@ -103,7 +105,7 @@ abstract public class Annotation extends Expr {
 	 * It includes metaobject annotations put before the metaobject but attached to it.
 	 */
 	public boolean isFirstCall() {
-		return this.metaobjectAnnotationNumber == Annotation.firstMetaobjectAnnotationNumber;
+		return this.metaobjectAnnotationNumber == Annotation.firstAnnotationNumber;
 	}
 
 
@@ -125,7 +127,7 @@ abstract public class Annotation extends Expr {
 	}
 
 	public String getPrototypeOfAnnotation() {
-		return programUnit == null ? null : this.programUnit.getName();
+		return prototype == null ? null : this.prototype.getName();
 	}
 
 
@@ -138,12 +140,12 @@ abstract public class Annotation extends Expr {
 		this.compilationUnit = compilationUnit;
 	}
 
-	public ProgramUnit getProgramUnit() {
-		return programUnit;
+	public Prototype getPrototype() {
+		return prototype;
 	}
 
-	public void setProgramUnit(ProgramUnit programUnit) {
-		this.programUnit = programUnit;
+	public void setPrototype(Prototype prototype) {
+		this.prototype = prototype;
 	}
 
 	@Override
@@ -157,7 +159,7 @@ abstract public class Annotation extends Expr {
 	public void calcInternalTypes(Env env) {
 
 		if ( isParsedWithCompiler() )
-			env.pushMetaobjectAnnotationParseWithCompiler(this);
+			env.pushAnnotationParseWithCompiler(this);
 		if ( exprStatList != null ) {
 			for ( ICalcInternalTypes es : exprStatList ) {
 				es.calcInternalTypes(env.getI());
@@ -168,7 +170,7 @@ abstract public class Annotation extends Expr {
 
 	public void finalizeCalcInternalTypes(Env env) {
 		if ( this.isParsedWithCompiler()  )
-			env.popMetaobjectAnnotationParseWithCompiler();
+			env.popAnnotationParseWithCompiler();
 	}
 
 
@@ -176,11 +178,11 @@ abstract public class Annotation extends Expr {
 		return inExpr;
 	}
 
-	public int getMetaobjectAnnotationNumber() {
+	public int getAnnotationNumber() {
 		return metaobjectAnnotationNumber;
 	}
 
-	public void setMetaobjectAnnotationNumber(int metaobjectAnnotationNumber) {
+	public void setAnnotationNumber(int metaobjectAnnotationNumber) {
 		this.metaobjectAnnotationNumber = metaobjectAnnotationNumber;
 	}
 
@@ -190,11 +192,11 @@ abstract public class Annotation extends Expr {
 	 * The first metaobject annotation has number 1.
 	   @return
 	 */
-	public int getMetaobjectAnnotationNumberByKind() {
+	public int getAnnotationNumberByKind() {
 		return metaobjectAnnotationNumberByKind;
 	}
 
-	public void setMetaobjectAnnotationNumberByKind(int metaobjectAnnotationNumberByKind) {
+	public void setAnnotationNumberByKind(int metaobjectAnnotationNumberByKind) {
 		this.metaobjectAnnotationNumberByKind = metaobjectAnnotationNumberByKind;
 	}
 
@@ -207,12 +209,12 @@ abstract public class Annotation extends Expr {
 	}
 
 
-	public StringBuffer getCodeMetaobjectAnnotationParseWithCompiler() {
-		return codeMetaobjectAnnotationParseWithCompiler;
+	public StringBuffer getCodeAnnotationParseWithCompiler() {
+		return codeAnnotationParseWithCompiler;
 	}
 
-	public void setCodeMetaobjectAnnotationParseWithCompiler(StringBuffer codeMetaobjectAnnotationParseWithCompiler) {
-		this.codeMetaobjectAnnotationParseWithCompiler = codeMetaobjectAnnotationParseWithCompiler;
+	public void setCodeAnnotationParseWithCompiler(StringBuffer codeAnnotationParseWithCompiler) {
+		this.codeAnnotationParseWithCompiler = codeAnnotationParseWithCompiler;
 	}
 
 	/**
@@ -270,7 +272,7 @@ abstract public class Annotation extends Expr {
 	/**
 	 * number of the first number of a metaobject annotation in a prototype
 	 */
-	public static final int firstMetaobjectAnnotationNumber = 1;
+	public static final int firstAnnotationNumber = 1;
 
 	/**
 	 * the compilation unit in which this metaobject annotation is, null if none
@@ -281,7 +283,7 @@ abstract public class Annotation extends Expr {
 	/**
 	 * the program unit in which this metaobject annotation is, null if none
 	 */
-	protected ProgramUnit programUnit;
+	protected Prototype prototype;
 
 	/**
 	 * the symbol just after this metaobject annotation
@@ -310,16 +312,16 @@ abstract public class Annotation extends Expr {
 
 	/**
 	 * this metaobject annotation may refer to expressions and statements of Cyan. These are grouped in exprStatList. This list is necessary
-	 * in order to do semantic analysis on them in step dsa.
+	 * in order to do semantic analysis on them in step SEM_AN.
 	 */
 	private List<ICalcInternalTypes> exprStatList;
 
 
 	/**
-	 * if this metaobject annotation is from a metaobject that implement IParseWithCyanCompiler_dpa or IParseMacro_dpa, the code produced
-	 * during phase dsa is put in this field
+	 * if this metaobject annotation is from a metaobject that implement IParseWithCyanCompiler_parsing or IParseMacro_parsing, the code produced
+	 * during phase SEM_AN is put in this field
 	 */
-	protected StringBuffer codeMetaobjectAnnotationParseWithCompiler;
+	protected StringBuffer codeAnnotationParseWithCompiler;
 
 	/**
 	 * original text of some metaobject annotations. It is between first symbol and next symbol

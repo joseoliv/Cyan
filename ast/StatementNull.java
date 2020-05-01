@@ -19,7 +19,8 @@ import saci.Env;
  */
 public class StatementNull extends Statement {
 
-	public StatementNull(Symbol firstSymbol) {
+	public StatementNull(Symbol firstSymbol, MethodDec method) {
+		super(method);
 		this.firstSymbol = firstSymbol;
 	}
 

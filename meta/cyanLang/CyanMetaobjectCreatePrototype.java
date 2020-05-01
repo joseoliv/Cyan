@@ -3,13 +3,13 @@ package meta.cyanLang;
 import java.util.ArrayList;
 import java.util.List;
 import meta.AnnotationArgumentsKind;
+import meta.AttachedDeclarationKind;
 import meta.CyanMetaobjectAtAnnot;
-import meta.IActionNewPrototypes_afti;
-import meta.IActionNewPrototypes_dpa;
-import meta.IAction_afti;
-import meta.IAction_dpa;
-import meta.ICompilerAction_dpa;
-import meta.ICompiler_afti;
+import meta.IActionNewPrototypes_afterResTypes;
+import meta.IActionNewPrototypes_parsing;
+import meta.IAction_parsing;
+import meta.ICompilerAction_parsing;
+import meta.ICompiler_afterResTypes;
 import meta.MetaHelper;
 import meta.Tuple2;
 import meta.WrAnnotationAt;
@@ -25,37 +25,48 @@ import meta.lexer.MetaLexer;
  * <code>
  * {@literal @}createPrototype(prototypeName1, codeForPrototypeName1, prototypeName2, codeForPrototypeName2)
  * </code><br>
- * <code>prototypeName1</code> is created in phase 1, dpa, and <code>prototypeName2</code> is created in phase
- * 3, afti.
+ * <code>prototypeName1</code> is created in phase 1, parsing, and <code>prototypeName2</code> is created in phase
+ * 3, AF_RES_TYPES.
    @author jose
  */
 public class CyanMetaobjectCreatePrototype extends CyanMetaobjectAtAnnot
-       implements IAction_dpa, IAction_afti, IActionNewPrototypes_afti,
-       IActionNewPrototypes_dpa {
+       implements IAction_parsing, IActionNewPrototypes_afterResTypes,
+       IActionNewPrototypes_parsing {
 
 	public CyanMetaobjectCreatePrototype() {
-		super("createPrototype", AnnotationArgumentsKind.OneOrMoreParameters);
+		super("createPrototype", AnnotationArgumentsKind.OneOrMoreParameters,
+				new AttachedDeclarationKind[] { AttachedDeclarationKind.PROGRAM_DEC,
+						AttachedDeclarationKind.METHOD_DEC
+				});
 	}
 
 
 	@Override
 	public void check() {
-		final WrAnnotationAt annotation = (WrAnnotationAt  ) this.metaobjectAnnotation;
+		final WrAnnotationAt annotation = (WrAnnotationAt  ) this.annotation;
 		final List<Object> javaParamList = annotation.getJavaParameterList();
 		if ( javaParamList.size() !=  4 && javaParamList.size() != 2 ) {
 			addError("This metaobject annotation should have two or four parameters");
 			return ;
 		}
-		if ( !(javaParamList.get(0) instanceof String) ||  !(javaParamList.get(1) instanceof String)
-				|| !(javaParamList.get(2) instanceof String) || !(javaParamList.get(3) instanceof String) ) {
+		boolean ok = true;
+		if ( !(javaParamList.get(0) instanceof String) ||
+				!(javaParamList.get(1) instanceof String)
+				 ) {
+		}
+		if ( javaParamList.size() ==  4  ) {
+			if (!(javaParamList.get(2) instanceof String) || !(javaParamList.get(3) instanceof String) ) {
+				ok = false;
+			}
+		}
+		if ( !ok ) {
 			addError("All parameters to this metaobject annotation should be strings");
-			return ;
 		}
 	}
 
 	@Override
-	public List<Tuple2<String, StringBuffer>> dpa_NewPrototypeList(ICompilerAction_dpa compiler) {
-		final WrAnnotationAt annotation = (WrAnnotationAt  ) this.metaobjectAnnotation;
+	public List<Tuple2<String, StringBuffer>> parsing_NewPrototypeList(ICompilerAction_parsing compiler) {
+		final WrAnnotationAt annotation = (WrAnnotationAt  ) this.annotation;
 		final List<Object> javaParamList = annotation.getJavaParameterList();
 
 		final List<Tuple2<String, StringBuffer>> protoCodeList = new ArrayList<>();
@@ -68,10 +79,10 @@ public class CyanMetaobjectCreatePrototype extends CyanMetaobjectAtAnnot
 	}
 
 	@Override
-	public List<Tuple2<String, StringBuffer>> afti_NewPrototypeList(
-			ICompiler_afti compiler_afti) {
+	public List<Tuple2<String, StringBuffer>> afterResTypes_NewPrototypeList(
+			ICompiler_afterResTypes compiler_afterResTypes) {
 
-		final WrAnnotationAt annotation = (WrAnnotationAt  ) this.metaobjectAnnotation;
+		final WrAnnotationAt annotation = (WrAnnotationAt  ) this.annotation;
 		final List<Object> javaParamList = annotation.getJavaParameterList();
 
 		if ( javaParamList.size() ==  4 ) {

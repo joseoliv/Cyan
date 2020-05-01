@@ -6,19 +6,19 @@ import cyan.lang.CyInt;
 import cyan.lang._Array_LT_GP__Tuple_LT_GP_CyString_GP_CyString_GT__GT;
 import cyan.lang._Tuple_LT_GP_CyString_GP_CyString_GT;
 import cyan.reflect._CyanMetaobjectLiteralObject;
-import cyan.reflect._IActionNewPrototypes__dsa;
+import cyan.reflect._IActionNewPrototypes__semAn;
 import error.ErrorKind;
 import lexer.CompilerPhase;
 import lexer.IWithCompilerPhase;
 import lexer.Symbol;
 import meta.CyanMetaobject;
 import meta.CyanMetaobjectLiteralObject;
-import meta.IActionNewPrototypes_dsa;
-import meta.IParseWithCyanCompiler_dpa;
+import meta.IActionNewPrototypes_semAn;
+import meta.IParseWithCyanCompiler_parsing;
 import meta.Tuple2;
 import meta.Tuple4;
 import meta.WrAnnotationLiteralObject;
-import metaRealClasses.Compiler_dsa;
+import metaRealClasses.Compiler_semAn;
 import saci.Compiler;
 import saci.CyanEnv;
 import saci.Env;
@@ -36,13 +36,13 @@ import saci.NameServer;
  */
 public class AnnotationLiteralObject extends Annotation {
 
-	public AnnotationLiteralObject(CompilationUnitSuper compilationUnit, ProgramUnit programUnit,
-			CyanMetaobjectLiteralObject cyanMetaobjectLiteralObject) {
-		super(compilationUnit, true);
-		this.setProgramUnit(programUnit);
-		this.setMetaobjectAnnotationNumber(programUnit.getIncMetaobjectAnnotationNumber());
+	public AnnotationLiteralObject(CompilationUnitSuper compilationUnit, Prototype prototype,
+			CyanMetaobjectLiteralObject cyanMetaobjectLiteralObject, MethodDec method) {
+		super(compilationUnit, true, method);
+		this.setPrototype(prototype);
+		this.setAnnotationNumber(prototype.getIncAnnotationNumber());
 		this.cyanMetaobjectLiteralObject = cyanMetaobjectLiteralObject;
-		this.cyanMetaobjectLiteralObject.setMetaobjectAnnotation(this.getI());
+		this.cyanMetaobjectLiteralObject.setAnnotation(this.getI());
 	}
 
 
@@ -55,8 +55,8 @@ public class AnnotationLiteralObject extends Annotation {
 		else {}
 		*/
 
-		if ( codeMetaobjectAnnotationParseWithCompiler != null )
-			pw.print(codeMetaobjectAnnotationParseWithCompiler);
+		if ( codeAnnotationParseWithCompiler != null )
+			pw.print(codeAnnotationParseWithCompiler);
 		else
 			pw.print(this.originalCode);
 
@@ -115,14 +115,14 @@ public class AnnotationLiteralObject extends Annotation {
 
 	@Override
 	public boolean isParsedWithCompiler() {
-		return this.cyanMetaobjectLiteralObject instanceof IParseWithCyanCompiler_dpa;
+		return this.cyanMetaobjectLiteralObject instanceof IParseWithCyanCompiler_parsing;
 	}
 
 	@Override
 	public void calcInternalTypes(Env env) {
 
 		super.calcInternalTypes(env);
-		if ( ! env.getCompInstSet().contains(meta.CompilationInstruction.dsa_actions) )
+		if ( ! env.getCompInstSet().contains(meta.CompilationInstruction.semAn_actions) )
 			/*
 			 * literal objects should only exist till phase 6 of the compiler. After that
 			 * they should be removed from the code.
@@ -132,17 +132,17 @@ public class AnnotationLiteralObject extends Annotation {
 
 
 			/*
-			if ( env.getDuring_dsa_actions() ) {
-				env.error(this.getFirstSymbol(), "A dsa action cannot occur inside another dsa actions. For example, you cannot have a macro expansion inside another macro expansion or even a literal object as r\"[a-z]+\" inside a macro");
+			if ( env.getDuring_semAn_actions() ) {
+				env.error(this.getFirstSymbol(), "A SEM_AN action cannot occur inside another SEM_AN actions. For example, you cannot have a macro expansion inside another macro expansion or even a literal object as r\"[a-z]+\" inside a macro");
 				//System.out.print("");
 			}
 			*/
 
 
 			try {
-				env.begin_dsa_actions();
-				final Compiler_dsa compiler_dsa = new Compiler_dsa(env, this);
-				// // cyanMetaobjectLiteralObject.setMetaobjectAnnotation(this, 0);
+				env.begin_semAn_actions();
+				final Compiler_semAn compiler_semAn = new Compiler_semAn(env, this);
+				// // cyanMetaobjectLiteralObject.setAnnotation(this, 0);
 
 
 
@@ -151,10 +151,10 @@ public class AnnotationLiteralObject extends Annotation {
 				try {
 					_CyanMetaobjectLiteralObject other = (_CyanMetaobjectLiteralObject ) cyanMetaobjectLiteralObject.getMetaobjectInCyan();
 					if ( other == null ) {
-						cyanCode = cyanMetaobjectLiteralObject.dsa_codeToAdd(compiler_dsa);
+						cyanCode = cyanMetaobjectLiteralObject.semAn_codeToAdd(compiler_semAn);
 					}
 					else {
-						cyanCode = new StringBuffer(other._dsa__codeToAdd_1(compiler_dsa).s);
+						cyanCode = new StringBuffer(other._semAn__codeToAdd_1(compiler_semAn).s);
 
 					}
 				}
@@ -175,39 +175,41 @@ public class AnnotationLiteralObject extends Annotation {
 					type = Compiler.singleTypeFromString(cyanMetaobjectLiteralObject.getPackageOfType() + "." +
 							cyanMetaobjectLiteralObject.getPrototypeOfType(),
 							this.getFirstSymbol(), "Error in literal object: ", env.getCurrentCompilationUnit(),
-							env.getCurrentProgramUnit(), env);
+							env.getCurrentPrototype(), env);
 					if ( this.isParsedWithCompiler() &&
-							env.sizeStackMetaobjectAnnotationParseWithCompiler() > 1 ) {
+							env.sizeStackAnnotationParseWithCompiler() > 1 ) {
 						/*
 						 * this metaobject annotation is a literal object that is inside other literal object
 						 */
-						this.setCodeMetaobjectAnnotationParseWithCompiler(cyanCode);
+						this.setCodeAnnotationParseWithCompiler(cyanCode);
 					}
 					else {
 						  /*
 						   * literal objects are always removed from the source code
 						   */
 
-						env.removeCodeMetaobjectAnnotation(cyanMetaobjectLiteralObject);
+						env.removeCodeAnnotation(cyanMetaobjectLiteralObject);
 
-						this.codeThatReplacesThisStatement = new StringBuffer(env.addCodeAtMetaobjectAnnotation(cyanMetaobjectLiteralObject, cyanCode, -1));
+						this.codeThatReplacesThisStatement = new StringBuffer(env.addCodeAtAnnotation(cyanMetaobjectLiteralObject, cyanCode, -1));
 					}
 				}
 
 				_CyanMetaobjectLiteralObject other = (_CyanMetaobjectLiteralObject ) cyanMetaobjectLiteralObject.getMetaobjectInCyan();
 
-				if ( this.cyanMetaobjectLiteralObject instanceof IActionNewPrototypes_dsa ||
-						(other != null && other instanceof _IActionNewPrototypes__dsa)) {
+				if ( this.cyanMetaobjectLiteralObject instanceof IActionNewPrototypes_semAn
+						||
+						(other != null && other instanceof _IActionNewPrototypes__semAn)
+						) {
 					List<Tuple2<String, StringBuffer>> prototypeNameCodeList = null;
 					try {
 						if ( other == null ) {
-							prototypeNameCodeList = ((IActionNewPrototypes_dsa ) cyanMetaobjectLiteralObject)
-									.dsa_NewPrototypeList(compiler_dsa);
+							prototypeNameCodeList = ((IActionNewPrototypes_semAn ) cyanMetaobjectLiteralObject)
+									.semAn_NewPrototypeList(compiler_semAn);
 						}
 						else {
-							_IActionNewPrototypes__dsa anp = (_IActionNewPrototypes__dsa ) other;
+							_IActionNewPrototypes__semAn anp = (_IActionNewPrototypes__semAn ) other;
 							_Array_LT_GP__Tuple_LT_GP_CyString_GP_CyString_GT__GT array =
-									anp._dsa__NewPrototypeList_1(compiler_dsa);
+									anp._semAn__NewPrototypeList_1(compiler_semAn);
 							int size = array._size().n;
 							if ( size > 0 ) {
 								prototypeNameCodeList = new ArrayList<>();
@@ -221,7 +223,6 @@ public class AnnotationLiteralObject extends Annotation {
 									}
 								}
 							}
-
 						}
 					}
 					catch ( final error.CompileErrorException e ) {
@@ -236,19 +237,23 @@ public class AnnotationLiteralObject extends Annotation {
 						env.errorInMetaobjectCatchExceptions(this.cyanMetaobjectLiteralObject);
 					}
 					if ( prototypeNameCodeList != null ) {
+						CyanPackage currentPackage = env.getCurrentCompilationUnit().getCyanPackage();
 						for ( final Tuple2<String, StringBuffer> prototypeNameCode : prototypeNameCodeList ) {
+							String prototypeName = prototypeNameCode.f1;
 							final CompilationUnit cunit = (CompilationUnit ) this.compilationUnit;
-							final Tuple2<CompilationUnit, String> t = env.getProject().getCompilerManager().createNewPrototype(prototypeNameCode.f1, prototypeNameCode.f2,
+							final Tuple2<CompilationUnit, String> t = env.getProject().getCompilerManager().createNewPrototype(
+									prototypeNameCode.f1, prototypeNameCode.f2,
 									cunit.getCompilerOptions(), cunit.getCyanPackage());
 							if ( t != null && t.f2 != null ) {
 								env.error(symbol, t.f2);
 							}
+							currentPackage.addPrototypeNameAnnotationInfo(prototypeName, this);
 						}
 					}
 				}
 			}
 			finally {
-				env.end_dsa_actions();
+				env.end_semAn_actions();
 				finalizeCalcInternalTypes(env);
 			}
 

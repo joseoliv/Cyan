@@ -8,7 +8,7 @@ import error.ErrorKind;
 import lexer.Lexer;
 import lexer.Symbol;
 import lexer.SymbolIdent;
-import meta.ICompiler_dsa;
+import meta.ICompiler_semAn;
 import meta.Token;
 import saci.CyanEnv;
 import saci.Env;
@@ -20,17 +20,17 @@ import saci.NameServer;
  *
  */
 
-public class InterfaceDec extends ProgramUnit {
+public class InterfaceDec extends Prototype {
 
 	public InterfaceDec() { }
 
 	public InterfaceDec(ObjectDec outerObject, Symbol interfaceSymbol, SymbolIdent symbol,
 			Token visibility,
-			List<AnnotationAt> nonAttachedMetaobjectAnnotationList,
-			List<AnnotationAt> attachedMetaobjectAnnotationList, Lexer lexer) {
-		super(visibility, nonAttachedMetaobjectAnnotationList, attachedMetaobjectAnnotationList,
+			List<AnnotationAt> nonAttachedAnnotationList,
+			List<AnnotationAt> attachedAnnotationList, Lexer lexer) {
+		super(visibility, nonAttachedAnnotationList, attachedAnnotationList,
 				outerObject);
-		lexer.setProgramUnit(this);
+		lexer.setPrototype(this);
 		this.interfaceSymbol = interfaceSymbol;
 		this.symbol = symbol;
 		this.methodSignatureList = new ArrayList<MethodSignature>();
@@ -39,13 +39,13 @@ public class InterfaceDec extends ProgramUnit {
 
 	static public void initInterfaceDec(InterfaceDec newInterfaceDec,
 			ObjectDec outerObject, Symbol interfaceSymbol, SymbolIdent symbol, Token visibility,
-			List<AnnotationAt> nonAttachedMetaobjectAnnotationList,
-			List<AnnotationAt> attachedMetaobjectAnnotationList, Lexer lexer) {
-		ProgramUnit.initProgramUnit(newInterfaceDec, visibility,
-				nonAttachedMetaobjectAnnotationList,
-				attachedMetaobjectAnnotationList,
+			List<AnnotationAt> nonAttachedAnnotationList,
+			List<AnnotationAt> attachedAnnotationList, Lexer lexer) {
+		Prototype.initPrototype(newInterfaceDec, visibility,
+				nonAttachedAnnotationList,
+				attachedAnnotationList,
 				outerObject);
-        lexer.setProgramUnit(newInterfaceDec);
+        lexer.setPrototype(newInterfaceDec);
         newInterfaceDec.interfaceSymbol = interfaceSymbol;
         newInterfaceDec.symbol = symbol;
         newInterfaceDec.methodSignatureList = new ArrayList<MethodSignature>();
@@ -135,21 +135,26 @@ public class InterfaceDec extends ProgramUnit {
 	@Override
 	public void genCyan(PWInterface pw, CyanEnv cyanEnv, boolean genFunctions) {
 
-		cyanEnv.atBeginningOfProgramUnit(this);
+		cyanEnv.atBeginningOfPrototype(this);
 
 
 		ExprGenericPrototypeInstantiation exprGPI = cyanEnv.getExprGenericPrototypeInstantiation();
 
 		super.genCyan(pw, cyanEnv, genFunctions);
-		if ( cyanEnv.getCreatingInstanceGenericPrototype() ) {
-			pw.println("@genericPrototypeInstantiationInfo(\"" + cyanEnv.getPackageNameInstantiation() + "\", \"" + cyanEnv.getPrototypeNameInstantiation()
-			  + "\", " + exprGPI.getFirstSymbol().getLineNumber() + ", " + exprGPI.getFirstSymbol().getColumnNumber() + ")");
-		}
+		//#$ {
+
+//		if ( cyanEnv.getCreatingInstanceGenericPrototype() ) {
+//			pw.println("@genericPrototypeInstantiationInfo(\"" + cyanEnv.getPackageNameInstantiation() + "\", \"" + cyanEnv.getPrototypeNameInstantiation()
+//			  + "\", " + exprGPI.getFirstSymbol().getLineNumber() + ", " + exprGPI.getFirstSymbol().getColumnNumber() + ")");
+//		}
+
+		//#$ }
+
 		pw.println("");
 		pw.print(NameServer.getVisibilityString(visibility) + " ");
 		pw.print("interface ");
 
-		genCyanProgramUnitName(pw, cyanEnv);
+		genCyanPrototypeName(pw, cyanEnv);
 
 		if ( moListBeforeExtendsMixinImplements != null ) {
 			for ( AnnotationAt annotation : moListBeforeExtendsMixinImplements ) {
@@ -178,22 +183,22 @@ public class InterfaceDec extends ProgramUnit {
 
 
 		for (MethodSignature ms : this.methodSignatureList) {
-			ms.genCyanMetaobjectAnnotations(pw, true, cyanEnv, genFunctions);
+			ms.genCyanAnnotations(pw, true, cyanEnv, genFunctions);
 			pw.printIdent("func ");
 			ms.genCyan(pw, true, cyanEnv, genFunctions);
 			pw.println();
 		}
 		pw.sub();
 
-		if ( beforeEndNonAttachedMetaobjectAnnotationList != null ) {
-			for ( AnnotationAt c : this.beforeEndNonAttachedMetaobjectAnnotationList )
+		if ( beforeEndNonAttachedAnnotationList != null ) {
+			for ( AnnotationAt c : this.beforeEndNonAttachedAnnotationList )
 				c.genCyan(pw, true, cyanEnv, genFunctions);
 		}
 
 		pw.printlnIdent("end");
 		pw.println("");
 
-		cyanEnv.atEndOfCurrentProgramUnit();
+		cyanEnv.atEndOfCurrentPrototype();
 
 	}
 
@@ -276,8 +281,8 @@ public class InterfaceDec extends ProgramUnit {
 			}
 			methodNameList.add(methodName);
 		}
-		if ( beforeEndNonAttachedMetaobjectAnnotationList != null ) {
-			for ( AnnotationAt annotation : beforeEndNonAttachedMetaobjectAnnotationList ) {
+		if ( beforeEndNonAttachedAnnotationList != null ) {
+			for ( AnnotationAt annotation : beforeEndNonAttachedAnnotationList ) {
 				annotation.calcInternalTypes(env);
 			}
 		}
@@ -290,23 +295,23 @@ public class InterfaceDec extends ProgramUnit {
 
 
 	@Override
-	public void calcInternalTypes(ICompiler_dsa compiler_dsa, Env env) {
+	public void calcInternalTypes(ICompiler_semAn compiler_semAn, Env env) {
 
 
 
 		List<Annotation> metaobjectAnnotationList = new ArrayList<>();
-		metaobjectAnnotationList.addAll(completeMetaobjectAnnotationList);
+		metaobjectAnnotationList.addAll(completeAnnotationList);
 
 		metaobjectAnnotationList.addAll(
-				this.getCompilationUnit().getCyanPackage().getAttachedMetaobjectAnnotationList());
+				this.getCompilationUnit().getCyanPackage().getAttachedAnnotationList());
 
 		metaobjectAnnotationList.addAll(
-				this.getCompilationUnit().getCyanPackage().getProgram().getAttachedMetaobjectAnnotationList());
+				this.getCompilationUnit().getCyanPackage().getProgram().getAttachedAnnotationList());
 
-		makeMetaobjectAnnotationsCommunicateInPrototype(metaobjectAnnotationList, env);
+		makeAnnotationsCommunicateInPrototype(metaobjectAnnotationList, env);
 
 
-		super.calcInternalTypes(compiler_dsa, env);
+		super.calcInternalTypes(compiler_semAn, env);
 
 		for ( MethodSignature ms : this.methodSignatureList ) {
 			String name = ms.getNameWithoutParamNumber();
@@ -325,7 +330,7 @@ public class InterfaceDec extends ProgramUnit {
 		env.atBeginningOfObjectDec(this);
 
 
-		genJavaCodeBeforeClassMetaobjectAnnotations(pw, env);
+		genJavaCodeBeforeClassAnnotations(pw, env);
 
 
 		pw.println();
@@ -484,7 +489,7 @@ public class InterfaceDec extends ProgramUnit {
 
 			if ( superInterfaceExprList != null ) {
 				for ( Expr expr : superInterfaceExprList ) {
-					ProgramUnit superInterface = (ProgramUnit ) expr.getType(env).getInsideType();
+					Prototype superInterface = (Prototype ) expr.getType(env).getInsideType();
 					foundMethodSignatureList = superInterface.searchMethodPublicPackageSuperPublicPackage(methodName, env);
 					if ( foundMethodSignatureList.size() > 0 )
 						return foundMethodSignatureList;
@@ -547,7 +552,7 @@ public class InterfaceDec extends ProgramUnit {
 			InterfaceDec otherInter = (InterfaceDec ) otherType;
 			if ( otherInter.getSuperInterfaceExprList() != null ) {
 				for ( Expr superInterfaceExpr : otherInter.getSuperInterfaceExprList() ) {
-					ProgramUnit superInterface = (ProgramUnit ) superInterfaceExpr.ifRepresentsTypeReturnsType(env).getInsideType();
+					Prototype superInterface = (Prototype ) superInterfaceExpr.ifRepresentsTypeReturnsType(env).getInsideType();
 					if ( this.isSupertypeOf(superInterface, env) )
 						return true;
 				}
@@ -557,7 +562,7 @@ public class InterfaceDec extends ProgramUnit {
 			ObjectDec otherProto = (ObjectDec ) otherType;
 			if ( otherProto.getInterfaceList() != null ) {
 				for ( Expr superInterfaceExpr : otherProto.getInterfaceList() ) {
-					ProgramUnit superInterface = (ProgramUnit ) superInterfaceExpr.ifRepresentsTypeReturnsType(env).getInsideType();
+					Prototype superInterface = (Prototype ) superInterfaceExpr.ifRepresentsTypeReturnsType(env).getInsideType();
 					if ( this.isSupertypeOf(superInterface, env) )
 						return true;
 				}

@@ -4,10 +4,15 @@ import java.util.List;
 import ast.AnnotationAt;
 import ast.Expr;
 
+/**
+ * should not be used. Use interface {@link meta.IActionAttachedType_semAn} instead
+   @author jose
+ */
+@Deprecated
 public class CyanMetaobjectAttachedType extends CyanMetaobjectAtAnnot {
 
 	public CyanMetaobjectAttachedType(String name, AnnotationArgumentsKind parameterKind) {
-		super(name, parameterKind);
+		super(name, parameterKind, new AttachedDeclarationKind[] { AttachedDeclarationKind.TYPE });
 	}
 
 
@@ -23,20 +28,20 @@ public class CyanMetaobjectAttachedType extends CyanMetaobjectAtAnnot {
 	public static boolean replaceRightExpr(CyanMetaobjectAttachedType metaobject,
 			 WrExpr iexpr, StringBuffer sb, WrEnv env, WrType newType) {
 
-		final AnnotationAt annotation = metaobject.getMetaobjectAnnotation().getHidden();
+		final AnnotationAt annotation = metaobject.getAnnotation().getHidden();
 		final Expr expr = meta.GetHiddenItem.getHiddenExpr(iexpr);
 		if ( expr.getCodeThatReplacesThisExpr() != null ) {
 			/*
 			 * this message send has already been replaced by another expression
 			 */
-			if ( expr.getCyanMetaobjectAnnotationThatReplacedMSbyExpr() != null ) {
+			if ( expr.getCyanAnnotationThatReplacedMSbyExpr() != null ) {
 				metaobject.addError(expr.getFirstSymbol().getI(),  "Metaobject annotation '" + metaobject.getName() +
 						"' is trying to replace expression '" + expr.asString() +
 						"' by another expression. But this has already been asked by metaobject annotation '" +
-						expr.getCyanMetaobjectAnnotationThatReplacedMSbyExpr().getCyanMetaobject().getName() + "'" +
-						" at line " + expr.getCyanMetaobjectAnnotationThatReplacedMSbyExpr().getFirstSymbol().getLineNumber() +
-						" of prototype " + expr.getCyanMetaobjectAnnotationThatReplacedMSbyExpr().getPackageOfAnnotation() + "." +
-						expr.getCyanMetaobjectAnnotationThatReplacedMSbyExpr().getPackageOfAnnotation());
+						expr.getCyanAnnotationThatReplacedMSbyExpr().getCyanMetaobject().getName() + "'" +
+						" at line " + expr.getCyanAnnotationThatReplacedMSbyExpr().getFirstSymbol().getLineNumber() +
+						" of prototype " + expr.getCyanAnnotationThatReplacedMSbyExpr().getPackageOfAnnotation() + "." +
+						expr.getCyanAnnotationThatReplacedMSbyExpr().getPackageOfAnnotation());
 			}
 			else {
 				metaobject.addError(expr.getFirstSymbol().getI(), "Metaobject annotation '" + metaobject.getName() +
@@ -49,8 +54,8 @@ public class CyanMetaobjectAttachedType extends CyanMetaobjectAtAnnot {
 		meta.GetHiddenItem.getHiddenEnv(env)
 		   .replaceStatementByCode(expr, annotation, sb, meta.GetHiddenItem.getHiddenType(newType) );
 
-		// boolean b = ! metaobject.getCurrentProgramUnit().getCompilationUnit(env).getFullFileNamePath().equals(expr.getFirstSymbol().getCompilationUnit().getFullFileNamePath());
-		expr.setCyanMetaobjectAnnotationThatReplacedMSbyExpr(annotation);
+		// boolean b = ! metaobject.getCurrentPrototype().getCompilationUnit(env).getFullFileNamePath().equals(expr.getFirstSymbol().getCompilationUnit().getFullFileNamePath());
+		expr.setCyanAnnotationThatReplacedMSbyExpr(annotation);
 		return true;
 	}
 
@@ -73,7 +78,7 @@ public class CyanMetaobjectAttachedType extends CyanMetaobjectAtAnnot {
 	 * The returned string replaces the expression rightExpr
 	 */
 	@SuppressWarnings("unused")
-	public StringBuffer dsa_checkTypeChangeLeft(ICompiler_dsa compiler_dsa,
+	public StringBuffer semAn_checkTypeChangeLeft(ICompiler_semAn compiler_semAn,
 			WrType leftType, Object leftASTNode, LeftHandSideKind leftKind,
 			WrType rightType, WrExpr rightExpr) {
 		return null;
@@ -103,7 +108,7 @@ public class CyanMetaobjectAttachedType extends CyanMetaobjectAtAnnot {
 	 */
 
 	@SuppressWarnings("unused")
-	public StringBuffer dsa_checkTypeChangeRight(ICompiler_dsa compiler_dsa,
+	public StringBuffer semAn_checkTypeChangeRight(ICompiler_semAn compiler_semAn,
 			WrType leftType, Object leftASTNode, LeftHandSideKind leftKind,
 			WrType rightType, WrExpr rightExpr) {
 		return null;
@@ -120,8 +125,8 @@ public class CyanMetaobjectAttachedType extends CyanMetaobjectAtAnnot {
 	/**
 	 * Return an array of tuples of the format, in Cyan syntax:<br>
 	 * <code> [. packageName, prototypeName .] </code><br>
-	 * For each tuple, neither {@link meta.ICheckTypeWithAnnotations_dsa#dsa_checkTypeChangeLeft} nor
-	 * {@link meta.ICheckTypeWithAnnotations_dsa#dsa_checkTypeChangeRight} are called inside
+	 * For each tuple, neither {@link meta.ICheckTypeWithAnnotations_semAn#semAn_checkTypeChangeLeft} nor
+	 * {@link meta.ICheckTypeWithAnnotations_semAn#semAn_checkTypeChangeRight} are called inside
 	 * packageName.prototypeName.
 	 *
 	 */

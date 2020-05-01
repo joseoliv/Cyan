@@ -7,10 +7,10 @@ import ast.Annotation;
  * metaobject annotations
    @author José
  */
-public class SourceCodeChangeAddText extends SourceCodeChangeByMetaobjectAnnotation {
+public class SourceCodeChangeAddText extends SourceCodeChangeByAnnotation {
 	
-	public SourceCodeChangeAddText(int offset, StringBuffer textToAdd, Annotation cyanMetaobjectAnnotation) {
-		super(offset, cyanMetaobjectAnnotation);
+	public SourceCodeChangeAddText(int offset, StringBuffer textToAdd, Annotation cyanAnnotation) {
+		super(offset, cyanAnnotation);
 		this.textToAdd = textToAdd;
 		
 	}

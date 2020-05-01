@@ -8,7 +8,8 @@ import saci.NameServer;
 
 public class ExprSelf__ extends Expr {
 
-	public ExprSelf__(Symbol selfSymbol) {
+	public ExprSelf__(Symbol selfSymbol, MethodDec method) {
+		super(method);
 		this.selfSymbol = selfSymbol;
 	}
 

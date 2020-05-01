@@ -9,7 +9,8 @@ import saci.Env;
 public class ExprJavaArrayType extends Expr {
 
 
-	public ExprJavaArrayType(ExprIdentStar identExpr, int numDimensions) {
+	public ExprJavaArrayType(ExprIdentStar identExpr, int numDimensions, MethodDec method) {
+		super(method);
 		this.identExpr = identExpr;
 		this.numDimensions = numDimensions;
 	}

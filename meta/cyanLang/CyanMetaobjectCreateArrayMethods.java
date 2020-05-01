@@ -5,14 +5,14 @@ import java.util.List;
 import meta.AnnotationArgumentsKind;
 import meta.AttachedDeclarationKind;
 import meta.CyanMetaobjectAtAnnot;
-import meta.ICompiler_afti;
-import meta.ISlotInterface;
+import meta.ICompiler_afterResTypes;
+import meta.ISlotSignature;
 import meta.MetaHelper;
 import meta.Tuple2;
 import meta.WrAnnotation;
 import meta.WrEnv;
 import meta.WrMethodSignature;
-import meta.WrProgramUnit;
+import meta.WrPrototype;
 import meta.WrType;
 
 /**
@@ -23,7 +23,7 @@ import meta.WrType;
  */
 
 public class CyanMetaobjectCreateArrayMethods  extends CyanMetaobjectAtAnnot
-	implements meta.IAction_afti {
+	implements meta.IAction_afterResTypes {
 
 	public CyanMetaobjectCreateArrayMethods() {
 		super("createArrayMethods", AnnotationArgumentsKind.ZeroParameters,
@@ -31,22 +31,22 @@ public class CyanMetaobjectCreateArrayMethods  extends CyanMetaobjectAtAnnot
 	}
 
 	@Override
-	public Tuple2<StringBuffer, String> afti_codeToAdd(
-			ICompiler_afti compiler_afti, List<Tuple2<WrAnnotation, List<ISlotInterface>>> infoList) {
+	public Tuple2<StringBuffer, String> afterResTypes_codeToAdd(
+			ICompiler_afterResTypes compiler_afterResTypes, List<Tuple2<WrAnnotation, List<ISlotSignature>>> infoList) {
 
 
 
 
-		List<List<String>> strListList = compiler_afti.getGenericPrototypeArgListList();
+		List<List<String>> strListList = compiler_afterResTypes.getGenericPrototypeArgListList();
 		if ( strListList == null || strListList.get(0) == null || strListList.get(0).size() != 1 ) {
-			compiler_afti.error(this.getMetaobjectAnnotation().getFirstSymbol(),
+			compiler_afterResTypes.error(this.getAnnotation().getFirstSymbol(),
 					"Metaobject '" + getName() + "' should only be used in a generic prototype with just one parameter");
 			return null;
 		}
 		String paramTypeName = strListList.get(0).get(0);
 
 
-		WrEnv env = compiler_afti.getEnv();
+		WrEnv env = compiler_afterResTypes.getEnv();
 
 		String javaParamTypeName = MetaHelper.getJavaName(paramTypeName);
 
@@ -55,15 +55,15 @@ public class CyanMetaobjectCreateArrayMethods  extends CyanMetaobjectAtAnnot
 			paramTypeName = "Object";
 		}
 		else {
-			WrProgramUnit pu = compiler_afti.getCompilationUnit().getPublicPrototype();
-			aType = env.searchPackagePrototype(paramTypeName, env.getCurrentProgramUnit().getFirstSymbol(env));
+			WrPrototype pu = compiler_afterResTypes.getCompilationUnit().getPublicPrototype();
+			aType = env.searchPackagePrototype(paramTypeName, env.getCurrentPrototype().getFirstSymbol(env));
 		}
 
 		String strSlotList = "";
 		StringBuffer s = new StringBuffer();
 		String tmp;
-		if ( aType != null && aType.getInsideType() instanceof WrProgramUnit ) {
-			WrProgramUnit pu = (WrProgramUnit ) aType.getInsideType();
+		if ( aType != null && aType.getInsideType() instanceof WrPrototype ) {
+			WrPrototype pu = (WrPrototype ) aType.getInsideType();
 
 			tmp = "    func init ";
 			strSlotList += tmp;
@@ -261,7 +261,7 @@ public class CyanMetaobjectCreateArrayMethods  extends CyanMetaobjectAtAnnot
 
 		}
 		List<StringBuffer> tupleArray = new ArrayList<>();
-		// WrProgramUnit thisProto = (WrProgramUnit ) this.getMetaobjectAnnotation().getDeclaration();
+		// WrPrototype thisProto = (WrPrototype ) this.getAnnotation().getDeclaration();
 
 
 		tupleArray.add( s );

@@ -40,7 +40,7 @@ public interface ICommunicateInPrototype_ded {
 		 * Every tuple is composed of a metaobject name, the number of this metaobject
 		 * considering all metaobjects in the same prototype, the number of this metaobject
 		 * considering only the metaobjects with the same name (both numbers starts at
-		 * <code>Annotation.firstMetaobjectAnnotationNumber</code>, which should be 1), and the information
+		 * <code>Annotation.firstAnnotationNumber</code>, which should be 1), and the information
 		 * this metaobject annotation wants to share with other metaobject annotations, which is the value returned
 		 * by {@link #ded_shareInfoPrototype()}.
 	 */

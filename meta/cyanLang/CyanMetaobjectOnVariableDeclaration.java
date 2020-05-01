@@ -4,13 +4,13 @@ import cyan.lang.CyString;
 import meta.AnnotationArgumentsKind;
 import meta.AttachedDeclarationKind;
 import meta.CyanMetaobjectAtAnnot;
-import meta.IActionVariableDeclaration_dsa;
+import meta.IActionVariableDeclaration_semAn;
 import meta.InterpreterPrototype;
 import meta.MetaHelper;
 import meta.WrEnv;
 
 public class CyanMetaobjectOnVariableDeclaration extends CyanMetaobjectAtAnnot
-			implements IActionVariableDeclaration_dsa, IInterpreterMethods_afti
+			implements IActionVariableDeclaration_semAn, IInterpreterMethods_afterResTypes
 				{
 
 	public CyanMetaobjectOnVariableDeclaration() {
@@ -23,13 +23,13 @@ public class CyanMetaobjectOnVariableDeclaration extends CyanMetaobjectAtAnnot
 
 
 	@Override
-	public StringBuffer dsa_codeToAddAfter(WrEnv env) {
+	public StringBuffer semAn_codeToAddAfter(WrEnv env) {
  		Object r = MetaHelper.interpreterFor_MOPInterfaceMethod(
  				null,
 				env,
 				interpreterPrototype,
 				this,
-				"dsa_codeToAddAfter",
+				"semAn_codeToAddAfter",
 				   // "env" is added by the called method
 				new String [] { }, new Object [] { },
 				CyString.class, "String");
@@ -68,10 +68,10 @@ public class CyanMetaobjectOnVariableDeclaration extends CyanMetaobjectAtAnnot
 
 	@Override
 	public String[] methodToInterpertList() {
-		return new String[] { "afti_codeToAdd", "dsa_NewPrototypeList",
-				"afti_NewPrototypeList", "runUntilFixedPoint", "afti_beforeMethodCodeList",
-				"afti_renameMethod", "afti_dsa_afsa_shareInfoPrototype", "afti_dsa_afsa_receiveInfoPrototype",
-				"dsa_codeToAddAfter" };
+		return new String[] { "afterResTypes_codeToAdd", "semAn_NewPrototypeList",
+				"afterResTypes_NewPrototypeList", "runUntilFixedPoint", "afterResTypes_beforeMethodCodeList",
+				"afterResTypes_renameMethod", "afterResTypes_semAn_afterSemAn_shareInfoPrototype", "afterResTypes_semAn_afterSemAn_receiveInfoPrototype",
+				"semAn_codeToAddAfter" };
 	}
 
 }

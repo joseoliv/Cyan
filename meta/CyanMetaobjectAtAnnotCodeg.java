@@ -13,10 +13,10 @@ abstract public class CyanMetaobjectAtAnnotCodeg extends CyanMetaobjectAtAnnot i
 	}
 
 	@Override public int getStartOffset() {
-		return this.metaobjectAnnotation.getFirstSymbol().getOffset();
+		return this.annotation.getFirstSymbol().getOffset();
 	}
 	@Override public int getEndOffset() {
-		final WrSymbol last = this.metaobjectAnnotation.getLastSymbol();
+		final WrSymbol last = this.annotation.getLastSymbol();
 		return last.getOffset() + last.getSymbolString().length() - 1;
 	}
 

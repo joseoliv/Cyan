@@ -9,13 +9,13 @@ import meta.AttachedDeclarationKind;
 import meta.CyanMetaobject;
 import meta.CyanMetaobjectAtAnnot;
 import meta.IActionFunction;
-import meta.IActionMethodMissing_dsa;
-import meta.IAction_afti;
-import meta.ICompiler_afti;
-import meta.ICompiler_dpa;
+import meta.IActionMethodMissing_semAn;
+import meta.IAction_afterResTypes;
+import meta.ICompiler_afterResTypes;
+import meta.ICompiler_parsing;
 import meta.IDeclaration;
-import meta.IParseWithCyanCompiler_dpa;
-import meta.ISlotInterface;
+import meta.IParseWithCyanCompiler_parsing;
+import meta.ISlotSignature;
 import meta.MetaHelper;
 import meta.Token;
 import meta.Tuple2;
@@ -38,20 +38,21 @@ import meta.WrType;
    @author jose
  */
 public class CyanMetaobjectGrammarMethod extends CyanMetaobjectAtAnnot
-       implements IParseWithCyanCompiler_dpa, // ICheckDeclaration_afti2,
-       IActionMethodMissing_dsa, IAction_afti {
+       implements IParseWithCyanCompiler_parsing, // ICheckDeclaration_afterResTypes2,
+       IActionMethodMissing_semAn, IAction_afterResTypes {
 
 
 	public CyanMetaobjectGrammarMethod() {
 			super("grammarMethod", AnnotationArgumentsKind.ZeroOrMoreParameters,
-					new AttachedDeclarationKind[] { AttachedDeclarationKind.METHOD_DEC });
+					new AttachedDeclarationKind[] { AttachedDeclarationKind.METHOD_DEC },
+					Token.PUBLIC);
 	}
 
 	@Override
 	public boolean shouldTakeText() { return true; }
 
 
-	public WrMethodSignatureGrammar methodSignatureGrammarForMetaobject(ICompiler_dpa cp) {
+	public WrMethodSignatureGrammar methodSignatureGrammarForMetaobject(ICompiler_parsing cp) {
 
 
 		final WrSymbol first = cp.getSymbol();
@@ -63,7 +64,7 @@ public class CyanMetaobjectGrammarMethod extends CyanMetaobjectAtAnnot
 		return new WrMethodSignatureGrammar(sg);
 	}
 
-	private MessageKeywordGrammar keywordGrammar(ICompiler_dpa cp) {
+	private MessageKeywordGrammar keywordGrammar(ICompiler_parsing cp) {
 
 		final WrSymbol firstSymbol = cp.getSymbol();
 
@@ -121,7 +122,7 @@ public class CyanMetaobjectGrammarMethod extends CyanMetaobjectAtAnnot
 	}
 
 
-	private IMessageKeyword keywordUnit(ICompiler_dpa cp) {
+	private IMessageKeyword keywordUnit(ICompiler_parsing cp) {
 		if ( cp.getSymbol().token == Token.LEFTPAR )
 			return keywordGrammar(cp);
 		else {
@@ -217,11 +218,11 @@ public class CyanMetaobjectGrammarMethod extends CyanMetaobjectAtAnnot
 
 
 	@Override
-	public void dpa_parse(ICompiler_dpa cp) {
+	public void parsing_parse(ICompiler_parsing cp) {
 
-		// Compiler_dpa compiler_dpa = (Compiler_dpa ) cp;
-		//saci.Compiler compiler = compiler_dpa.getCompiler();
-		//ICompiler_dpa compiler = compiler_dpa;
+		// Compiler_parsing compiler_parsing = (Compiler_parsing ) cp;
+		//saci.Compiler compiler = compiler_parsing.getCompiler();
+		//ICompiler_parsing compiler = compiler_parsing;
 		cp.next();
 		grammarMethodSignatureInDSL = methodSignatureGrammarForMetaobject(cp);
 
@@ -253,7 +254,7 @@ public class CyanMetaobjectGrammarMethod extends CyanMetaobjectAtAnnot
 			cp.error(cp.getSymbol(), "Unexpected symbol: '" + cp.getSymbol().getSymbolString() + "'");
 		}
 
-		if ( cp.getCurrentProgramUnit() == null ) {
+		if ( cp.getCurrentPrototype() == null ) {
 			this.addError("Annotation '" + this.getName() + "' can only be attached to a method.");
 			return ;
 		}
@@ -269,9 +270,9 @@ public class CyanMetaobjectGrammarMethod extends CyanMetaobjectAtAnnot
 		 * create all instantiations of generic prototypes that  it needs.
 
 		 */
-		final WrExpr type = ICompiler_dpa.parseSingleTypeFromString(grammarMethodSignatureInDSL.getkeywordGrammar().getStringType(),
-				this.metaobjectAnnotation.getFirstSymbol(), "Internal error: ",
-				cp.getCurrentCompilationUnit(), cp.getCurrentProgramUnit());
+		final WrExpr type = ICompiler_parsing.parseSingleTypeFromString(grammarMethodSignatureInDSL.getkeywordGrammar().getStringType(),
+				this.annotation.getFirstSymbol(), "Internal error: ",
+				cp.getCurrentCompilationUnit(), cp.getCurrentPrototype());
 
 		cp.addExprStat(type);
 
@@ -280,14 +281,14 @@ public class CyanMetaobjectGrammarMethod extends CyanMetaobjectAtAnnot
 		 * replacying the AST by a single prototype.
 		 */
 		astRootTypeExpr = null;
-		final WrAnnotationAt annotation = (WrAnnotationAt ) this.metaobjectAnnotation;
+		final WrAnnotationAt annotation = (WrAnnotationAt ) this.annotation;
 		if ( annotation.getJavaParameterList() != null && annotation.getJavaParameterList().size() == 1 ) {
 			if ( annotation.getJavaParameterList().get(0) instanceof String ) {
 				// there is a prototype name as parameter
 				final String prototypeName = MetaHelper.removeQuotes( (String ) annotation.getJavaParameterList().get(0) );
-				astRootTypeExpr = ICompiler_dpa.parseSingleTypeFromString(prototypeName,
-						this.metaobjectAnnotation.getFirstSymbol(), "'" + prototypeName + "' is not a valid prototype name",
-						cp.getCurrentCompilationUnit(), cp.getCurrentProgramUnit());
+				astRootTypeExpr = ICompiler_parsing.parseSingleTypeFromString(prototypeName,
+						this.annotation.getFirstSymbol(), "'" + prototypeName + "' is not a valid prototype name",
+						cp.getCurrentCompilationUnit(), cp.getCurrentPrototype());
 
 				cp.addExprStat(astRootTypeExpr);
 			}
@@ -299,38 +300,38 @@ public class CyanMetaobjectGrammarMethod extends CyanMetaobjectAtAnnot
 
 
 
-		//this.getMetaobjectAnnotation().setInfo_dpa( new Tuple2<Expr, WrMethodSignatureGrammar>(astRootTypeExpr, msg) );
+		//this.getAnnotation().setInfo_parsing( new Tuple2<Expr, WrMethodSignatureGrammar>(astRootTypeExpr, msg) );
 		// info = new Tuple2<Expr, WrMethodSignatureGrammar>(astRootTypeExpr, msg);
 
 	}
 
 
-	private void checkDeclaration(ICompiler_afti compiler_afti) {
+	private void checkDeclaration(ICompiler_afterResTypes compiler_afterResTypes) {
 
-		final WrAnnotationAt annotation = (WrAnnotationAt ) this.metaobjectAnnotation;
+		final WrAnnotationAt annotation = (WrAnnotationAt ) this.annotation;
 		final IDeclaration dec = annotation.getDeclaration();
 
 		final WrMethodDec method = (WrMethodDec ) dec;
 		final WrMethodSignature mss = method.getMethodSignature();
 		if ( !(mss instanceof WrMethodSignatureWithKeywords) ) {
-			compiler_afti.error(method.getFirstSymbol(compiler_afti.getEnv()),
+			compiler_afterResTypes.error(method.getFirstSymbol(compiler_afterResTypes.getEnv()),
 					"Metaobject '" + this.getName() + "' is attached to this method. Then it "
 					+ "should be a method with one keyword that is not an operator. Like 'add: Array<Int>'");
 			return ;
 		}
 		final WrMethodSignatureWithKeywords msws = (WrMethodSignatureWithKeywords ) mss;
 		if ( msws.getNameWithoutParamNumber().equals("init:") ) {
-			compiler_afti.error(method.getFirstSymbol(compiler_afti.getEnv()), "Metaobject '" + this.getName() + "' is attached to an 'init:' method. This is illegal");
+			compiler_afterResTypes.error(method.getFirstSymbol(compiler_afterResTypes.getEnv()), "Metaobject '" + this.getName() + "' is attached to an 'init:' method. This is illegal");
 			return ;
 		}
 
-		//Expr astRootTypeExpr = ((Tuple2<Expr, WrMethodSignatureGrammar> ) annotation.getInfo_dpa()).f1;
+		//Expr astRootTypeExpr = ((Tuple2<Expr, WrMethodSignatureGrammar> ) annotation.getInfo_parsing()).f1;
 
 		WrType astRootType = null;
 		if ( astRootTypeExpr != null ) {
-			astRootType = astRootTypeExpr.getType( compiler_afti.getEnv());
+			astRootType = astRootTypeExpr.getType( compiler_afterResTypes.getEnv());
 			if ( !astRootType.isObjectDec() ) {
-				compiler_afti.error(annotation.getFirstSymbol(),
+				compiler_afterResTypes.error(annotation.getFirstSymbol(),
 						"The parameter to this metaobject annotation should be a prototype. It cannot be Dyn or an interface");
 				return ;
 			}
@@ -341,16 +342,16 @@ public class CyanMetaobjectGrammarMethod extends CyanMetaobjectAtAnnot
 	}
 
 //	@Override
-//	public void ati2_checkDeclaration(ICompiler_afti compiler_afti) {
-//		this.checkDeclaration(compiler_afti);
+//	public void ati2_checkDeclaration(ICompiler_afterResTypes compiler_afterResTypes) {
+//		this.checkDeclaration(compiler_afterResTypes);
 //	}
 
 	@Override
-	public Tuple2<StringBuffer, String> afti_codeToAdd(
-			ICompiler_afti compiler, List<Tuple2<WrAnnotation,
-			List<ISlotInterface>>> infoList) {
+	public Tuple2<StringBuffer, String> afterResTypes_codeToAdd(
+			ICompiler_afterResTypes compiler, List<Tuple2<WrAnnotation,
+			List<ISlotSignature>>> infoList) {
 
-		final WrAnnotationAt annotation = (WrAnnotationAt ) this.metaobjectAnnotation;
+		final WrAnnotationAt annotation = (WrAnnotationAt ) this.annotation;
 		final IDeclaration dec = annotation.getDeclaration();
 		final WrMethodDec method = (WrMethodDec ) dec;
 		final WrMethodSignature mss = method.getMethodSignature();
@@ -363,10 +364,10 @@ public class CyanMetaobjectGrammarMethod extends CyanMetaobjectAtAnnot
 					"' is attached to this method. Then it "
 					+ "should be a method with one keyword that is not an operator. Like 'add: Array<Int>'");
 		}
-		final WrType type = ICompiler_dpa.singleTypeFromString(
+		final WrType type = ICompiler_parsing.singleTypeFromString(
 				this.grammarMethodSignatureInDSL.getkeywordGrammar().getStringType(),
 				msNonGrammar.getFirstSymbol(), "Internal error: ", compiler.getEnv().getCurrentCompilationUnit(),
-				compiler.getEnv().getCurrentProgramUnit(), compiler.getEnv());
+				compiler.getEnv().getCurrentPrototype(), compiler.getEnv());
 
 
 		final WrType methodParameterType = msNonGrammar.getKeywordArray().get(0).getParameterList().get(0).getType();
@@ -384,7 +385,7 @@ public class CyanMetaobjectGrammarMethod extends CyanMetaobjectAtAnnot
 	}
 
 //	@Override
-//	public void afsa_checkDeclaration(ICompiler_dsa compiler) {
+//	public void afterSemAn_checkDeclaration(ICompiler_semAn compiler) {
 //
 //
 //		final WrAnnotationAt annotation = (WrAnnotationAt ) this.metaobjectAnnotation;
@@ -400,10 +401,10 @@ public class CyanMetaobjectGrammarMethod extends CyanMetaobjectAtAnnot
 //					"' is attached to this method. Then it "
 //					+ "should be a method with one keyword that is not an operator. Like 'add: Array<Int>'");
 //		}
-//		final WrType type = ICompiler_dpa.singleTypeFromString(
+//		final WrType type = ICompiler_parsing.singleTypeFromString(
 //				this.grammarMethodSignatureInDSL.getkeywordGrammar().getStringType(),
 //				msNonGrammar.getFirstSymbol(), "Internal error: ", compiler.getEnv().getCurrentCompilationUnit(),
-//				compiler.getEnv().getCurrentProgramUnit(), compiler.getEnv());
+//				compiler.getEnv().getCurrentPrototype(), compiler.getEnv());
 //
 //
 //		final WrType methodParameterType = msNonGrammar.getKeywordArray().get(0).getParameterList().get(0).getType();
@@ -418,7 +419,7 @@ public class CyanMetaobjectGrammarMethod extends CyanMetaobjectAtAnnot
 //	}
 
 	@Override
-	public Tuple3<StringBuffer, String, String> dsa_missingKeywordMethod(WrExpr receiver,
+	public Tuple3<StringBuffer, String, String> semAn_missingKeywordMethod(WrExpr receiver,
 			 WrMessageWithKeywords message, WrEnv env) {
 
 
@@ -426,7 +427,7 @@ public class CyanMetaobjectGrammarMethod extends CyanMetaobjectAtAnnot
 
 		// WrMethodSignatureGrammar gmSignature = info.f2;
 
-		final WrAnnotationAt annotation = (WrAnnotationAt ) this.metaobjectAnnotation;
+		final WrAnnotationAt annotation = (WrAnnotationAt ) this.annotation;
 		final IDeclaration dec = annotation.getDeclaration();
 		final WrMethodDec method = (WrMethodDec ) dec;
 

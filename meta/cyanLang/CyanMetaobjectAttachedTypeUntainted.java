@@ -3,9 +3,10 @@ package meta.cyanLang;
 import java.util.List;
 import ast.AnnotationAt;
 import meta.AnnotationArgumentsKind;
+import meta.AttachedDeclarationKind;
 import meta.CyanMetaobjectAtAnnot;
-import meta.IActionAttachedType_dsa;
-import meta.ICompiler_dsa;
+import meta.IActionAttachedType_semAn;
+import meta.ICompiler_semAn;
 import meta.LeftHandSideKind;
 import meta.MetaHelper;
 import meta.Tuple2;
@@ -13,15 +14,15 @@ import meta.WrExpr;
 import meta.WrType;
 import meta.WrTypeWithAnnotations;
 
-public class CyanMetaobjectAttachedTypeUntainted extends CyanMetaobjectAtAnnot implements IActionAttachedType_dsa {
+public class CyanMetaobjectAttachedTypeUntainted extends CyanMetaobjectAtAnnot implements IActionAttachedType_semAn {
 
 	public CyanMetaobjectAttachedTypeUntainted() {
-		super("untainted", AnnotationArgumentsKind.OneParameter);
+		super("untainted", AnnotationArgumentsKind.OneParameter, new AttachedDeclarationKind[] { AttachedDeclarationKind.TYPE });
 	}
 
 
 	@Override public void check() {
-		List<Object> paramList = this.getMetaobjectAnnotation().getJavaParameterList();
+		List<Object> paramList = this.getAnnotation().getJavaParameterList();
 		if ( !(paramList.get(0) instanceof String ) ) {
 			this.addError("The sole parameter should be a string or identifier");
 		}
@@ -29,7 +30,7 @@ public class CyanMetaobjectAttachedTypeUntainted extends CyanMetaobjectAtAnnot i
 
 
 	@Override
-	public StringBuffer dsa_checkLeftTypeChangeRightExpr(ICompiler_dsa compiler_dsa, WrType leftType, Object leftASTNode,
+	public StringBuffer semAn_checkLeftTypeChangeRightExpr(ICompiler_semAn compiler_semAn, WrType leftType, Object leftASTNode,
 			LeftHandSideKind leftKind,
 			WrType rightType, WrExpr rightExpr) {
 
@@ -41,7 +42,7 @@ public class CyanMetaobjectAttachedTypeUntainted extends CyanMetaobjectAtAnnot i
 			for ( AnnotationAt annot : ((WrTypeWithAnnotations ) rightType).getAnnotationToTypeList() ) {
 				if ( annot.getCyanMetaobject() instanceof CyanMetaobjectAttachedTypeUntainted ) {
 					// CyanMetaobjectAttachedTypeUntainted other = (CyanMetaobjectAttachedTypeUntainted ) annot.getCyanMetaobject();
-					String thisParam = MetaHelper.removeQuotes( (String ) this.getMetaobjectAnnotation().getJavaParameterList().get(0) );
+					String thisParam = MetaHelper.removeQuotes( (String ) this.getAnnotation().getJavaParameterList().get(0) );
 					String otherParam = MetaHelper.removeQuotes( (String ) annot.getJavaParameterList().get(0) );
 					foundUntainted = thisParam.equals(otherParam);
 				}

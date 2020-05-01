@@ -10,14 +10,14 @@ import java.util.List;
 import cyan.lang.CyString;
 import cyan.lang._Tuple_LT_GP_CyString_GP_CyString_GP_CyString_GT;
 import cyan.reflect._CyanMetaobjectAtAnnot;
-import cyan.reflect._IActionMethodMissing__dsa;
+import cyan.reflect._IActionMethodMissing__semAn;
 import error.ErrorKind;
 import lexer.Symbol;
 import meta.CompilationInstruction;
 import meta.CompilationStep;
 import meta.CyanMetaobjectAtAnnot;
 import meta.ExprReceiverKind;
-import meta.IActionMethodMissing_dsa;
+import meta.IActionMethodMissing_semAn;
 import meta.IdentStarKind;
 import meta.MetaHelper;
 import meta.Token;
@@ -25,7 +25,7 @@ import meta.Tuple2;
 import meta.Tuple3;
 import meta.WrExprAnyLiteral;
 import meta.WrExprMessageSendUnaryChainToExpr;
-import meta.WrProgramUnit;
+import meta.WrPrototype;
 import saci.CyanEnv;
 import saci.Env;
 import saci.NameServer;
@@ -35,8 +35,8 @@ public class ExprMessageSendUnaryChainToExpr extends ExprMessageSendUnaryChain {
 
 
 
-	public ExprMessageSendUnaryChainToExpr(Expr expr) {
-		super();
+	public ExprMessageSendUnaryChainToExpr(Expr expr, MethodDec currentMethod) {
+		super(currentMethod);
 		this.receiverExprOrFirstUnary = expr;
 	}
 
@@ -70,7 +70,7 @@ public class ExprMessageSendUnaryChainToExpr extends ExprMessageSendUnaryChain {
 	@Override
 	public boolean isNREForInitOnce(Env env) {
 		String name = receiverExprOrFirstUnary.asString();
-		ProgramUnit pu = env.getProject().getCyanLangPackage().searchPublicNonGenericProgramUnit(name);
+		Prototype pu = env.getProject().getCyanLangPackage().searchPublicNonGenericPrototype(name);
 		return pu != null && this.unarySymbol.symbolString.equals("new");
 	}
 
@@ -716,7 +716,7 @@ public class ExprMessageSendUnaryChainToExpr extends ExprMessageSendUnaryChain {
 							if ( aMethod.getVisibility() == Token.PRIVATE  ) {
 								if ( aMethod.getDeclaringObject() != env.getCurrentOuterObjectDec() ) {
 									env.error(this.getFirstSymbol(), "This 'init' method is private. It cannot be called "
-											+ "inside prototype '" + env.getCurrentProgramUnit().getFullName() + "'");
+											+ "inside prototype '" + env.getCurrentPrototype().getFullName() + "'");
 								}
 							}
 							else if ( aMethod.getVisibility() == Token.PACKAGE ) {
@@ -742,9 +742,9 @@ public class ExprMessageSendUnaryChainToExpr extends ExprMessageSendUnaryChain {
 					methodSignatureList = exprType.searchMethodPrivateProtectedPublicPackageSuperProtectedPublicPackage(
 							methodName, env);
 
-					ProgramUnit pu = (ProgramUnit ) exprType.getInsideType();
-					List<ProgramUnit> superList = pu.get_this_and_all_superPrototypes();
-					for ( ProgramUnit current : superList ) {
+					Prototype pu = (Prototype ) exprType.getInsideType();
+					List<Prototype> superList = pu.get_this_and_all_superPrototypes();
+					for ( Prototype current : superList ) {
 						List<MethodSignature> currentMSList = current.searchMethodPrivateProtectedPublicPackage(methodName, env);
 						if ( currentMSList != null ) {
 							allMethodSignatureList.addAll(currentMSList);
@@ -762,9 +762,9 @@ public class ExprMessageSendUnaryChainToExpr extends ExprMessageSendUnaryChain {
 
 				methodSignatureList = exprType.searchMethodPublicPackageSuperPublicPackage(methodName, env);
 
-				ProgramUnit pu = (ProgramUnit ) exprType.getInsideType();
-				List<ProgramUnit> superList = pu.get_this_and_all_superPrototypes();
-				for ( ProgramUnit current : superList ) {
+				Prototype pu = (Prototype ) exprType.getInsideType();
+				List<Prototype> superList = pu.get_this_and_all_superPrototypes();
+				for ( Prototype current : superList ) {
 					List<MethodSignature> currentMSList = current.searchMethodPublicPackage(methodName, env);
 					if ( currentMSList != null ) {
 						allMethodSignatureList.addAll(currentMSList);
@@ -784,14 +784,14 @@ public class ExprMessageSendUnaryChainToExpr extends ExprMessageSendUnaryChain {
 
 					methodSignatureList = exprType.searchMethodPublicPackageSuperPublicPackage(methodName, env);
 
-					ProgramUnit pu = (ProgramUnit ) exprType.getInsideType();
-					List<ProgramUnit> superList = pu.get_this_and_all_superPrototypes();
+					Prototype pu = (Prototype ) exprType.getInsideType();
+					List<Prototype> superList = pu.get_this_and_all_superPrototypes();
 
 					List<MethodSignature> currentMSList = pu.searchMethodPublicPackage(methodName, env);
 					if ( currentMSList != null ) {
 						allMethodSignatureList.addAll(currentMSList);
 					}
-					for ( ProgramUnit current : superList ) {
+					for ( Prototype current : superList ) {
 						currentMSList = current.searchMethodPublicPackage(methodName, env);
 						if ( currentMSList != null ) {
 							allMethodSignatureList.addAll(currentMSList);
@@ -805,9 +805,9 @@ public class ExprMessageSendUnaryChainToExpr extends ExprMessageSendUnaryChain {
 						 * inner prototypes can access private and protected members of the outer prototype
 						 */
 						methodSignatureList = exprType.searchMethodPrivateProtectedPublicPackageSuperProtectedPublicPackage(methodName, env);
-						pu = (ProgramUnit ) exprType.getInsideType();
+						pu = (Prototype ) exprType.getInsideType();
 						superList = pu.get_this_and_all_superPrototypes();
-						for ( ProgramUnit current : superList ) {
+						for ( Prototype current : superList ) {
 							currentMSList = current.searchMethodPrivateProtectedPublicPackage(methodName, env);
 							if ( currentMSList != null ) {
 								allMethodSignatureList.addAll(currentMSList);
@@ -821,14 +821,14 @@ public class ExprMessageSendUnaryChainToExpr extends ExprMessageSendUnaryChain {
 
 
 
-						if ( env.getCompInstSet().contains(CompilationInstruction.dsa_actions) &&
+						if ( env.getCompInstSet().contains(CompilationInstruction.semAn_actions) &&
 		 						 super.lookForUnaryMethodAtCompileTime(
 		 								this.receiverExprOrFirstUnary.getI(), this.unarySymbol.getI(),
 		 								this.receiverExprOrFirstUnary.getType(), env) ) {
 
 							return ;
 						}
-//						if ( env.getCompInstSet().contains(CompilationInstruction.dsa_actions) &&
+//						if ( env.getCompInstSet().contains(CompilationInstruction.semAn_actions) &&
 //								 lookForMethodAtCompileTime(env, this.receiverExprOrFirstUnary.getType() ) ) {
 //							return ;
 //						}
@@ -885,8 +885,8 @@ public class ExprMessageSendUnaryChainToExpr extends ExprMessageSendUnaryChain {
 				if ( !isNew && receiverIsPrototype ) {
 					ObjectDec protoOfMethod = aMethod.getDeclaringObject();
 					// protoOfMethod == Type.Any && aMethod.getIsFinal
-					if ( receiverType instanceof ProgramUnit ) {
-						ProgramUnit rpu = (ProgramUnit ) receiverType;
+					if ( receiverType instanceof Prototype ) {
+						Prototype rpu = (Prototype ) receiverType;
 						List<MethodSignature> initMSList = rpu.searchMethodPrivateProtectedPublicPackage("init", env);
 						if ( (initMSList == null || initMSList.size() == 0) &&
 								rpu != Type.Nil ) {
@@ -969,7 +969,7 @@ public class ExprMessageSendUnaryChainToExpr extends ExprMessageSendUnaryChain {
 
 
 				if ( env.getProject().getCompilerManager().getCompilationStep().ordinal() < CompilationStep.step_7.ordinal() ) {
-					if ( exprType instanceof ProgramUnit ) {
+					if ( exprType instanceof Prototype ) {
 						// this test should be redundant
 
 						type = MetaInfoServer.replaceMessageSendIfAsked(allMethodSignatureList,
@@ -1020,28 +1020,30 @@ public class ExprMessageSendUnaryChainToExpr extends ExprMessageSendUnaryChain {
 
 		ObjectDec proto = (ObjectDec ) receiverType;
 
-		List<AnnotationAt> metaobjectAnnotationList = proto.getMetaobjectAnnotationThisAndSuperCTDNUList();
+		List<AnnotationAt> metaobjectAnnotationList = proto.getAnnotationThisAndSuperCTDNUList();
 
 		if ( metaobjectAnnotationList.size() == 0 ) {
 			return false;
 		}
-		WrProgramUnit lastProtoWithAnnotReplacedCode = null;
+		WrPrototype lastProtoWithAnnotReplacedCode = null;
 
 		AnnotationAt lastAnnotWhichReplacedCode = null;
 
 		for ( AnnotationAt annot : metaobjectAnnotationList ) {
 
-			ExprMessageSendWithKeywordsToExpr.checkAnnotIActionMethodMissing_dsa(env, annot);
+			ExprMessageSendWithKeywordsToExpr.checkAnnotIActionMethodMissing_semAn(env, annot);
 
 			CyanMetaobjectAtAnnot cyanMetaobject = annot.getCyanMetaobject();
 			_CyanMetaobjectAtAnnot other = (_CyanMetaobjectAtAnnot ) cyanMetaobject.getMetaobjectInCyan();
 
-			boolean actionMissing = cyanMetaobject instanceof IActionMethodMissing_dsa ||
-			        (other != null && other instanceof _IActionMethodMissing__dsa);
+			boolean actionMissing = cyanMetaobject instanceof IActionMethodMissing_semAn
+					||
+			        (other != null && other instanceof _IActionMethodMissing__semAn)
+			        ;
 
 			if ( !actionMissing ) {
 				env.error(this.getFirstSymbol(), "Internal error: metaobject '" + annot.getCyanMetaobject().getName() + "' should implement "
-						+ meta.IActionMethodMissing_dsa.class.getName());
+						+ meta.IActionMethodMissing_semAn.class.getName());
 				return false;
 			}
 
@@ -1050,13 +1052,13 @@ public class ExprMessageSendUnaryChainToExpr extends ExprMessageSendUnaryChain {
 			StringBuffer sb = null;
 			try {
 				if ( other == null ) {
-					IActionMethodMissing_dsa doesNot = (IActionMethodMissing_dsa ) cyanMetaobject;
-					codeType = doesNot.dsa_missingUnaryMethod(
+					IActionMethodMissing_semAn doesNot = (IActionMethodMissing_semAn ) cyanMetaobject;
+					codeType = doesNot.semAn_missingUnaryMethod(
 							this.receiverExprOrFirstUnary.getI(), this.unarySymbol.getI(), env.getI());
 				}
 				else {
-					final _IActionMethodMissing__dsa doesNot = (_IActionMethodMissing__dsa ) other;
-					_Tuple_LT_GP_CyString_GP_CyString_GP_CyString_GT tdd = doesNot._dsa__missingUnaryMethod_3(
+					final _IActionMethodMissing__semAn doesNot = (_IActionMethodMissing__semAn ) other;
+					_Tuple_LT_GP_CyString_GP_CyString_GP_CyString_GT tdd = doesNot._semAn__missingUnaryMethod_3(
 							this.receiverExprOrFirstUnary.getI(), this.unarySymbol.getI(), env.getI());
 
 					Object f1 = tdd._f1();
@@ -1075,7 +1077,6 @@ public class ExprMessageSendUnaryChainToExpr extends ExprMessageSendUnaryChain {
 								);
 
 					}
-
 				}
 			}
 			catch ( error.CompileErrorException e ) {
@@ -1096,7 +1097,7 @@ public class ExprMessageSendUnaryChainToExpr extends ExprMessageSendUnaryChain {
 			if ( codeType != null  ) {
 
 
-				WrProgramUnit protoOfAnnotWantsToReplaceMessagePassing = ExprMessageSendWithKeywordsToExpr.currentPrototypeFromAnnot(annot);
+				WrPrototype protoOfAnnotWantsToReplaceMessagePassing = ExprMessageSendWithKeywordsToExpr.currentPrototypeFromAnnot(annot);
 
 				if ( protoOfAnnotWantsToReplaceMessagePassing == lastProtoWithAnnotReplacedCode ) {
 					// two annotations are trying to replace a message passing by code and
@@ -1130,17 +1131,17 @@ public class ExprMessageSendUnaryChainToExpr extends ExprMessageSendUnaryChain {
 						/*
 						 * this message send has already been replaced by another expression
 						 */
-						if ( cyanMetaobjectAnnotationThatReplacedStatByAnotherOne != null ) {
+						if ( cyanAnnotationThatReplacedStatByAnotherOne != null ) {
 							env.warning(this.getFirstSymbol(), "Metaobject annotation '" + cyanMetaobject.getName() +
 									"' at line " + annot.getFirstSymbol().getLineNumber()  +
 									" of prototype " + annot.getPackageOfAnnotation() + "." +
 									annot.getPackageOfAnnotation() +
 									" is trying to replace message send '" + this.asString() +
 									"' by an expression. But this has already been asked by metaobject annotation '" +
-									cyanMetaobjectAnnotationThatReplacedStatByAnotherOne.getCyanMetaobject().getName() + "'" +
-									" at line " + cyanMetaobjectAnnotationThatReplacedStatByAnotherOne.getFirstSymbol().getLineNumber() +
-									" of prototype " + cyanMetaobjectAnnotationThatReplacedStatByAnotherOne.getPackageOfAnnotation() + "." +
-									cyanMetaobjectAnnotationThatReplacedStatByAnotherOne.getPackageOfAnnotation());
+									cyanAnnotationThatReplacedStatByAnotherOne.getCyanMetaobject().getName() + "'" +
+									" at line " + cyanAnnotationThatReplacedStatByAnotherOne.getFirstSymbol().getLineNumber() +
+									" of prototype " + cyanAnnotationThatReplacedStatByAnotherOne.getPackageOfAnnotation() + "." +
+									cyanAnnotationThatReplacedStatByAnotherOne.getPackageOfAnnotation());
 						}
 						else {
 							env.warning(this.getFirstSymbol(), "Metaobject annotation '" + cyanMetaobject.getName() +
@@ -1175,7 +1176,7 @@ public class ExprMessageSendUnaryChainToExpr extends ExprMessageSendUnaryChain {
 
 					env.replaceStatementByCode(this, annot, sb, typeOfCode);
 
-					cyanMetaobjectAnnotationThatReplacedStatByAnotherOne = annot;
+					cyanAnnotationThatReplacedStatByAnotherOne = annot;
 
 					if ( typeOfCode == null )
 						env.error(true,

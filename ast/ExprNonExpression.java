@@ -18,6 +18,10 @@ import saci.Env;
 public class ExprNonExpression extends Expr {
 
 
+	public ExprNonExpression(MethodDec method) {
+		super(method);
+	}
+
 
 	@Override
 	public WrExpr getI() {

@@ -3,7 +3,7 @@ package meta.cyanLang;
 import meta.AnnotationArgumentsKind;
 import meta.AttachedDeclarationKind;
 import meta.CyanMetaobjectAtAnnot;
-import meta.IActionVariableDeclaration_dsa;
+import meta.IActionVariableDeclaration_semAn;
 import meta.WrAnnotationAt;
 import meta.WrEnv;
 
@@ -12,7 +12,7 @@ import meta.WrEnv;
    @author jose
  */
 public class CyanMetaobjectCodeAfter extends CyanMetaobjectAtAnnot
-     implements IActionVariableDeclaration_dsa {
+     implements IActionVariableDeclaration_semAn {
 
 	public CyanMetaobjectCodeAfter() {
 		super("codeAfter", AnnotationArgumentsKind.ZeroParameters,
@@ -26,8 +26,8 @@ public class CyanMetaobjectCodeAfter extends CyanMetaobjectAtAnnot
 	@Override
 	public
 
-	StringBuffer dsa_codeToAddAfter(WrEnv env) {
-		final WrAnnotationAt withAt = this.getMetaobjectAnnotation();
+	StringBuffer semAn_codeToAddAfter(WrEnv env) {
+		final WrAnnotationAt withAt = this.getAnnotation();
 
 		return new StringBuffer(new String(withAt.getTextAttachedDSL()));
 	}

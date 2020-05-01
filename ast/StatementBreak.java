@@ -11,7 +11,8 @@ import saci.Env;
  */
 public class StatementBreak extends Statement {
 
-	public StatementBreak(Symbol breakSymbol) {
+	public StatementBreak(Symbol breakSymbol, MethodDec method) {
+		super(method);
 		this.breakSymbol = breakSymbol;
 	}
 	@Override

@@ -5,9 +5,9 @@ package ast;
 
 import lexer.Symbol;
 import lexer.SymbolLongLiteral;
-import meta.WrExprLiteralLong;
 import meta.MetaHelper;
 import meta.Token;
+import meta.WrExprLiteralLong;
 import saci.Env;
 
 /** Represents a long literal such as
@@ -20,12 +20,12 @@ public class ExprLiteralLong extends ExprLiteralNumber {
 	/**
 	 * @param symbol
 	 */
-	public ExprLiteralLong(Symbol symbol) {
-		super(symbol);
+	public ExprLiteralLong(Symbol symbol, MethodDec currentMethod) {
+		super(symbol, currentMethod);
 	}
 
-	public ExprLiteralLong(Symbol symbol, Symbol prefix) {
-		super(symbol);
+	public ExprLiteralLong(Symbol symbol, Symbol prefix, MethodDec currentMethod) {
+		super(symbol, currentMethod);
 		this.prefix = prefix;
 	}
 

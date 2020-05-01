@@ -5,12 +5,12 @@ import java.util.List;
 import meta.AnnotationArgumentsKind;
 import meta.AttachedDeclarationKind;
 import meta.CyanMetaobjectAtAnnot;
-import meta.IAction_afti;
-import meta.ICompiler_afti;
-import meta.ICompiler_dpa;
+import meta.IAction_afterResTypes;
+import meta.ICompiler_afterResTypes;
+import meta.ICompiler_parsing;
 import meta.IDeclaration;
-import meta.IParseWithCyanCompiler_dpa;
-import meta.ISlotInterface;
+import meta.IParseWithCyanCompiler_parsing;
+import meta.ISlotSignature;
 import meta.MetaHelper;
 import meta.Token;
 import meta.Tuple2;
@@ -21,10 +21,10 @@ import meta.WrExpr;
 import meta.WrExprLiteralTuple;
 import meta.WrMethodDec;
 import meta.WrMethodSignature;
-import meta.WrProgramUnit;
+import meta.WrPrototype;
 
 public class CyanMetaobjectCodegFSM_DSL_Methods extends CyanMetaobjectAtAnnot
-    implements IAction_afti,  IParseWithCyanCompiler_dpa
+    implements IAction_afterResTypes,  IParseWithCyanCompiler_parsing
     {
 
 
@@ -75,7 +75,7 @@ public class CyanMetaobjectCodegFSM_DSL_Methods extends CyanMetaobjectAtAnnot
 
 	@Override
 	public void check() {
-		List<Object> paramList = this.getMetaobjectAnnotation().getJavaParameterList();
+		List<Object> paramList = this.getAnnotation().getJavaParameterList();
 		if ( paramList != null && paramList.size() > 0 ) {
 			if ( !( paramList.get(0) instanceof String ) ) {
 				this.addError("Annotation '" + this.getName() + "' should take an identifer as parameter");
@@ -97,8 +97,8 @@ public class CyanMetaobjectCodegFSM_DSL_Methods extends CyanMetaobjectAtAnnot
 	}
 
 	@Override
-	public Tuple2<StringBuffer, String> afti_codeToAdd(
-			ICompiler_afti compiler, List<Tuple2<WrAnnotation, List<ISlotInterface>>> infoList) {
+	public Tuple2<StringBuffer, String> afterResTypes_codeToAdd(
+			ICompiler_afterResTypes compiler, List<Tuple2<WrAnnotation, List<ISlotSignature>>> infoList) {
 
 		String slotStr = "let Tuple<initialState, String, finalStates, Array<String>, states, Array<String>, transitions, "
 		         + "Array<Tuple<String, String, String>>> " + fsmFieldName + ";\n";
@@ -139,7 +139,7 @@ public class CyanMetaobjectCodegFSM_DSL_Methods extends CyanMetaobjectAtAnnot
 		}
 		s.append(" ],\n        transitions = [");
 
-		WrProgramUnit proto = (WrProgramUnit ) this.getAttachedDeclaration();
+		WrPrototype proto = (WrPrototype ) this.getAttachedDeclaration();
 		WrEnv env = compiler.getEnv();
 
 		size = fsmData.transList.size();
@@ -202,8 +202,8 @@ public class CyanMetaobjectCodegFSM_DSL_Methods extends CyanMetaobjectAtAnnot
 
 
 //	@Override
-//	public List<StringBuffer> afti_codeToAdd(
-//			ICompiler_afti compiler) {
+//	public List<StringBuffer> afterResTypes_codeToAdd(
+//			ICompiler_afterResTypes compiler) {
 //		StringBuffer s = new StringBuffer();
 //		s.append("    let Tuple<initialState, String, finalStates, Array<String>,\n" +
 //				 "   states, Array<String>, transitions,\n" +
@@ -241,7 +241,7 @@ public class CyanMetaobjectCodegFSM_DSL_Methods extends CyanMetaobjectAtAnnot
 //		}
 //		s.append(" ],\n        transitions = [");
 //
-//		WrProgramUnit proto = (WrProgramUnit ) this.getAttachedDeclaration();
+//		WrPrototype proto = (WrPrototype ) this.getAttachedDeclaration();
 //		WrEnv env = compiler.getEnv();
 //
 //		size = fsmData.transList.size();
@@ -298,15 +298,15 @@ public class CyanMetaobjectCodegFSM_DSL_Methods extends CyanMetaobjectAtAnnot
 //
 
 	@Override
-	public List<Tuple3<String, StringBuffer, Boolean>> afti_beforeMethodCodeList(
-			ICompiler_afti compiler) {
+	public List<Tuple3<String, StringBuffer, Boolean>> afterResTypes_beforeMethodCodeList(
+			ICompiler_afterResTypes compiler) {
 		List<Tuple3<String, StringBuffer, Boolean>> array = new ArrayList<>();
 		IDeclaration dec = this.getAttachedDeclaration();
-		if ( !(dec instanceof WrProgramUnit) || ((WrProgramUnit ) dec).isInterface()) {
+		if ( !(dec instanceof WrPrototype) || ((WrPrototype ) dec).isInterface()) {
 			this.addError("Annotation '" + this.getName() + "' can be attached only to prototypes");
 			return null;
 		}
-		WrProgramUnit proto = (WrProgramUnit ) dec;
+		WrPrototype proto = (WrPrototype ) dec;
 
 		for ( WrMethodDec m : proto.getMethodDecList(compiler.getEnv()) ) {
 			if ( m.getVisibility() == Token.PUBLIC ) {
@@ -352,7 +352,7 @@ public class CyanMetaobjectCodegFSM_DSL_Methods extends CyanMetaobjectAtAnnot
 	public boolean shouldTakeText() { return true; }
 
 	@Override
-	public void dpa_parse(ICompiler_dpa cp) {
+	public void parsing_parse(ICompiler_parsing cp) {
 //		 * Tuple<initialState, String, finalStates, Array<String>,\n" +
 //				 "   states, Array<String>, transitions,\n" +
 //				 "   Array<Tuple<String, String, String>>>

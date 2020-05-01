@@ -43,4 +43,19 @@ abstract public class WrStatement extends WrASTNode implements IICalcInternalTyp
 	public boolean demandSemicolon() {
 		return hidden.demandSemicolon();
 	}
+
+	public WrMethodDec getCurrentMethod() {
+		if ( hidden.getCurrentMethod() == null ) {
+			return null;
+		}
+		else {
+			return hidden.getCurrentMethod().getI();
+		}
+	}
+
+	public boolean getCreatedByMetaobjects() {
+		return hidden.getCreatedByMetaobjects();
+	}
+
+
 }

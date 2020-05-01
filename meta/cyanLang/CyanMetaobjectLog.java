@@ -6,13 +6,13 @@ import meta.AnnotationArgumentsKind;
 import meta.AttachedDeclarationKind;
 import meta.CyanMetaobject;
 import meta.CyanMetaobjectAtAnnot;
-import meta.IAction_afti;
-import meta.ICompiler_afti;
+import meta.IAction_afterResTypes;
+import meta.ICompiler_afterResTypes;
 import meta.IDeclaration;
 import meta.Token;
 import meta.Tuple3;
 import meta.WrMethodDec;
-import meta.WrProgramUnit;
+import meta.WrPrototype;
 
 /**
  *     Annotation 'log', when attached to a prototype P, without paramters,
@@ -67,7 +67,7 @@ import meta.WrProgramUnit;
    @author jose
  */
 
-public class CyanMetaobjectLog extends CyanMetaobjectAtAnnot implements IAction_afti { // , IAction_dsa {
+public class CyanMetaobjectLog extends CyanMetaobjectAtAnnot implements IAction_afterResTypes { // , IAction_semAn {
 
 	public CyanMetaobjectLog() {
 		super("log", AnnotationArgumentsKind.ZeroOrMoreParameters,
@@ -76,11 +76,11 @@ public class CyanMetaobjectLog extends CyanMetaobjectAtAnnot implements IAction_
 	}
 
 	@Override
-	public List<Tuple3<String, StringBuffer, Boolean>> afti_beforeMethodCodeList(
-			ICompiler_afti compiler) {
+	public List<Tuple3<String, StringBuffer, Boolean>> afterResTypes_beforeMethodCodeList(
+			ICompiler_afterResTypes compiler) {
 		List<Tuple3<String, StringBuffer, Boolean>> array = new ArrayList<>();
 		IDeclaration dec = this.getAttachedDeclaration();
-		List<Object> paramList = this.getMetaobjectAnnotation().getJavaParameterList();
+		List<Object> paramList = this.getAnnotation().getJavaParameterList();
 		String logMapName = null;
 
 		if ( paramList != null ) {
@@ -104,7 +104,7 @@ public class CyanMetaobjectLog extends CyanMetaobjectAtAnnot implements IAction_
 			WrMethodDec m = (WrMethodDec ) dec;
 			StringBuffer sb;
 			if ( logMapName != null ) {
-				sb = CyanMetaobjectLog.genLogCount(m.getMethodSignature().getName(),  compiler.getEnv().getCurrentProgramUnit().getFullName(), logMapName);
+				sb = CyanMetaobjectLog.genLogCount(m.getMethodSignature().getName(),  compiler.getEnv().getCurrentPrototype().getFullName(), logMapName);
 			}
 			else {
 				sb = new StringBuffer("    \"Calling method '" +
@@ -119,8 +119,8 @@ public class CyanMetaobjectLog extends CyanMetaobjectAtAnnot implements IAction_
 			return array;
 
 		}
-		else if ( dec instanceof WrProgramUnit && ! ((WrProgramUnit ) dec).isInterface() ) {
-			WrProgramUnit pu = (WrProgramUnit ) dec;
+		else if ( dec instanceof WrPrototype && ! ((WrPrototype ) dec).isInterface() ) {
+			WrPrototype pu = (WrPrototype ) dec;
 			for ( WrMethodDec m : pu.getMethodDecList(compiler.getEnv()) ) {
 				if ( m.getVisibility() == Token.PUBLIC  ) {
 					StringBuffer sb;

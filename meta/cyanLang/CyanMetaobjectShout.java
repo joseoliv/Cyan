@@ -3,15 +3,15 @@ package meta.cyanLang;
 import meta.AnnotationArgumentsKind;
 import meta.AttachedDeclarationKind;
 import meta.CyanMetaobjectAtAnnot;
-import meta.IAction_dsa;
-import meta.ICompiler_dsa;
+import meta.IAction_semAn;
+import meta.ICompiler_semAn;
 import meta.WrASTVisitor;
 import meta.WrAnnotationAt;
 import meta.WrEnv;
 import meta.WrExprLiteralString;
 import meta.WrMethodDec;
 
-public class CyanMetaobjectShout extends CyanMetaobjectAtAnnot implements IAction_dsa /*, ICheckDeclaration_afsa */ {
+public class CyanMetaobjectShout extends CyanMetaobjectAtAnnot implements IAction_semAn /*, ICheckDeclaration_afterSemAn */ {
 
 	public CyanMetaobjectShout() {
 		super("shout", AnnotationArgumentsKind.ZeroParameters,
@@ -21,8 +21,8 @@ public class CyanMetaobjectShout extends CyanMetaobjectAtAnnot implements IActio
 
 
 	@Override
-	public StringBuffer dsa_codeToAdd(ICompiler_dsa compiler_dsa) {
-		final WrAnnotationAt annot = this.getMetaobjectAnnotation();
+	public StringBuffer semAn_codeToAdd(ICompiler_semAn compiler_semAn) {
+		final WrAnnotationAt annot = this.getAnnotation();
 		final WrMethodDec dec = (WrMethodDec ) annot.getDeclaration();
 
 		dec.accept( new WrASTVisitor() {
@@ -33,10 +33,10 @@ public class CyanMetaobjectShout extends CyanMetaobjectAtAnnot implements IActio
 				for (int i = 0; i < str.length(); ++i) {
 					strUpper.append(Character.toUpperCase(str.charAt(i)));
 				}
-				compiler_dsa.replaceStatementByCode(node, annot,
-						strUpper, node.getType());
+				replaceStatementByCode(node,
+						strUpper, node.getType(), env);
 			}
-		}, compiler_dsa.getEnv());
+		}, compiler_semAn.getEnv());
 
 		return null;
 	}

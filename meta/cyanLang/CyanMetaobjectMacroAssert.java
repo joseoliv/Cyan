@@ -1,8 +1,8 @@
 package meta.cyanLang;
 
 import meta.CyanMetaobjectMacro;
-import meta.ICompilerMacro_dpa;
-import meta.ICompiler_dsa;
+import meta.ICompilerMacro_parsing;
+import meta.ICompiler_semAn;
 import meta.WrAnnotationMacroCall;
 import meta.WrEnv;
 import meta.WrExpr;
@@ -35,26 +35,26 @@ public class CyanMetaobjectMacroAssert extends CyanMetaobjectMacro {
 	 * parse the macro call
 	 */
 	@Override
-	public void dpa_parseMacro(ICompilerMacro_dpa compiler_dpa) {
+	public void parsing_parseMacro(ICompilerMacro_parsing compiler_parsing) {
 
     	  /*
-    	   *   compiler_dpa.getSymbol() is the lexical symbol for 'assert'
+    	   *   compiler_parsing.getSymbol() is the lexical symbol for 'assert'
     	   *   from this symbol we get its line number and column
     	   */
-		lineNumberStartMacro = compiler_dpa.getSymbol().getLineNumber();
-		offsetStartLine = compiler_dpa.getSymbol().getColumnNumber();
+		lineNumberStartMacro = compiler_parsing.getSymbol().getLineNumber();
+		offsetStartLine = compiler_parsing.getSymbol().getColumnNumber();
 		   // get past symbol 'assert'
-		compiler_dpa.next();
+		compiler_parsing.next();
 		   // calls the compiler to parse the expression that should come
            // after 'assert'. The expression is kept in field 'assertExpr'
-		assertExpr = compiler_dpa.expr();
+		assertExpr = compiler_parsing.expr();
 		   // if there was any errors when parsing the expression, returns
 		   // Any errors will be reported back to the Cyan compiler
-		if ( compiler_dpa.getThereWasErrors() )
+		if ( compiler_parsing.getThereWasErrors() )
 			return ;
 		  // does the macro ends with ';' ?
-		if ( compiler_dpa.getSymbol().token == Token.SEMICOLON ) {
-			compiler_dpa.next();
+		if ( compiler_parsing.getSymbol().token == Token.SEMICOLON ) {
+			compiler_parsing.next();
 		}
 	}
 
@@ -62,19 +62,19 @@ public class CyanMetaobjectMacroAssert extends CyanMetaobjectMacro {
 	 * generate code for the macro. The string returned will replace the macro call
 	 */
 	@Override
-	public StringBuffer dsa_codeToAdd(ICompiler_dsa compiler_dsa) {
+	public StringBuffer semAn_codeToAdd(ICompiler_semAn compiler_semAn) {
 
 		  // the annotation is the macro call, an object of AnnotationMacroCall
-		final WrAnnotationMacroCall annotation = (WrAnnotationMacroCall ) this.getMetaobjectAnnotation();
+		final WrAnnotationMacroCall annotation = (WrAnnotationMacroCall ) this.getAnnotation();
 		   // env keeps all the environment of the call: the current method, prototype, etc
-		final WrEnv env = compiler_dsa.getEnv();
+		final WrEnv env = compiler_semAn.getEnv();
 		  // if there was any errors before the macro call, return
 		if ( env.isThereWasError() )
 			return null;
 		  // the  type of the assert expression should be Boolean or Dyn
 		WrType exprType = assertExpr.getType(env);
 		if ( exprType != WrType.Boolean && exprType != WrType.Dyn ) {
-			compiler_dsa.error(assertExpr.getFirstSymbol(), "Expression of type Boolean or Dyn expected");
+			compiler_semAn.error(assertExpr.getFirstSymbol(), "Expression of type Boolean or Dyn expected");
 			return null;
 		}
 

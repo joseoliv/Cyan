@@ -12,7 +12,8 @@ import saci.Env;
 public class StatementRepeat extends Statement {
 
 	public StatementRepeat(Symbol repeatSymbol, Expr booleanExpr,
-			   StatementList statementList, Symbol untilSymbol) {
+			   StatementList statementList, Symbol untilSymbol, MethodDec method) {
+		super(method);
 		this.repeatSymbol = repeatSymbol;
 		this.booleanExpr = booleanExpr;
 		this.statementList = statementList;
@@ -150,7 +151,7 @@ public class StatementRepeat extends Statement {
 		else {
 
 
-			if ( booleanExpr.getType().getInsideType() instanceof ProgramUnit ) {
+			if ( booleanExpr.getType().getInsideType() instanceof Prototype ) {
 		        pw.printlnIdent("if ( " + tmpVarString + ".b ) break;");
 			}
 			else if ( booleanExpr.getType() instanceof TypeJavaRef ) {

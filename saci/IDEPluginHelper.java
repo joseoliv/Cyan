@@ -7,7 +7,7 @@ import ast.CompilationUnit;
 import ast.Annotation;
 import ast.FieldDec;
 import ast.ObjectDec;
-import ast.ProgramUnit;
+import ast.Prototype;
 import lexer.HighlightColor;
 import lexer.Symbol;
 import lexer.SymbolIdent;
@@ -35,7 +35,7 @@ public class IDEPluginHelper {
 		CompilationUnit compUnit = saci.getLastCompilationUnitParsed();
 		ObjectDec proto = null;
 		if ( compUnit != null ) {
-			ProgramUnit pu = compUnit.getPublicPrototype();
+			Prototype pu = compUnit.getPublicPrototype();
 			if ( pu != null && pu instanceof ObjectDec ) {
 				proto = (ObjectDec ) pu;
 				for ( FieldDec iv : proto.getFieldList() ) {
@@ -49,7 +49,7 @@ public class IDEPluginHelper {
 		for (int i = 0; i < saci.getSizeSymbolList(); ++i) {
 			Symbol sym = saci.getSymbolList()[i];
 
-			Annotation annotation = sym.getCyanMetaobjectAnnotation();
+			Annotation annotation = sym.getCyanAnnotation();
 			if ( annotation != null ) {
 				/*
 				 * symbol represents a metaobject annotation
@@ -104,7 +104,7 @@ public class IDEPluginHelper {
 		for (int i = 0; i < saci.getSizeSymbolList(); ++i) {
 			Symbol sym = saci.getSymbolList()[i];
 
-			Annotation annot = sym.getCyanMetaobjectAnnotation();
+			Annotation annot = sym.getCyanAnnotation();
 			if ( annot != null ) {
 				/*
 				 * symbol represents a metaobject annotation

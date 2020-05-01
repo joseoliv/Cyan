@@ -4,12 +4,12 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import ast.CompilationUnit;
 import ast.AnnotationAt;
+import ast.CompilationUnit;
 import ast.FieldDec;
 import ast.MethodDec;
 import ast.MethodSignature;
-import ast.ProgramUnit;
+import ast.Prototype;
 import ast.StatementList;
 
 public class WrMethodDec extends WrSlotDec implements IDeclarationWritable {
@@ -80,12 +80,7 @@ public class WrMethodDec extends WrSlotDec implements IDeclarationWritable {
     @Override
     public void addDocumentText(String doc, String docKind, WrEnv env) {
     	securityCheck(env);
-    	CompilationStep step = env.getCompilationStep();
-    	if ( step != CompilationStep.step_1 &&
-    		 step != CompilationStep.step_4 &&
-    		 step != CompilationStep.step_7 ) {
-    		throw new MetaSecurityException();
-    	}
+    	checkAdditionInfo(env);
 
 
     	hidden.addDocumentText(doc, docKind);
@@ -100,12 +95,7 @@ public class WrMethodDec extends WrSlotDec implements IDeclarationWritable {
     public void addFeature(Tuple2<String, WrExprAnyLiteral> feature, WrEnv env) {
     	securityCheck(env);
 
-    	CompilationStep step = env.getCompilationStep();
-    	if ( step != CompilationStep.step_1 &&
-          	 step != CompilationStep.step_4 &&
-          	 step != CompilationStep.step_7 ) {
-    		throw new MetaSecurityException();
-    	}
+    	checkAdditionInfo(env);
 
 
         hidden.addFeature(feature);
@@ -119,16 +109,23 @@ public class WrMethodDec extends WrSlotDec implements IDeclarationWritable {
     public void addDocumentExample(String example, String exampleKind, WrEnv env) {
     	securityCheck(env);
 
-    	CompilationStep step = env.getCompilationStep();
+    	checkAdditionInfo(env);
+
+
+        hidden.addDocumentExample(example, exampleKind);
+    }
+
+	/**
+	   @param env
+	 */
+	private static void checkAdditionInfo(WrEnv env) {
+		CompilationStep step = env.getCompilationStep();
     	if ( step != CompilationStep.step_1 &&
              	 step != CompilationStep.step_4 &&
              	 step != CompilationStep.step_7 ) {
     		throw new MetaSecurityException();
     	}
-
-
-        hidden.addDocumentExample(example, exampleKind);
-    }
+	}
 
     /**
      * return the list of documents associated to this method. Each tuple
@@ -137,6 +134,8 @@ public class WrMethodDec extends WrSlotDec implements IDeclarationWritable {
 
     @Override
     public List<Tuple2<String, String>> getDocumentTextList(WrEnv env) {
+    	checkGetInfo(env);
+
         return hidden.getDocumentTextList();
     }
 
@@ -147,6 +146,8 @@ public class WrMethodDec extends WrSlotDec implements IDeclarationWritable {
 
     @Override
     public List<Tuple2<String, String>> getDocumentExampleList(WrEnv env) {
+    	checkGetInfo(env);
+
         return hidden.getDocumentExampleList();
     }
 
@@ -155,7 +156,7 @@ public class WrMethodDec extends WrSlotDec implements IDeclarationWritable {
 	   @param env
 	 */
 	private void securityCheck(WrEnv env) {
-		if ( env.getCurrentProgramUnit().hidden != hidden.getDeclaringObject() ) {
+		if ( env.getCurrentPrototype().hidden != hidden.getDeclaringObject() ) {
     		throw new MetaSecurityException();
     	}
 
@@ -166,6 +167,7 @@ public class WrMethodDec extends WrSlotDec implements IDeclarationWritable {
 	 */
     @Override
     public List<Tuple2<String, WrExprAnyLiteral>> getFeatureList(WrEnv env) {
+    	checkGetInfo(env);
         return hidden.getFeatureList();
     }
 
@@ -174,6 +176,7 @@ public class WrMethodDec extends WrSlotDec implements IDeclarationWritable {
      */
     @Override
     public List<WrExprAnyLiteral> searchFeature(String name, WrEnv env) {
+    	checkGetInfo(env);
         return hidden.searchFeature(name);
     }
 
@@ -233,8 +236,8 @@ public class WrMethodDec extends WrSlotDec implements IDeclarationWritable {
 	 * return the Program Unit that declared this method.
 	   @return
 	 */
-	public WrProgramUnit getDeclaringObject() {
-		ProgramUnit pu = hidden.getDeclaringObject();
+	public WrPrototype getDeclaringObject() {
+		Prototype pu = hidden.getDeclaringObject();
 		return pu == null ? null : pu.getI();
 	}
 
@@ -385,10 +388,10 @@ public class WrMethodDec extends WrSlotDec implements IDeclarationWritable {
 		return e == null ? null : e.getI();
 	}
 
-	public List<WrAnnotationAt> getAttachedMetaobjectAnnotationList(WrEnv env) {
+	public List<WrAnnotationAt> getAttachedAnnotationList(WrEnv env) {
     	//securityCheck(env);
 
-		List<AnnotationAt> annotList = hidden.getAttachedMetaobjectAnnotationList();
+		List<AnnotationAt> annotList = hidden.getAttachedAnnotationList();
 		if ( annotList == null ) {
 			return null;
 		}
@@ -399,7 +402,7 @@ public class WrMethodDec extends WrSlotDec implements IDeclarationWritable {
 					newList.add(annot.getI());
 				}
 				else if ( annot.getCyanMetaobject().getVisibility() == Token.PACKAGE ) {
-					if ( env.getCurrentProgramUnit().hidden.getPackageName().equals(hidden.getDeclaringObject().getPackageName())
+					if ( env.getCurrentPrototype().hidden.getPackageName().equals(hidden.getDeclaringObject().getPackageName())
 							) {
 						newList.add(annot.getI());
 			    	}
@@ -413,4 +416,7 @@ public class WrMethodDec extends WrSlotDec implements IDeclarationWritable {
 		return hidden.createdByMetaobjects();
 	}
 
+	public boolean isUnary() {
+		return hidden.isUnary();
+	}
 }

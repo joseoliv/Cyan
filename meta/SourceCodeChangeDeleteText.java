@@ -2,11 +2,11 @@ package meta;
 
 import ast.Annotation;
 
-public class SourceCodeChangeDeleteText extends SourceCodeChangeByMetaobjectAnnotation {
+public class SourceCodeChangeDeleteText extends SourceCodeChangeByAnnotation {
 
 
-	public SourceCodeChangeDeleteText(int offset, int numCharToDelete, Annotation cyanMetaobjectAnnotation) {
-		super(offset, cyanMetaobjectAnnotation);
+	public SourceCodeChangeDeleteText(int offset, int numCharToDelete, Annotation cyanAnnotation) {
+		super(offset, cyanAnnotation);
 		this.numCharToDelete = numCharToDelete;
 	}
 	

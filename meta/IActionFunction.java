@@ -10,8 +10,8 @@ package meta;
  * <code>
  *      CyanMetaobject searchActionFunction(String name)
  * </code>
- * of interfaces <code>ICompiler_dpa</code>, <code>ICompiler_afti</code>,
- * and <code>ICompiler_dsa</code>. The semantics of method 'eval'
+ * of interfaces <code>ICompiler_parsing</code>, <code>ICompiler_afterResTypes</code>,
+ * and <code>ICompiler_semAn</code>. The semantics of method 'eval'
  * is application specific.
    @author jose
  */

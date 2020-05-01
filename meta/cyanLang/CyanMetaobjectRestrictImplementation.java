@@ -6,17 +6,17 @@ import meta.AnnotationArgumentsKind;
 import meta.AttachedDeclarationKind;
 import meta.CyanMetaobject;
 import meta.CyanMetaobjectAtAnnot;
-import meta.ICheckSubprototype_afsa;
-import meta.ICompiler_dsa;
+import meta.ICheckSubprototype_afterSemAn;
+import meta.ICompiler_semAn;
 import meta.IDeclaration;
 import meta.Token;
 import meta.WrAnnotationAt;
 import meta.WrEnv;
-import meta.WrProgramUnit;
+import meta.WrPrototype;
 import meta.WrType;
 
 public class CyanMetaobjectRestrictImplementation extends CyanMetaobjectAtAnnot
-		implements  ICheckSubprototype_afsa   {
+		implements  ICheckSubprototype_afterSemAn   {
 
 	public CyanMetaobjectRestrictImplementation() {
 		super("restrictImplementation", AnnotationArgumentsKind.OneOrMoreParameters,
@@ -30,21 +30,21 @@ public class CyanMetaobjectRestrictImplementation extends CyanMetaobjectAtAnnot
 	 */
 
 	@Override
-	public void afsa_checkSubprototype(ICompiler_dsa compiler_dsa, WrProgramUnit subPrototype) {
+	public void afterSemAn_checkSubprototype(ICompiler_semAn compiler_semAn, WrPrototype subPrototype) {
 
 		final IDeclaration dec = this.getAttachedDeclaration();
-		WrProgramUnit puAnnot = (WrProgramUnit ) dec;
+		WrPrototype puAnnot = (WrPrototype ) dec;
 
-		WrEnv env = compiler_dsa.getEnv();
+		WrEnv env = compiler_semAn.getEnv();
 		if ( ! setAllowedList(env) ) { return ; }
-		for ( WrProgramUnit pu : allowedList ) {
+		for ( WrPrototype pu : allowedList ) {
 			if ( pu.isSupertypeOf(subPrototype, env) ) {
 				return ;
 			}
 		}
 		int size = allowedList.size();
 		String s = "";
-		for ( WrProgramUnit pu : allowedList ) {
+		for ( WrPrototype pu : allowedList ) {
 			s += pu.getFullName();
 			if ( --size > 0 ) {
 				s += ", ";
@@ -58,11 +58,11 @@ public class CyanMetaobjectRestrictImplementation extends CyanMetaobjectAtAnnot
 	public boolean setAllowedList(WrEnv env) {
 
 		final IDeclaration dec = this.getAttachedDeclaration();
-		WrProgramUnit pu = (WrProgramUnit ) dec;
+		WrPrototype pu = (WrPrototype ) dec;
 		if ( !pu.isInterface() ) {
 			this.addError("Annotations '" + this.getName() + "' can only be attached to interfaces");
 		}
-		WrAnnotationAt mo = this.getMetaobjectAnnotation();
+		WrAnnotationAt mo = this.getAnnotation();
 		List<Object> jpList = mo.getJavaParameterList();
 		allowedList = new ArrayList<>();
 		for ( Object po : jpList ) {
@@ -77,16 +77,16 @@ public class CyanMetaobjectRestrictImplementation extends CyanMetaobjectAtAnnot
 						"' should be a prototype. But it was not found");
 				return false;
 			}
-			if ( !(t instanceof WrProgramUnit ) || ((WrProgramUnit ) t).isInterface()) {
+			if ( !(t instanceof WrPrototype ) || ((WrPrototype ) t).isInterface()) {
 				this.addError("Arguments '" + s + "' to annotation '" + this.getName() +
 						"' should be a prototype. But it is not");
 				return false;
 			}
-			allowedList.add( (WrProgramUnit ) t );
+			allowedList.add( (WrPrototype ) t );
 		}
 		return true;
 	}
-	private List<WrProgramUnit> allowedList = null;
+	private List<WrPrototype> allowedList = null;
 
 }
 

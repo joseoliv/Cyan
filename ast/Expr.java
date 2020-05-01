@@ -4,14 +4,14 @@ import java.util.List;
 import cyan.lang.CyString;
 import cyan.lang._Tuple_LT_GP_CyString_GP_CyString_GP_CyString_GT;
 import cyan.reflect._CyanMetaobjectAtAnnot;
-import cyan.reflect._IActionMethodMissing__dsa;
+import cyan.reflect._IActionMethodMissing__semAn;
 import error.ErrorKind;
 import meta.CyanMetaobjectAtAnnot;
-import meta.IActionMethodMissing_dsa;
+import meta.IActionMethodMissing_semAn;
 import meta.Tuple2;
 import meta.Tuple3;
 import meta.WrExpr;
-import meta.WrProgramUnit;
+import meta.WrPrototype;
 import meta.WrSymbol;
 import saci.Env;
 import saci.NameServer;
@@ -25,8 +25,8 @@ import saci.TupleTwo;
 
 public abstract class Expr extends Statement implements GenCyan, GenJavaInterface, ASTNode {
 
-	public Expr() {
-		super();
+	public Expr(MethodDec method) {
+		super(method);
 		type = null;
 		codeThatReplacesThisStatement = null;
 	}
@@ -362,11 +362,11 @@ public abstract class Expr extends Statement implements GenCyan, GenJavaInterfac
 		boolean ret = false;
 
 
-		List<AnnotationAt> metaobjectAnnotationList = proto.getMetaobjectAnnotationThisAndSuperCTDNUList();
+		List<AnnotationAt> metaobjectAnnotationList = proto.getAnnotationThisAndSuperCTDNUList();
 		if ( metaobjectAnnotationList.size() == 0 ) {
 			return false;
 		}
-		WrProgramUnit lastProtoWithAnnotReplacedCode = null;
+		WrPrototype lastProtoWithAnnotReplacedCode = null;
 
 		AnnotationAt lastAnnotWhichReplacedCode = null;
 
@@ -374,12 +374,14 @@ public abstract class Expr extends Statement implements GenCyan, GenJavaInterfac
 			CyanMetaobjectAtAnnot cyanMetaobject = annot.getCyanMetaobject();
 			_CyanMetaobjectAtAnnot other = (_CyanMetaobjectAtAnnot ) cyanMetaobject.getMetaobjectInCyan();
 
-			boolean actionMissing = cyanMetaobject instanceof IActionMethodMissing_dsa ||
-			        (other != null && other instanceof _IActionMethodMissing__dsa);
+			boolean actionMissing = cyanMetaobject instanceof IActionMethodMissing_semAn
+					||
+			        (other != null && other instanceof _IActionMethodMissing__semAn)
+			        ;
 
 			if ( !actionMissing ) {
 				env.error(this.getFirstSymbol(), "Internal error: metaobject '" + annot.getCyanMetaobject().getName() + "' should implement "
-						+ meta.IActionMethodMissing_dsa.class.getName());
+						+ meta.IActionMethodMissing_semAn.class.getName());
 				return false;
 			}
 
@@ -388,13 +390,13 @@ public abstract class Expr extends Statement implements GenCyan, GenJavaInterfac
 			StringBuffer sb = null;
 			try {
 				if ( other == null ) {
-					IActionMethodMissing_dsa doesNot = (IActionMethodMissing_dsa ) cyanMetaobject;
-					codeType = doesNot.dsa_missingUnaryMethod(
+					IActionMethodMissing_semAn doesNot = (IActionMethodMissing_semAn ) cyanMetaobject;
+					codeType = doesNot.semAn_missingUnaryMethod(
 							receiverExpr, unarySymbol, env.getI());
 				}
 				else {
-					final _IActionMethodMissing__dsa doesNot = (_IActionMethodMissing__dsa ) other;
-					_Tuple_LT_GP_CyString_GP_CyString_GP_CyString_GT tdd = doesNot._dsa__missingUnaryMethod_3(
+					final _IActionMethodMissing__semAn doesNot = (_IActionMethodMissing__semAn ) other;
+					_Tuple_LT_GP_CyString_GP_CyString_GP_CyString_GT tdd = doesNot._semAn__missingUnaryMethod_3(
 							receiverExpr, unarySymbol, env.getI());
 
 					CyString f1 = tdd._f1();
@@ -424,7 +426,7 @@ public abstract class Expr extends Statement implements GenCyan, GenJavaInterfac
 			if ( codeType != null  ) {
 
 
-				WrProgramUnit protoOfAnnotWantsToReplaceMessagePassing =
+				WrPrototype protoOfAnnotWantsToReplaceMessagePassing =
 						ExprMessageSendWithKeywordsToExpr.currentPrototypeFromAnnot(annot);
 
 				if ( protoOfAnnotWantsToReplaceMessagePassing == lastProtoWithAnnotReplacedCode ) {
@@ -459,17 +461,17 @@ public abstract class Expr extends Statement implements GenCyan, GenJavaInterfac
 						/*
 						 * this message send has already been replaced by another expression
 						 */
-						if ( cyanMetaobjectAnnotationThatReplacedStatByAnotherOne != null ) {
+						if ( cyanAnnotationThatReplacedStatByAnotherOne != null ) {
 							env.warning(this.getFirstSymbol(), "Metaobject annotation '" + cyanMetaobject.getName() +
 									"' at line " + annot.getFirstSymbol().getLineNumber()  +
 									" of prototype " + annot.getPackageOfAnnotation() + "." +
 									annot.getPackageOfAnnotation() +
 									" is trying to replace message send '" + this.asString() +
 									"' by an expression. But this has already been asked by metaobject annotation '" +
-									cyanMetaobjectAnnotationThatReplacedStatByAnotherOne.getCyanMetaobject().getName() + "'" +
-									" at line " + cyanMetaobjectAnnotationThatReplacedStatByAnotherOne.getFirstSymbol().getLineNumber() +
-									" of prototype " + cyanMetaobjectAnnotationThatReplacedStatByAnotherOne.getPackageOfAnnotation() + "." +
-									cyanMetaobjectAnnotationThatReplacedStatByAnotherOne.getPackageOfAnnotation());
+									cyanAnnotationThatReplacedStatByAnotherOne.getCyanMetaobject().getName() + "'" +
+									" at line " + cyanAnnotationThatReplacedStatByAnotherOne.getFirstSymbol().getLineNumber() +
+									" of prototype " + cyanAnnotationThatReplacedStatByAnotherOne.getPackageOfAnnotation() + "." +
+									cyanAnnotationThatReplacedStatByAnotherOne.getPackageOfAnnotation());
 						}
 						else {
 							env.warning(this.getFirstSymbol(), "Metaobject annotation '" + cyanMetaobject.getName() +
@@ -506,7 +508,7 @@ public abstract class Expr extends Statement implements GenCyan, GenJavaInterfac
 
 					env.replaceStatementByCode(this, annot, sb, typeOfCode);
 
-					cyanMetaobjectAnnotationThatReplacedStatByAnotherOne = annot;
+					cyanAnnotationThatReplacedStatByAnotherOne = annot;
 
 					if ( typeOfCode == null )
 						env.error(true,

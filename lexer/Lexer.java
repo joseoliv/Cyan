@@ -12,7 +12,7 @@ import ast.CompilationUnitSuper;
 import ast.ExprAnyLiteral;
 import ast.ExprAnyLiteralIdent;
 import ast.ExprLiteralNil;
-import ast.ProgramUnit;
+import ast.Prototype;
 import error.UnitError;
 import meta.CompilationInstruction;
 import meta.CompilationStep;
@@ -20,7 +20,7 @@ import meta.CyanMetaobjectLiteralObjectSeq;
 import meta.CyanMetaobjectLiteralString;
 import meta.CyanMetaobjectMacro;
 import meta.CyanMetaobjectNumber;
-import meta.IParseWithCyanCompiler_dpa;
+import meta.IParseWithCyanCompiler_parsing;
 import meta.Token;
 import meta.Tuple2;
 import meta.WrExprAnyLiteral;
@@ -41,7 +41,7 @@ public class Lexer implements Cloneable {
 		this.compilationUnit = compilationUnit;
 		this.compInstSet = compInstSet;
 		this.compiler = compiler;
-		programUnit = null;
+		prototype = null;
 		lineNumber = 1;
 		k = 0;
 		commentLevel = 0;
@@ -99,7 +99,7 @@ public class Lexer implements Cloneable {
 	/**
 	 * the program unit that is being compiled.
 	 */
-	private ProgramUnit programUnit;
+	private Prototype prototype;
 
 
 	public Token token;
@@ -171,7 +171,7 @@ public class Lexer implements Cloneable {
 	 * >$]<br>
 	 * </code>
 	 */
-	private static final String ValidCharsForMetaobjectAnnotationSequence = "=!?$%&*-+^~/:.\\|([{<>}])";
+	private static final String ValidCharsForAnnotationSequence = "=!?$%&*-+^~/:.\\|([{<>}])";
 
 
 	/**
@@ -199,8 +199,8 @@ public class Lexer implements Cloneable {
 
 
 
-	public void setProgramUnit(ProgramUnit programUnit) {
-		this.programUnit = programUnit;
+	public void setPrototype(Prototype prototype) {
+		this.prototype = prototype;
 	}
 
 
@@ -585,7 +585,7 @@ public class Lexer implements Cloneable {
 					k++;
 				}
 				ident = s.toString();
-				if ( compInstSet.contains(CompilationInstruction.dpa_originalSourceCode) &&
+				if ( compInstSet.contains(CompilationInstruction.parsing_originalSourceCode) &&
 					 ident.endsWith("__") )
 					error("An identifier cannot end with two underscores, \"__\"");
 
@@ -647,8 +647,8 @@ public class Lexer implements Cloneable {
 								}
 
 								final AnnotationLiteralObject metaobjectAnnotation =
-										new AnnotationLiteralObject( compilationUnit, programUnit,
-												cyanMetaobjectString);
+										new AnnotationLiteralObject( compilationUnit, prototype,
+												cyanMetaobjectString, this.compiler.getCurrentMethod());
 								metaobjectAnnotation.setUsefulString(usefulString);
 								symbol =
 								    new SymbolLiteralObject(Token.LITERALOBJECT, metaobjectAnnotation,  null,
@@ -685,16 +685,16 @@ public class Lexer implements Cloneable {
 					    			symbolStr = symbolStr + in[jj];
 
 					    		k = positionStartingTokenMOCall;
-					    		AnnotationLiteralObject metaobjectAnnotation = new AnnotationLiteralObject(
-					    				compilationUnit, programUnit, lop);
+					    		AnnotationLiteralObject annotation = new AnnotationLiteralObject(
+					    				compilationUnit, prototype, lop);
 					    		symbol = new SymbolLiteralObject( Token.LITERALOBJECT,
-					    				metaobjectAnnotation,
+					    				annotation,
 					    				symbolStr,
 					    				textStr,
 					    				text,
 					    				startLineMOCall,  lineNumberMOCall, columnNumberMOCall,
 					    				positionStartingTokenMOCall);
-					    		metaobjectAnnotation.setSymbolLiteralObject( (SymbolLiteralObject) symbol );
+					    		annotation.setSymbolLiteralObject( (SymbolLiteralObject) symbol );
 					    	}
 					    	else { */
 								// identifier
@@ -820,7 +820,9 @@ public class Lexer implements Cloneable {
 										final String strnumStr = (strnum + ext).toString();
 										usefulString += ext;
 										final AnnotationLiteralObject metaobjectAnnotation  =
-												new AnnotationLiteralObject(compilationUnit, programUnit, cyanMetaobjectNumber);
+												new AnnotationLiteralObject(compilationUnit,
+														prototype, cyanMetaobjectNumber,
+														this.compiler.getCurrentMethod());
 										symbol = new SymbolLiteralObject(Token.LITERALOBJECT,
 												        metaobjectAnnotation, null,
 												        strnumStr,
@@ -1082,11 +1084,11 @@ public class Lexer implements Cloneable {
 				*/
 
 				else if ( in[k] == '@' ) {
-					final int startOffsetMetaobjectAnnotation = k;
+					final int startOffsetAnnotation = k;
 					final int lookAt = k+1;
 					if ( Character.isLetter(in[lookAt]) || in[lookAt] == '_' ) {
 						k = lookAt;
-						setMetaobjectAnnotation(startOffsetMetaobjectAnnotation );
+						setAnnotation(startOffsetAnnotation );
 						foundToken = true;
 					}
 				}
@@ -1370,7 +1372,7 @@ public class Lexer implements Cloneable {
 					    		 * </code><br>
 					    		 * This literal object may be parsed by with the help of the Cyan compiler or
 					    		 * parsed by a user-defined compiler. In the first case the metaobject inherits
-					    		 * from {@link meta#IParseWithCyanCompiler_dpa}.
+					    		 * from {@link meta#IParseWithCyanCompiler_parsing}.
 					    		 *
 					    		 * <br>
 					    		 * When metaobjects are loaded (imported) the compiler already checks whether
@@ -1383,9 +1385,9 @@ public class Lexer implements Cloneable {
 						    		lop = lop.myClone();
 						    		final String rightSymbolSeq = MetaLexer.rightSymbolSeqFromLeftSymbolSeq(ss);
 						    		final AnnotationLiteralObject metaobjectAnnotation = new AnnotationLiteralObject(
-						    				compilationUnit, programUnit, lop);
+						    				compilationUnit, prototype, lop, this.compiler.getCurrentMethod());
 
-						    		if ( lop instanceof IParseWithCyanCompiler_dpa ) {
+						    		if ( lop instanceof IParseWithCyanCompiler_parsing ) {
 						    			// the compiler will parse the source inside the literal object. Then
 						    			// we should push the right symbol sequence in stack {@link #rightSymbolSeqStack}
 						    			rightSymbolSeqStack.push(rightSymbolSeq);
@@ -2000,7 +2002,7 @@ public class Lexer implements Cloneable {
 
 
 
-		return  ValidCharsForMetaobjectAnnotationSequence.indexOf(ch) >= 0;
+		return  ValidCharsForAnnotationSequence.indexOf(ch) >= 0;
 
 		/*
 		return ch == '=' ||  ch == '!' ||  ch == '?' ||
@@ -2113,7 +2115,7 @@ public class Lexer implements Cloneable {
 	 * Only '@javacode' and '@color' is scanned.
 	 *
 	 */
-	private void setMetaobjectAnnotation( int startOffsetMetaobjectAnnotation) {
+	private void setAnnotation( int startOffsetAnnotation) {
 
 		final StringBuffer s = new StringBuffer();
 		String postfixName = "";
@@ -2140,9 +2142,9 @@ public class Lexer implements Cloneable {
 				error("Wrong postfix to a metaobject annotation. It may be one of " + CompilerPhase.phaseNames);
 		}
 
-		symbol = new SymbolCyanMetaobjectAnnotation(token = Token.METAOBJECT_ANNOTATION,
+		symbol = new SymbolCyanAnnotation(token = Token.METAOBJECT_ANNOTATION,
 				ctmoName, postfix, startLine, lineNumber,
-				getColumn(), startOffsetMetaobjectAnnotation, in[k] == '(', compilationUnit);
+				getColumn(), startOffsetAnnotation, in[k] == '(', compilationUnit);
 	}
 
 
@@ -2322,7 +2324,7 @@ public class Lexer implements Cloneable {
 
 		char ch = rightCharArray2[0];
 		final int startText = k;
-		final int startLineMetaobjectAnnotation = lineNumber;
+		final int startLineAnnotation = lineNumber;
 		int offsetStartCurrentLine = k;
 		while ( true ) {
 			if (in[k] == '\0') {
@@ -2333,8 +2335,8 @@ public class Lexer implements Cloneable {
 					++jj;
 				}
 				error("Compile-Time metaobject annotation or literal object that started in line "
-						+ startLineMetaobjectAnnotation + " was not ended with "
-						+ rightSeq + " as expected", startLineMetaobjectAnnotation);
+						+ startLineAnnotation + " was not ended with "
+						+ rightSeq + " as expected", startLineAnnotation);
 				token = Token.EOF;
 				symbol = new Symbol(token, "", offsetStartCurrentLine, lineNumber,
 						getColumn(), positionStartingToken, compilationUnit);
@@ -2879,7 +2881,7 @@ public class Lexer implements Cloneable {
 	/**
 	 * true if the character <code>\n</code> should be considered as a symbol. This
 	 * may be necessary when the lexer is used with literal metaobjects that implement
-	 * interface {@link meta#IParseWithCyanCompiler_dpa}. Some DSL´s may consider the
+	 * interface {@link meta#IParseWithCyanCompiler_parsing}. Some DSL´s may consider the
 	 * end of line as a token.
 	 */
 	private boolean newLineAsToken;

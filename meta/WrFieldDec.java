@@ -3,10 +3,10 @@ package meta;
 import java.util.List;
 import ast.Expr;
 import ast.FieldDec;
-import ast.ProgramUnit;
+import ast.Prototype;
 
 public class WrFieldDec extends WrSlotDec
-    implements IDeclarationWritable, IVariableDecInterface, ISlotInterface {
+    implements IDeclarationWritable, IVariableDecInterface, ISlotSignature {
 
     public WrFieldDec(FieldDec hiddenFieldDec) {
         this.hidden = hiddenFieldDec;
@@ -48,57 +48,54 @@ public class WrFieldDec extends WrSlotDec
 
     @Override
     public void addDocumentText(String doc, String docKind, WrEnv env) {
-    	CompilationStep step = env.getCompilationStep();
-    	if ( env.getCurrentProgramUnit().hidden != hidden.getDeclaringObject() ||
-    			(step != CompilationStep.step_1 &&
-          		 step != CompilationStep.step_4 &&
-          		 step != CompilationStep.step_7 )
-    			) {
-    		throw new MetaSecurityException();
-    	}
+    	checkAdditionInfo(env);
         hidden.addDocumentText(doc, docKind);
     }
 
     @Override
     public void addDocumentExample(String example, String exampleKind, WrEnv env) {
-    	CompilationStep step = env.getCompilationStep();
-    	if ( env.getCurrentProgramUnit().hidden != hidden.getDeclaringObject() ||
+    	checkAdditionInfo(env);
+
+        hidden.addDocumentExample(example, exampleKind);
+    }
+
+	/**
+	   @param env
+	 */
+	private void checkAdditionInfo(WrEnv env) {
+		CompilationStep step = env.getCompilationStep();
+    	if ( env.getCurrentPrototype().hidden != hidden.getDeclaringObject() ||
     			(step != CompilationStep.step_1 &&
           		 step != CompilationStep.step_4 &&
           		 step != CompilationStep.step_7 )
        		) {
     		throw new MetaSecurityException();
     	}
-
-        hidden.addDocumentExample(example, exampleKind);
-    }
+	}
 
     @Override
     public void addFeature(Tuple2<String, WrExprAnyLiteral> feature, WrEnv env) {
-    	CompilationStep step = env.getCompilationStep();
-    	if ( env.getCurrentProgramUnit().hidden != hidden.getDeclaringObject() ||
-          		 (step != CompilationStep.step_1 &&
-           		 step != CompilationStep.step_4 &&
-           		 step != CompilationStep.step_7 )
-           		) {
-    		throw new MetaSecurityException();
-    	}
+    	checkAdditionInfo(env);
         hidden.addFeature(feature);
     }
 
+
     @Override
     public List<Tuple2<String, String>> getDocumentTextList(WrEnv env) {
+    	checkGetInfo(env);
         return hidden.getDocumentTextList();
     }
 
     @Override
     public List<Tuple2<String, String>> getDocumentExampleList(WrEnv env) {
+    	checkGetInfo(env);
         return hidden.getDocumentExampleList();
     }
 
 
     @Override
     public List<Tuple2<String, WrExprAnyLiteral>> getFeatureList(WrEnv env) {
+    	checkGetInfo(env);
         return hidden.getFeatureList();
     }
 
@@ -111,8 +108,8 @@ public class WrFieldDec extends WrSlotDec
 		return hidden.isShared();
 	}
 
-	public WrProgramUnit getDeclaringObject() {
-		ProgramUnit pu = hidden.getDeclaringObject();
+	public WrPrototype getDeclaringObject() {
+		Prototype pu = hidden.getDeclaringObject();
 		return pu == null ? null : pu.getI();
 	}
 
@@ -125,7 +122,7 @@ public class WrFieldDec extends WrSlotDec
 	}
 
 	public WrSymbol getFirstSymbol(WrEnv env) {
-    	if ( env.getCurrentProgramUnit().hidden != hidden.getDeclaringObject()) {
+    	if ( env.getCurrentPrototype().hidden != hidden.getDeclaringObject()) {
     		throw new MetaSecurityException();
     	}
 

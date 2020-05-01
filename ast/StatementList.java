@@ -209,8 +209,8 @@ public class StatementList implements GenCyan, ASTNode {
 			for ( int i = 1; i < statementList.size(); ++i ) {
 				if ( statementList.get(i-1).alwaysReturn() ) {
 					Statement other = statementList.get(i);
-					if ( !( other instanceof StatementMetaobjectAnnotation &&
-							((StatementMetaobjectAnnotation) other).getMetaobjectAnnotation().getCyanMetaobject()
+					if ( !( other instanceof StatementAnnotation &&
+							((StatementAnnotation) other).getAnnotation().getCyanMetaobject()
 						     instanceof CyanMetaobjectCompilationContextPop) ) {
 						env.error(statementList.get(i).getFirstSymbol(), "unreachable statement");
 					}
@@ -247,8 +247,8 @@ public class StatementList implements GenCyan, ASTNode {
 			for ( int i = 1; i < statementList.size(); ++i ) {
 				if ( statementList.get(i-1).alwaysReturn() ) {
 					Statement other = statementList.get(i);
-					if ( !( other instanceof StatementMetaobjectAnnotation &&
-							((StatementMetaobjectAnnotation) other).getMetaobjectAnnotation().getCyanMetaobject()
+					if ( !( other instanceof StatementAnnotation &&
+							((StatementAnnotation) other).getAnnotation().getCyanMetaobject()
 						     instanceof CyanMetaobjectCompilationContextPop) ) {
 						env.error(statementList.get(i).getFirstSymbol(), "unreachable statement");
 					}
@@ -260,8 +260,8 @@ public class StatementList implements GenCyan, ASTNode {
 			int last = statementList.size()-1;
 			while ( last > 0 ) {
 				Statement other = statementList.get(last);
-				if ( !( other instanceof StatementMetaobjectAnnotation &&
-						((StatementMetaobjectAnnotation) other).getMetaobjectAnnotation().getCyanMetaobject()
+				if ( !( other instanceof StatementAnnotation &&
+						((StatementAnnotation) other).getAnnotation().getCyanMetaobject()
 					     instanceof CyanMetaobjectCompilationContextPop) ) {
 					return other.alwaysReturn();
 				}

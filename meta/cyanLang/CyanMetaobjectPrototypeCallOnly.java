@@ -7,9 +7,9 @@ import meta.AnnotationArgumentsKind;
 import meta.AttachedDeclarationKind;
 import meta.CyanMetaobjectAtAnnot;
 import meta.ExprReceiverKind;
-import meta.ICheckDeclaration_afsa;
-import meta.ICheckMessageSend_afsa;
-import meta.ICompiler_dsa;
+import meta.ICheckDeclaration_afterSemAn;
+import meta.ICheckMessageSend_afterSemAn;
+import meta.ICompiler_semAn;
 import meta.Token;
 import meta.WrEnv;
 import meta.WrExpr;
@@ -17,7 +17,7 @@ import meta.WrFieldDec;
 import meta.WrMessageWithKeywords;
 import meta.WrMethodDec;
 import meta.WrMethodSignature;
-import meta.WrProgramUnit;
+import meta.WrPrototype;
 import meta.WrSymbol;
 
 /** metaobject prototypeCallOnly should be attached to a method. The method
@@ -28,7 +28,7 @@ import meta.WrSymbol;
  */
 
 public class CyanMetaobjectPrototypeCallOnly extends CyanMetaobjectAtAnnot
-             implements ICheckMessageSend_afsa, ICheckDeclaration_afsa {
+             implements ICheckMessageSend_afterSemAn, ICheckDeclaration_afterSemAn {
 
 	public CyanMetaobjectPrototypeCallOnly() {
 		super("prototypeCallOnly", AnnotationArgumentsKind.ZeroParameters,
@@ -38,9 +38,9 @@ public class CyanMetaobjectPrototypeCallOnly extends CyanMetaobjectAtAnnot
 
 
 	@Override
-	public void afsa_checkKeywordMessageSendMostSpecific(WrExpr receiverExpr, WrProgramUnit receiverType,
+	public void afterSemAn_checkKeywordMessageSendMostSpecific(WrExpr receiverExpr, WrPrototype receiverType,
 			ExprReceiverKind receiverKind, WrMessageWithKeywords message, WrMethodSignature ms,
-			WrProgramUnit mostSpecificReceiver, WrEnv env) {
+			WrPrototype mostSpecificReceiver, WrEnv env) {
 		if ( receiverKind != ExprReceiverKind.PROTOTYPE_R ) {
 			addError(receiverExpr.getFirstSymbol(), "The receiver of the message send '" + receiverExpr.asString() + " " +
 		           message.asString()  +
@@ -58,21 +58,21 @@ public class CyanMetaobjectPrototypeCallOnly extends CyanMetaobjectAtAnnot
 	}
 
 	@Override
-	public void afsa_checkUnaryMessageSendMostSpecific(WrExpr receiverExpr, WrProgramUnit receiverType,
-			ExprReceiverKind receiverKind, WrSymbol unarySymbol, WrProgramUnit  mostSpecificReceiver,
+	public void afterSemAn_checkUnaryMessageSendMostSpecific(WrExpr receiverExpr, WrPrototype receiverType,
+			ExprReceiverKind receiverKind, WrSymbol unarySymbol, WrPrototype  mostSpecificReceiver,
 			WrEnv env) {
 
 		final WrMethodDec method = (WrMethodDec ) this.getAttachedDeclaration();
 		/*
 	    ObjectDec proto = method.getDeclaringObject();
-		List<AnnotationAt> annotList = proto.getAttachedMetaobjectAnnotationList();
+		List<AnnotationAt> annotList = proto.getAttachedAnnotationList();
 		for (AnnotationAt annot : annotList ) {
 			// scans all prototype annotations
 			if ( annot.getCyanMetaobject().getName().equals("curupira") ) {
 				this.addError("Sorry, this is Saci, Curupiras are not allowed here");
 			}
 		}
-		annotList = method.getAttachedMetaobjectAnnotationList();
+		annotList = method.getAttachedAnnotationList();
 		for (AnnotationAt annot : annotList ) {
 			// scans all method annotations
 			if ( annot.getCyanMetaobject().getName().equals("Sacuras") ) {
@@ -103,17 +103,17 @@ public class CyanMetaobjectPrototypeCallOnly extends CyanMetaobjectAtAnnot
 
 //
 //	@Override
-//	public void ati3_checkDeclaration(ICompiler_dsa compiler_dsa) {
+//	public void ati3_checkDeclaration(ICompiler_semAn compiler_semAn) {
 //
 //		final WrMethodDec md = (WrMethodDec ) this.getAttachedDeclaration();
-//		md.setAllowAccessToFields(false, compiler_dsa.getEnv());
+//		md.setAllowAccessToFields(false, compiler_semAn.getEnv());
 //	}
 
 
 	@Override
-	public void afsa_checkDeclaration(ICompiler_dsa compiler) {
-		if ( compiler.getEnv().getCurrentProgramUnit().isInterface() )
-			compiler.error(this.metaobjectAnnotation.getFirstSymbol(),
+	public void afterSemAn_checkDeclaration(ICompiler_semAn compiler) {
+		if ( compiler.getEnv().getCurrentPrototype().isInterface() )
+			compiler.error(this.annotation.getFirstSymbol(),
 					"This metaobject cannot be attached to a method of an interface");
 		final WrMethodDec method = (WrMethodDec ) this.getAttachedDeclaration();
 		if ( method.getAccessedFieldSet() != null ) {
@@ -131,7 +131,7 @@ public class CyanMetaobjectPrototypeCallOnly extends CyanMetaobjectAtAnnot
 						+ "Therefore it should not access any non-shared field. It accesses the following fields: " + all);
 			}
 		}
-		final WrProgramUnit proto = method.getDeclaringObject();
+		final WrPrototype proto = method.getDeclaringObject();
 		if ( ! proto.getIsFinal(compiler.getEnv()) ) {
 			// open prototype, may have non-final methods
 			if ( ! method.getIsFinal() ) {

@@ -8,15 +8,15 @@ import java.util.List;
 import cyan.lang.CyInt;
 import cyan.lang.CyString;
 import cyan.reflect._CyanMetaobjectAtAnnot;
-import cyan.reflect._IActionFieldAccess__dsa;
-import cyan.reflect._IActionFieldMissing__dsa;
+import cyan.reflect._IActionFieldAccess__semAn;
+import cyan.reflect._IActionFieldMissing__semAn;
 import error.ErrorKind;
 import lexer.Symbol;
 import meta.CompilationStep;
 import meta.CyanMetaobjectAtAnnot;
 import meta.IActionAssignment_cge;
-import meta.IActionFieldAccess_dsa;
-import meta.IActionFieldMissing_dsa;
+import meta.IActionFieldAccess_semAn;
+import meta.IActionFieldMissing_semAn;
 import meta.IdentStarKind;
 import meta.LeftHandSideKind;
 import meta.MetaHelper;
@@ -42,7 +42,8 @@ import saci.NameServer;
  */
 public class StatementAssignmentList extends Statement {
 
-	public StatementAssignmentList() {
+	public StatementAssignmentList(MethodDec method) {
+		super(method);
 		exprList = new ArrayList<Expr>();
 	}
 
@@ -196,11 +197,11 @@ public class StatementAssignmentList extends Statement {
 					catch ( final error.CompileErrorException e ) {
 					}
 					catch ( final NoClassDefFoundError e ) {
-						final Annotation annotation = meta.GetHiddenItem.getHiddenCyanMetaobjectAnnotation(((CyanMetaobjectAtAnnot) changeCyanMetaobject).getMetaobjectAnnotation());
+						final Annotation annotation = meta.GetHiddenItem.getHiddenCyanAnnotation(((CyanMetaobjectAtAnnot) changeCyanMetaobject).getAnnotation());
 						env.error(annotation.getFirstSymbol(), e.getMessage() + " " + NameServer.messageClassNotFoundException);
 					}
 					catch ( final RuntimeException e ) {
-						final Annotation annotation = meta.GetHiddenItem.getHiddenCyanMetaobjectAnnotation(((CyanMetaobjectAtAnnot) changeCyanMetaobject).getMetaobjectAnnotation());
+						final Annotation annotation = meta.GetHiddenItem.getHiddenCyanAnnotation(((CyanMetaobjectAtAnnot) changeCyanMetaobject).getAnnotation());
 						env.thrownException(annotation, annotation.getFirstSymbol(), e);
 					}
 					finally {
@@ -231,7 +232,7 @@ public class StatementAssignmentList extends Statement {
 
 
                 /*
-                if ( indexOfExpr.getType() instanceof TypeJavaClass && mustBeTypeIndex.getInsideType() instanceof ProgramUnit ) {
+                if ( indexOfExpr.getType() instanceof TypeJavaClass && mustBeTypeIndex.getInsideType() instanceof Prototype ) {
                 	// v[java] = expr,   convert java to cyan
     				String javaClass = indexOfExpr.getType().getName();
     				indexOfExprTmpVar = "new " + NameServer.cyanNameFromJavaBasicType(javaClass) + "(" + indexOfExprTmpVar + ")";
@@ -240,7 +241,7 @@ public class StatementAssignmentList extends Statement {
                 */
                 indexOfExprTmpVar = Type.genJavaExpr_CastJavaCyan(env, indexOfExprTmpVar, indexOfExpr.getType(), mustBeTypeIndex, getFirstSymbol());
                 /*
-                if ( mustBeRightExprType.getInsideType() instanceof ProgramUnit && rightType instanceof TypeJavaClass ) {
+                if ( mustBeRightExprType.getInsideType() instanceof Prototype && rightType instanceof TypeJavaClass ) {
                 	// v[expr] = java; // convert java to cyan
     				String javaClass = rightType.getName();
     				s = "new " + NameServer.cyanNameFromJavaBasicType(javaClass) + "(" + s + ")";
@@ -291,11 +292,11 @@ public class StatementAssignmentList extends Statement {
 					catch ( final error.CompileErrorException e ) {
 					}
 					catch ( final NoClassDefFoundError e ) {
-						final Annotation annotation = meta.GetHiddenItem.getHiddenCyanMetaobjectAnnotation(((CyanMetaobjectAtAnnot) changeCyanMetaobject).getMetaobjectAnnotation());
+						final Annotation annotation = meta.GetHiddenItem.getHiddenCyanAnnotation(((CyanMetaobjectAtAnnot) changeCyanMetaobject).getAnnotation());
 						env.error(annotation.getFirstSymbol(), e.getMessage() + " " + NameServer.messageClassNotFoundException);
 					}
 					catch ( final RuntimeException e ) {
-						final Annotation annotation = meta.GetHiddenItem.getHiddenCyanMetaobjectAnnotation(((CyanMetaobjectAtAnnot) changeCyanMetaobject).getMetaobjectAnnotation());
+						final Annotation annotation = meta.GetHiddenItem.getHiddenCyanAnnotation(((CyanMetaobjectAtAnnot) changeCyanMetaobject).getAnnotation());
 						env.thrownException(annotation, annotation.getFirstSymbol(), e);
 					}
 					finally {
@@ -329,7 +330,7 @@ public class StatementAssignmentList extends Statement {
 						NameServer.javaNameAtPutMethod  + "\", 2);");
 				final int lineNumber = indexedExpr.getFirstSymbol().getLineNumber();
 				pw.printlnIdent("if ( " + aMethodTmp + " == null ) throw new ExceptionContainer__( new _ExceptionMethodNotFound( new CyString(\"Method called at line \" + " + lineNumber +
-				     "+ \" of prototype '" + env.getCurrentProgramUnit().getFullName() + "' was not found\") ) );");
+				     "+ \" of prototype '" + env.getCurrentPrototype().getFullName() + "' was not found\") ) );");
 				String resultTmpVar = NameServer.nextJavaLocalVariableName();
 				pw.printlnIdent("Object " + resultTmpVar + " = null;");
 				pw.printlnIdent("try {");
@@ -347,11 +348,11 @@ public class StatementAssignmentList extends Statement {
 					catch ( final error.CompileErrorException e ) {
 					}
 					catch ( final NoClassDefFoundError e ) {
-						final Annotation annotation = meta.GetHiddenItem.getHiddenCyanMetaobjectAnnotation(((CyanMetaobjectAtAnnot) changeCyanMetaobject).getMetaobjectAnnotation());
+						final Annotation annotation = meta.GetHiddenItem.getHiddenCyanAnnotation(((CyanMetaobjectAtAnnot) changeCyanMetaobject).getAnnotation());
 						env.error(annotation.getFirstSymbol(), e.getMessage() + " " + NameServer.messageClassNotFoundException);
 					}
 					catch ( final RuntimeException e ) {
-						final Annotation annotation = meta.GetHiddenItem.getHiddenCyanMetaobjectAnnotation(((CyanMetaobjectAtAnnot) changeCyanMetaobject).getMetaobjectAnnotation());
+						final Annotation annotation = meta.GetHiddenItem.getHiddenCyanAnnotation(((CyanMetaobjectAtAnnot) changeCyanMetaobject).getAnnotation());
 						env.thrownException(annotation, annotation.getFirstSymbol(), e);
 					}
 					finally {
@@ -410,7 +411,7 @@ public class StatementAssignmentList extends Statement {
 		        pw.printlnIdent("}");
 				pw.printlnIdent("catch (IllegalAccessException | IllegalArgumentException " + ep + ") {");
 				pw.printlnIdent("        throw new ExceptionContainer__( new _ExceptionMethodNotFound( new CyString(\"Method called at line \" + " + lineNumber +
-				"+ \" of prototype '" + env.getCurrentProgramUnit().getFullName() + "' was not found\") ) );");
+				"+ \" of prototype '" + env.getCurrentPrototype().getFullName() + "' was not found\") ) );");
 				pw.printlnIdent("}");
 				pw.sub();
 				pw.printlnIdent("}");
@@ -437,11 +438,11 @@ public class StatementAssignmentList extends Statement {
 				catch ( final error.CompileErrorException e ) {
 				}
 				catch ( final NoClassDefFoundError e ) {
-					final Annotation annotation = meta.GetHiddenItem.getHiddenCyanMetaobjectAnnotation(((CyanMetaobjectAtAnnot) changeCyanMetaobject).getMetaobjectAnnotation());
+					final Annotation annotation = meta.GetHiddenItem.getHiddenCyanAnnotation(((CyanMetaobjectAtAnnot) changeCyanMetaobject).getAnnotation());
 					env.error(annotation.getFirstSymbol(), e.getMessage() + " " + NameServer.messageClassNotFoundException);
 				}
 				catch ( final RuntimeException e ) {
-					final Annotation annotation = meta.GetHiddenItem.getHiddenCyanMetaobjectAnnotation(((CyanMetaobjectAtAnnot) changeCyanMetaobject).getMetaobjectAnnotation());
+					final Annotation annotation = meta.GetHiddenItem.getHiddenCyanAnnotation(((CyanMetaobjectAtAnnot) changeCyanMetaobject).getAnnotation());
 					env.thrownException(annotation, annotation.getFirstSymbol(), e);
 				}
 				finally {
@@ -498,7 +499,7 @@ public class StatementAssignmentList extends Statement {
                 }
 
            		/*
-                if ( leftType instanceof TypeJavaRef && rightType.getInsideType() instanceof ProgramUnit ) {
+                if ( leftType instanceof TypeJavaRef && rightType.getInsideType() instanceof Prototype ) {
                 	// java = cyan
 					String puName = rightType.getName();
 					if ( NameServer.isBasicType(puName) ) {
@@ -508,7 +509,7 @@ public class StatementAssignmentList extends Statement {
                     ((LeftHandSideAssignment ) leftSide).genJavaCodeVariable(pw, env);
                		pw.println(" = " + rightExprTmpVar + ";");
                 }
-                else if ( rightType instanceof TypeJavaRef && leftType.getInsideType() instanceof ProgramUnit ) {
+                else if ( rightType instanceof TypeJavaRef && leftType.getInsideType() instanceof Prototype ) {
 
 					boolean arrayLeftRight = false;
 					// **********************
@@ -794,7 +795,7 @@ public class StatementAssignmentList extends Statement {
 	public static void replaceSetFieldAccess( Env env, Expr leftExpr, Expr rightExpr,
 			             Statement object, FieldDec varDec ) {
 
-		final List<AnnotationAt> annotList = varDec.getAttachedMetaobjectAnnotationList();
+		final List<AnnotationAt> annotList = varDec.getAttachedAnnotationList();
 
 		if ( annotList == null ) {
 			return ;
@@ -805,17 +806,19 @@ public class StatementAssignmentList extends Statement {
 			_CyanMetaobjectAtAnnot other = (_CyanMetaobjectAtAnnot ) cyanMetaobject.getMetaobjectInCyan();
 
 
-			if ( cyanMetaobject instanceof IActionFieldAccess_dsa  ||
-					(other != null && other instanceof _IActionFieldAccess__dsa) ) {
+			if ( cyanMetaobject instanceof IActionFieldAccess_semAn
+					||
+					(other != null && other instanceof _IActionFieldAccess__semAn)
+					) {
 
 				StringBuffer sb = null;
 				try {
 					if ( other == null ) {
-						final IActionFieldAccess_dsa access = (IActionFieldAccess_dsa ) cyanMetaobject;
-						sb = access.dsa_replaceSetField(leftExpr.getI(), rightExpr.getI(), env.getI());
+						final IActionFieldAccess_semAn access = (IActionFieldAccess_semAn ) cyanMetaobject;
+						sb = access.semAn_replaceSetField(leftExpr.getI(), rightExpr.getI(), env.getI());
 					}
 					else {
-						sb = new StringBuffer( ((_IActionFieldAccess__dsa ) other)._dsa__replaceSetField_3(
+						sb = new StringBuffer( ((_IActionFieldAccess__semAn ) other)._semAn__replaceSetField_3(
 								leftExpr.getI(), rightExpr.getI(), env.getI()).s);
 					}
 				}
@@ -838,17 +841,17 @@ public class StatementAssignmentList extends Statement {
 						/*
 						 * this field access has already been replaced by another expression
 						 */
-						if ( object.getCyanMetaobjectAnnotationThatReplacedMSbyExpr() != null ) {
+						if ( object.getCyanAnnotationThatReplacedMSbyExpr() != null ) {
 							env.warning(symForError, "Metaobject annotation '" + cyanMetaobject.getName() +
 									"' at line " + annot.getFirstSymbol().getLineNumber()  +
 									" of prototype " + annot.getPackageOfAnnotation() + "." +
 									annot.getPackageOfAnnotation() +
 									" is trying to replace the field access '" + leftExpr.asString() +
 									"' by an expression. But this has already been asked by metaobject annotation '" +
-									leftExpr.getCyanMetaobjectAnnotationThatReplacedMSbyExpr().getCyanMetaobject().getName() + "'" +
-									" at line " + leftExpr.getCyanMetaobjectAnnotationThatReplacedMSbyExpr().getFirstSymbol().getLineNumber() +
-									" of prototype " + leftExpr.getCyanMetaobjectAnnotationThatReplacedMSbyExpr().getPackageOfAnnotation() + "." +
-									leftExpr.getCyanMetaobjectAnnotationThatReplacedMSbyExpr().getPackageOfAnnotation());
+									leftExpr.getCyanAnnotationThatReplacedMSbyExpr().getCyanMetaobject().getName() + "'" +
+									" at line " + leftExpr.getCyanAnnotationThatReplacedMSbyExpr().getFirstSymbol().getLineNumber() +
+									" of prototype " + leftExpr.getCyanAnnotationThatReplacedMSbyExpr().getPackageOfAnnotation() + "." +
+									leftExpr.getCyanAnnotationThatReplacedMSbyExpr().getPackageOfAnnotation());
 						}
 						else {
 							env.warning(symForError, "Metaobject annotation '" + cyanMetaobject.getName() +
@@ -879,7 +882,7 @@ public class StatementAssignmentList extends Statement {
 					// removeCodeFromToOffset(int offsetStart, int offsetNext, CompilationUnitSuper compilationUnit,
 					// AnnotationAt annotation)
 
-					object.setCyanMetaobjectAnnotationThatReplacedMSbyExpr(annot);
+					object.setCyanAnnotationThatReplacedMSbyExpr(annot);
 
 					return ;
 				}
@@ -897,7 +900,7 @@ public class StatementAssignmentList extends Statement {
 	 */
 	private boolean replaceSetFieldMissingAccess( Env env, ExprSelfPeriodIdent leftExpr, Expr rightExpr ) {
 
-		final List<AnnotationAt> annotList = env.getCurrentProgramUnit().getAttachedMetaobjectAnnotationList();
+		final List<AnnotationAt> annotList = env.getCurrentPrototype().getAttachedAnnotationList();
 
 		if ( annotList == null ) {
 			return false;
@@ -908,18 +911,20 @@ public class StatementAssignmentList extends Statement {
 
 			_CyanMetaobjectAtAnnot other = (_CyanMetaobjectAtAnnot ) cyanMetaobject.getMetaobjectInCyan();
 
-			if ( cyanMetaobject instanceof IActionFieldMissing_dsa ||
-					(other != null && other instanceof _IActionFieldMissing__dsa) ) {
+			if ( cyanMetaobject instanceof IActionFieldMissing_semAn
+					||
+					(other != null && other instanceof _IActionFieldMissing__semAn)
+					) {
 
 				StringBuffer sb = null;
 				try {
 					if ( other == null ) {
-						final IActionFieldMissing_dsa access = (IActionFieldMissing_dsa ) cyanMetaobject;
-						sb = access.dsa_replaceSetMissingField(leftExpr.getI(), rightExpr.getI(), env.getI());
+						final IActionFieldMissing_semAn access = (IActionFieldMissing_semAn ) cyanMetaobject;
+						sb = access.semAn_replaceSetMissingField(leftExpr.getI(), rightExpr.getI(), env.getI());
 					}
 					else {
-						CyString cyTuple = ((_IActionFieldMissing__dsa) other )
-								._dsa__replaceSetMissingField_3(leftExpr.getI(), rightExpr.getI(), env.getI());
+						CyString cyTuple = ((_IActionFieldMissing__semAn) other )
+								._semAn__replaceSetMissingField_3(leftExpr.getI(), rightExpr.getI(), env.getI());
 
 						String f1 = cyTuple.s;
 						if ( f1.length() != 0 ) {
@@ -946,17 +951,17 @@ public class StatementAssignmentList extends Statement {
 						/*
 						 * this field access has already been replaced by another expression
 						 */
-						if ( this.getCyanMetaobjectAnnotationThatReplacedMSbyExpr() != null ) {
+						if ( this.getCyanAnnotationThatReplacedMSbyExpr() != null ) {
 							env.warning(symForError, "Metaobject annotation '" + cyanMetaobject.getName() +
 									"' at line " + annot.getFirstSymbol().getLineNumber()  +
 									" of prototype " + annot.getPackageOfAnnotation() + "." +
 									annot.getPackageOfAnnotation() +
 									" is trying to replace the field access '" + leftExpr.asString() +
 									"' by an expression. But this has already been asked by metaobject annotation '" +
-									leftExpr.getCyanMetaobjectAnnotationThatReplacedMSbyExpr().getCyanMetaobject().getName() + "'" +
-									" at line " + leftExpr.getCyanMetaobjectAnnotationThatReplacedMSbyExpr().getFirstSymbol().getLineNumber() +
-									" of prototype " + leftExpr.getCyanMetaobjectAnnotationThatReplacedMSbyExpr().getPackageOfAnnotation() + "." +
-									leftExpr.getCyanMetaobjectAnnotationThatReplacedMSbyExpr().getPackageOfAnnotation());
+									leftExpr.getCyanAnnotationThatReplacedMSbyExpr().getCyanMetaobject().getName() + "'" +
+									" at line " + leftExpr.getCyanAnnotationThatReplacedMSbyExpr().getFirstSymbol().getLineNumber() +
+									" of prototype " + leftExpr.getCyanAnnotationThatReplacedMSbyExpr().getPackageOfAnnotation() + "." +
+									leftExpr.getCyanAnnotationThatReplacedMSbyExpr().getPackageOfAnnotation());
 						}
 						else {
 							env.warning(symForError, "Metaobject annotation '" + cyanMetaobject.getName() +
@@ -988,7 +993,7 @@ public class StatementAssignmentList extends Statement {
 							offsetNext,
 							annot, sb, null);
 
-					this.setCyanMetaobjectAnnotationThatReplacedMSbyExpr(annot);
+					this.setCyanAnnotationThatReplacedMSbyExpr(annot);
 
 					return true;
 				}

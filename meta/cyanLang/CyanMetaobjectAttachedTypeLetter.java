@@ -2,10 +2,11 @@ package meta.cyanLang;
 
 import ast.AnnotationAt;
 import meta.AnnotationArgumentsKind;
+import meta.AttachedDeclarationKind;
 import meta.CyanMetaobject;
 import meta.CyanMetaobjectAtAnnot;
-import meta.IActionAttachedType_dsa;
-import meta.ICompiler_dsa;
+import meta.IActionAttachedType_semAn;
+import meta.ICompiler_semAn;
 import meta.LeftHandSideKind;
 import meta.MetaHelper;
 import meta.WrExpr;
@@ -13,14 +14,14 @@ import meta.WrExprLiteralChar;
 import meta.WrType;
 import meta.WrTypeWithAnnotations;
 
-public class CyanMetaobjectAttachedTypeLetter extends CyanMetaobjectAtAnnot implements IActionAttachedType_dsa {
+public class CyanMetaobjectAttachedTypeLetter extends CyanMetaobjectAtAnnot implements IActionAttachedType_semAn {
 
 	public CyanMetaobjectAttachedTypeLetter() {
-		super("letter", AnnotationArgumentsKind.ZeroParameters);
+		super("letter", AnnotationArgumentsKind.ZeroParameters, new AttachedDeclarationKind[] { AttachedDeclarationKind.TYPE });
 	}
 
 	@Override
-	public StringBuffer dsa_checkLeftTypeChangeRightExpr(ICompiler_dsa compiler_dsa, WrType leftType, Object leftASTNode,
+	public StringBuffer semAn_checkLeftTypeChangeRightExpr(ICompiler_semAn compiler_semAn, WrType leftType, Object leftASTNode,
 			LeftHandSideKind leftKind,
 			WrType rightType, WrExpr rightExpr) {
 
@@ -57,7 +58,7 @@ public class CyanMetaobjectAttachedTypeLetter extends CyanMetaobjectAtAnnot impl
 				final String tmpVar = MetaHelper.nextIdentifier();
 				final String msg = "In line " + rightExpr.getFirstSymbol().getLineNumber() + " of file '"
 						 + CyanMetaobject.escapeString(
-								 compiler_dsa.getEnv().getCurrentCompilationUnit().getFullFileNamePath()) +
+								 compiler_semAn.getEnv().getCurrentCompilationUnit().getFullFileNamePath()) +
 						 "' expression '" + rightExpr.asString() + "' should be a letter";
 				sb.append("         { let Char " + tmpVar + " = "  + rightExpr.asString() + "; \r\n" +
 						"              if ! (" + tmpVar + " isLetter) { \r\n" +

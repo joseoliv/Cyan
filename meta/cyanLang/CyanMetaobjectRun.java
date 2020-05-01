@@ -5,11 +5,11 @@ import java.util.List;
 import error.CompileErrorException;
 import meta.AnnotationArgumentsKind;
 import meta.CyanMetaobjectAtAnnot;
-import meta.IAction_afti;
-import meta.ICompiler_afti;
-import meta.ICompiler_dpa;
-import meta.IParseWithCyanCompiler_dpa;
-import meta.ISlotInterface;
+import meta.IAction_afterResTypes;
+import meta.ICompiler_afterResTypes;
+import meta.ICompiler_parsing;
+import meta.IParseWithCyanCompiler_parsing;
+import meta.ISlotSignature;
 import meta.Token;
 import meta.Tuple2;
 import meta.WrAnnotation;
@@ -20,31 +20,31 @@ import meta.WrSymbol;
 
 /**
  * Demonstration metaobject. It takes Cyan statements as DSL code and interprets them
- * during phase afti (3). No code is inserted in the prototype. If this is needed,
+ * during phase AF_RES_TYPES (3). No code is inserted in the prototype. If this is needed,
  * use metaobject insertCode instead.
    @author jose
  */
 public class CyanMetaobjectRun extends CyanMetaobjectAtAnnot
-implements IAction_afti, IParseWithCyanCompiler_dpa {
+implements IAction_afterResTypes, IParseWithCyanCompiler_parsing {
 
 	public CyanMetaobjectRun() {
 		super("run", AnnotationArgumentsKind.ZeroParameters);
 	}
 
 	@Override
-	public void dpa_parse(ICompiler_dpa compiler_dpa) {
-		compiler_dpa.next();
+	public void parsing_parse(ICompiler_parsing compiler_parsing) {
+		compiler_parsing.next();
 		statList = new ArrayList<>();
-		while ( compiler_dpa.getSymbol().token != Token.EOLO ) {
-			WrStatement lastStat = compiler_dpa.statement();
+		while ( compiler_parsing.getSymbol().token != Token.EOLO ) {
+			WrStatement lastStat = compiler_parsing.statement();
 			statList.add(lastStat);
-			compiler_dpa.removeLastExprStat();
+			compiler_parsing.removeLastExprStat();
 			if ( lastStat.demandSemicolon() ) {
-				if ( compiler_dpa.getSymbol().token == Token.SEMICOLON ) {
-					compiler_dpa.next();
+				if ( compiler_parsing.getSymbol().token == Token.SEMICOLON ) {
+					compiler_parsing.next();
 				}
 				else {
-					WrSymbol sym = compiler_dpa.getSymbol();
+					WrSymbol sym = compiler_parsing.getSymbol();
 					if ( sym.token == Token.EOF || sym.token == Token.EOLO ) {
 						sym = lastStat.getFirstSymbol();
 					}
@@ -58,10 +58,10 @@ implements IAction_afti, IParseWithCyanCompiler_dpa {
 	}
 
 	@Override
-	public Tuple2<StringBuffer, String> afti_codeToAdd(
-			ICompiler_afti compiler_afti, List<Tuple2<WrAnnotation, List<ISlotInterface>>> infoList)  {
+	public Tuple2<StringBuffer, String> afterResTypes_codeToAdd(
+			ICompiler_afterResTypes compiler_afterResTypes, List<Tuple2<WrAnnotation, List<ISlotSignature>>> infoList)  {
 		if ( statList.size() == 0 ) { return null; }
-		final WrEnv env = compiler_afti.getEnv();
+		final WrEnv env = compiler_afterResTypes.getEnv();
 		final WrStatement fs = statList.get(0);
 		final Object selfObject = new Object() { };
 

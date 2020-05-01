@@ -24,8 +24,8 @@ import saci.NameServer;
 public class ExprFunctionWithKeywords extends ExprFunction {
 
 	public ExprFunctionWithKeywords(Symbol startSymbol,
-			                        List<MethodKeywordWithParameters> keywordWithParametersList) {
-		super(startSymbol);
+			                        List<MethodKeywordWithParameters> keywordWithParametersList, MethodDec method) {
+		super(startSymbol, method);
 		this.keywordWithParametersList = keywordWithParametersList;
 	}
 
@@ -61,7 +61,7 @@ public StringBuffer genContextObjectForFunction(CyanEnv cyanEnv) {
 
 		StringBuffer s = new StringBuffer();
 
-		if ( ! (currentProgramUnit instanceof ObjectDec ) ) {
+		if ( ! (currentPrototype instanceof ObjectDec ) ) {
 			return s;
 		}
 
@@ -69,7 +69,7 @@ public StringBuffer genContextObjectForFunction(CyanEnv cyanEnv) {
 		accessedVariableParameters.addAll(accessedParameterList);
 		accessedVariableParameters.addAll(accessedLocalVariables);
 		int size = accessedVariableParameters.size();
-		ObjectDec currentObjectDec = (ObjectDec ) currentProgramUnit;
+		ObjectDec currentObjectDec = (ObjectDec ) currentPrototype;
 		boolean contextFunction = this.isContextFunction();
 
 
@@ -190,10 +190,10 @@ public StringBuffer genContextObjectForFunction(CyanEnv cyanEnv) {
 		StringBuffer s = new StringBuffer();
 
 
-		if ( ! (currentProgramUnit instanceof ObjectDec ) ) {
+		if ( ! (currentPrototype instanceof ObjectDec ) ) {
 			return s;
 		}
-		ObjectDec currentObjectDec = (ObjectDec ) currentProgramUnit;
+		ObjectDec currentObjectDec = (ObjectDec ) currentPrototype;
 
 		s.append("    object " + this.functionPrototypeName + "(" + currentObjectDec.getFullName()
 		+ " " + NameServer.selfNameInnerPrototypes );
@@ -378,23 +378,23 @@ public StringBuffer genContextObjectForFunction(CyanEnv cyanEnv) {
 
 			if ( keyword.getParameterList().size() == 0 ) {
 				Symbol first = this.getFirstSymbol();
-				realTypeList.add( new ExprIdentStar(
+				realTypeList.add( new ExprIdentStar( null,
 						new SymbolIdent(Token.IDENT, MetaHelper.noneArgumentNameForFunctions, first.getStartLine(),
 								first.getLineNumber(), first.getColumnNumber(), first.getOffset(), first.getCompilationUnit())) );
 			}
 			else {
 				for ( ParameterDec p : keyword.getParameterList() ) {
 					Type paramType = p.getType();
-					if ( paramType.getInsideType() instanceof ProgramUnit ) {
-						Expr typeAsExpr = ((ProgramUnit ) paramType).asExpr(this.getFirstSymbol());
+					if ( paramType.getInsideType() instanceof Prototype ) {
+						Expr typeAsExpr = ((Prototype ) paramType).asExpr(this.getFirstSymbol());
 						if ( typeAsExpr instanceof ExprGenericPrototypeInstantiation ) {
-							((ExprGenericPrototypeInstantiation ) typeAsExpr).setProgramUnit(env.getCurrentProgramUnit());
+							((ExprGenericPrototypeInstantiation ) typeAsExpr).setPrototype(env.getCurrentPrototype());
 						}
 						realTypeList.add( typeAsExpr );
 					}
 					else if ( paramType instanceof TypeDynamic ) {
 						Symbol first = p.getFirstSymbol();
-						realTypeList.add( new ExprIdentStar(
+						realTypeList.add( new ExprIdentStar(null,
 								new SymbolIdent(Token.IDENT, MetaHelper.dynName, first.getStartLine(),
 										first.getLineNumber(), first.getColumnNumber(), first.getOffset(), first.getCompilationUnit())) );
 					}
@@ -407,10 +407,10 @@ public StringBuffer genContextObjectForFunction(CyanEnv cyanEnv) {
 
 			realTypeListList.add(realTypeList);
 			if ( --sizekeywordList == 0 ) {
-				if ( returnType.getInsideType() instanceof ProgramUnit ) {
-					Expr typeAsExpr = ((ProgramUnit ) returnType).asExpr(this.getFirstSymbol());
+				if ( returnType.getInsideType() instanceof Prototype ) {
+					Expr typeAsExpr = ((Prototype ) returnType).asExpr(this.getFirstSymbol());
 					if ( typeAsExpr instanceof ExprGenericPrototypeInstantiation ) {
-						((ExprGenericPrototypeInstantiation ) typeAsExpr).setProgramUnit(env.getCurrentProgramUnit());
+						((ExprGenericPrototypeInstantiation ) typeAsExpr).setPrototype(env.getCurrentPrototype());
 					}
 					   // add the return type
 					realTypeList.add( typeAsExpr );
@@ -419,7 +419,7 @@ public StringBuffer genContextObjectForFunction(CyanEnv cyanEnv) {
 					   // add the return type
 					   // add the return type
 					Symbol first = this.getFirstSymbol();
-					realTypeList.add( new ExprIdentStar(
+					realTypeList.add( new ExprIdentStar( null,
 							new SymbolIdent(Token.IDENT, MetaHelper.dynName, first.getStartLine(),
 									first.getLineNumber(), first.getColumnNumber(), first.getOffset(), first.getCompilationUnit())) );
 				}

@@ -29,8 +29,9 @@ public class ExprMessageSendWithKeywordsToSuper extends ExprMessageSendWithKeywo
 	/**
 	 * @param message
 	 */
-	public ExprMessageSendWithKeywordsToSuper(Symbol superSymbol, MessageWithKeywords message, Symbol nextSymbol) {
-		super(message, nextSymbol);
+	public ExprMessageSendWithKeywordsToSuper(Symbol superSymbol,
+			MessageWithKeywords message, Symbol nextSymbol, MethodDec currentMethod) {
+		super(message, nextSymbol, currentMethod);
 		this.superSymbol = superSymbol;
 	}
 
@@ -220,15 +221,15 @@ public class ExprMessageSendWithKeywordsToSuper extends ExprMessageSendWithKeywo
 					catch ( final error.CompileErrorException e ) {
 					}
 					catch ( final NoClassDefFoundError e ) {
-						final WrAnnotation annotation = ((CyanMetaobjectAtAnnot) changeCyanMetaobject).getMetaobjectAnnotation();
+						final WrAnnotation annotation = ((CyanMetaobjectAtAnnot) changeCyanMetaobject).getAnnotation();
 						env.error(
 								meta.GetHiddenItem.getHiddenSymbol(annotation.getFirstSymbol()),
 								e.getMessage() + " " + NameServer.messageClassNotFoundException);
 					}
 					catch ( final RuntimeException e ) {
-						final WrAnnotation annotation = ((CyanMetaobjectAtAnnot) changeCyanMetaobject).getMetaobjectAnnotation();
+						final WrAnnotation annotation = ((CyanMetaobjectAtAnnot) changeCyanMetaobject).getAnnotation();
 						env.thrownException(
-								meta.GetHiddenItem.getHiddenCyanMetaobjectAnnotation(annotation),
+								meta.GetHiddenItem.getHiddenCyanAnnotation(annotation),
 								meta.GetHiddenItem.getHiddenSymbol(annotation.getFirstSymbol()), e);
 					}
 					finally {
@@ -270,8 +271,8 @@ public class ExprMessageSendWithKeywordsToSuper extends ExprMessageSendWithKeywo
 		receiverType = currentObj.getSuperobject();
 		if ( receiverType == null ) {
 			env.error(true, getFirstSymbol(),
-					"Prototype " + env.getCurrentProgramUnit().getName() + " does not have a super-prototype",
-					env.getCurrentProgramUnit().getName(), ErrorKind.use_of_super_without_a_super_prototype);
+					"Prototype " + env.getCurrentPrototype().getName() + " does not have a super-prototype",
+					env.getCurrentPrototype().getName(), ErrorKind.use_of_super_without_a_super_prototype);
 			return ;
 		}
 
@@ -337,8 +338,8 @@ public class ExprMessageSendWithKeywordsToSuper extends ExprMessageSendWithKeywo
 			else {
 				methodSignatureList = receiverType.searchMethodProtectedPublicPackageSuperProtectedPublicPackage(methodNameWithParamNumber, env);
 
-				List<ProgramUnit> superList = receiverType.get_this_and_all_superPrototypes();
-				for ( ProgramUnit current : superList ) {
+				List<Prototype> superList = receiverType.get_this_and_all_superPrototypes();
+				for ( Prototype current : superList ) {
 					List<MethodSignature> currentMSList = current.searchMethodProtectedPublicPackage(methodName, env);
 					if ( currentMSList != null ) {
 						allMethodSignatureList.addAll(currentMSList);
@@ -411,7 +412,8 @@ public class ExprMessageSendWithKeywordsToSuper extends ExprMessageSendWithKeywo
 
 					type = methodSignatureForMessage.getReturnType(env);
 
-					final ExprSelf exprSelf = new ExprSelf(superSymbol, env.getCurrentProgramUnit());
+					final ExprSelf exprSelf = new ExprSelf(superSymbol,
+							env.getCurrentPrototype(), currentMethod);
 					if ( env.getProject().getCompilerManager().getCompilationStep() == CompilationStep.step_9 )  {
 						MetaInfoServer.checkMessageSendWithMethodMetaobject(allMethodSignatureList, receiverType, exprSelf,
 								ExprReceiverKind.SUPER_R, message, env, this.message.getFirstSymbol());

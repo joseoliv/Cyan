@@ -27,7 +27,8 @@ import saci.NameServer;
  */
 abstract public class ExprFunction extends Expr {
 
-	public ExprFunction(Symbol startSymbol) {
+	public ExprFunction(Symbol startSymbol, MethodDec method) {
+		super(method);
 		this.startSymbol = startSymbol;
 		returnTypeExpr = null;
 		accessedParameterList = new ArrayList<ParameterDec>();
@@ -170,6 +171,7 @@ abstract public class ExprFunction extends Expr {
 	}
 
 
+	@Override
 	public MethodDec getCurrentMethod() {
 		return currentMethod;
 	}
@@ -179,12 +181,12 @@ abstract public class ExprFunction extends Expr {
 	}
 
 
-	public ProgramUnit getCurrentProgramUnit() {
-		return currentProgramUnit;
+	public Prototype getCurrentPrototype() {
+		return currentPrototype;
 	}
 
-	public void setCurrentProgramUnit(ProgramUnit currentProgramUnit) {
-		this.currentProgramUnit = currentProgramUnit;
+	public void setCurrentPrototype(Prototype currentPrototype) {
+		this.currentPrototype = currentPrototype;
 	}
 
 	public int getFunctionLevel() {
@@ -329,18 +331,18 @@ abstract public class ExprFunction extends Expr {
 		}
 	}
 
-	protected ProgramUnit createGenericPrototype(String prototypeName, List<List<Expr>> realTypeListList,
+	protected Prototype createGenericPrototype(String prototypeName, List<List<Expr>> realTypeListList,
 			Env env) {
 
 		Symbol sym = this.getFirstSymbol();
 
 		SymbolIdent symbolIdent = new SymbolIdent(Token.IDENT, prototypeName, sym.getStartLine(),
 				sym.getLineNumber(), sym.getColumnNumber(), sym.getOffset(), sym.getCompilationUnit() );
-		ExprIdentStar typeIdent = new ExprIdentStar(symbolIdent);
+		ExprIdentStar typeIdent = new ExprIdentStar(null, symbolIdent);
 
 		ExprGenericPrototypeInstantiation gpi = new ExprGenericPrototypeInstantiation( typeIdent,
-				realTypeListList, env.getCurrentProgramUnit(), null);
-		return (ProgramUnit )  CompilerManager.createGenericPrototype(gpi, env);
+				realTypeListList, env.getCurrentPrototype(), null, null);
+		return (Prototype )  CompilerManager.createGenericPrototype(gpi, env);
 	}
 
 
@@ -449,7 +451,7 @@ abstract public class ExprFunction extends Expr {
 		String functionType = MetaHelper.getJavaName(this.functionPrototypeName);
 		String tmp = NameServer.nextJavaLocalVariableName();
 		pw.printIdent(functionType + " " + tmp + " = new " + functionType + "(" );
-		if ( this.getCurrentProgramUnit().getOuterObject() == null )
+		if ( this.getCurrentPrototype().getOuterObject() == null )
 			  // function is in a regular method. It is not in the prototype that was created for some method or other function
 			pw.print("this");
 		else
@@ -579,15 +581,15 @@ abstract public class ExprFunction extends Expr {
 	 *   { (: eval: (Int f1)  eval: (String y) :) ... }
 	 */
 	protected String functionPrototypeName;
-	/**
-	 * the method in which this function is declared
-	 */
-	protected MethodDec currentMethod;
+//	/**
+//	 * the method in which this function is declared
+//	 */
+//	protected MethodDec currentMethod;
 
 	/**
 	 * the prototype in which this function is declared
 	 */
-	protected ProgramUnit currentProgramUnit;
+	protected Prototype currentPrototype;
 
 	/**
 	 * functionLevel is the number of nested functions in which this one is inside.

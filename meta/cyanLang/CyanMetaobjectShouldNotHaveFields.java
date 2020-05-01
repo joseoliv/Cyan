@@ -3,11 +3,11 @@ package meta.cyanLang;
 import meta.AnnotationArgumentsKind;
 import meta.AttachedDeclarationKind;
 import meta.CyanMetaobjectAtAnnot;
-import meta.ICheckDeclaration_afsa;
-import meta.ICompiler_dsa;
-import meta.WrProgramUnit;
+import meta.ICheckDeclaration_afterSemAn;
+import meta.ICompiler_semAn;
+import meta.WrPrototype;
 
-public class CyanMetaobjectShouldNotHaveFields extends CyanMetaobjectAtAnnot implements ICheckDeclaration_afsa {
+public class CyanMetaobjectShouldNotHaveFields extends CyanMetaobjectAtAnnot implements ICheckDeclaration_afterSemAn {
 
 	public CyanMetaobjectShouldNotHaveFields() {
 		super("shouldNotHaveFields", AnnotationArgumentsKind.ZeroParameters,
@@ -15,8 +15,8 @@ public class CyanMetaobjectShouldNotHaveFields extends CyanMetaobjectAtAnnot imp
 	}
 
 	@Override
-	public void afsa_checkDeclaration(ICompiler_dsa compiler) {
-		WrProgramUnit pu = (WrProgramUnit ) this.getAttachedDeclaration();
+	public void afterSemAn_checkDeclaration(ICompiler_semAn compiler) {
+		WrPrototype pu = (WrPrototype ) this.getAttachedDeclaration();
 		if ( pu.getFieldList(compiler.getEnv()).size() != 0 ) {
 			if ( pu.getFullName().equals("cyan.lang.Any") ) {
 				this.addError("Prototype Any cannot have fields because that would cause "

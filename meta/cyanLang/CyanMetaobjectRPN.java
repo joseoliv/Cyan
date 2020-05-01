@@ -4,10 +4,10 @@ import java.util.Stack;
 import meta.AnnotationArgumentsKind;
 import meta.CyanMetaobjectLiteralObject;
 import meta.CyanMetaobjectAtAnnot;
-import meta.IAction_dsa;
-import meta.ICompiler_dpa;
-import meta.ICompiler_dsa;
-import meta.IParseWithCyanCompiler_dpa;
+import meta.IAction_semAn;
+import meta.ICompiler_parsing;
+import meta.ICompiler_semAn;
+import meta.IParseWithCyanCompiler_parsing;
 import meta.Token;
 import meta.WrSymbol;
 import meta.WrSymbolIntLiteral;
@@ -20,37 +20,37 @@ import meta.WrSymbolIntLiteral;
  * </code>
    @author jose
  */
-public class CyanMetaobjectRPN extends CyanMetaobjectAtAnnot implements IParseWithCyanCompiler_dpa, IAction_dsa {
+public class CyanMetaobjectRPN extends CyanMetaobjectAtAnnot implements IParseWithCyanCompiler_parsing, IAction_semAn {
 
 	public CyanMetaobjectRPN() {
 		super("rpn", AnnotationArgumentsKind.ZeroParameters );
 	}
 
 	@Override
-	public void dpa_parse(ICompiler_dpa compiler_dpa) {
-		compiler_dpa.next();
-		parseExpr(compiler_dpa);
-		if ( compiler_dpa.getSymbol().token != Token.EOLO ) {
-			compiler_dpa.error(compiler_dpa.getSymbol(), "Unexpected symbol: '" + compiler_dpa.getSymbol().getSymbolString() + "'");
+	public void parsing_parse(ICompiler_parsing compiler_parsing) {
+		compiler_parsing.next();
+		parseExpr(compiler_parsing);
+		if ( compiler_parsing.getSymbol().token != Token.EOLO ) {
+			compiler_parsing.error(compiler_parsing.getSymbol(), "Unexpected symbol: '" + compiler_parsing.getSymbol().getSymbolString() + "'");
 		}
 	}
 
 
 	@Override
-	public StringBuffer dsa_codeToAdd(ICompiler_dsa compiler) {
+	public StringBuffer semAn_codeToAdd(ICompiler_semAn compiler) {
 
 		return new StringBuffer(value);
 	}
 
-	private void parseExpr(ICompiler_dpa compiler_dpa) {
+	private void parseExpr(ICompiler_parsing compiler_parsing) {
 
-		WrSymbol sym = compiler_dpa.getSymbol();
+		WrSymbol sym = compiler_parsing.getSymbol();
 		final Stack<Integer> valueStack = new Stack<>();
-		while ( compiler_dpa.getSymbol().token != Token.EOLO ) {
+		while ( compiler_parsing.getSymbol().token != Token.EOLO ) {
 			if ( sym.token == Token.INTLITERAL ) {
 				valueStack.push( ((WrSymbolIntLiteral ) sym).getIntValue() );
 			}
-			else if ( compiler_dpa.isOperator(sym.token) ) {
+			else if ( compiler_parsing.isOperator(sym.token) ) {
 				if ( valueStack.size() < 2 ) {
 					this.addError(sym, "An operator with insuffient arguments: '" + sym.getSymbolString() + "'");
 					return ;
@@ -84,12 +84,12 @@ public class CyanMetaobjectRPN extends CyanMetaobjectAtAnnot implements IParseWi
 				this.addError(sym, "An operator or number was expected. Found '" + sym.getSymbolString() + "'");
 				return ;
 			}
-			compiler_dpa.next();
-			sym = compiler_dpa.getSymbol();
+			compiler_parsing.next();
+			sym = compiler_parsing.getSymbol();
 
 		}
 		if ( valueStack.size() != 1 ) {
-			this.addError(compiler_dpa.getSymbol(), "Insufficient number of operators");
+			this.addError(compiler_parsing.getSymbol(), "Insufficient number of operators");
 			return ;
 		}
 		value = "" + valueStack.pop();

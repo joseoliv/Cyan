@@ -4,6 +4,8 @@ package error;
  * Represents an error in a compilation unit (object or interface declaration)
  */
 import java.io.PrintWriter;
+import ast.Annotation;
+import ast.CompilationUnit;
 import ast.CompilationUnitSuper;
 import lexer.Symbol;
 import meta.WrUnitError;
@@ -23,6 +25,15 @@ public class UnitError implements Comparable<UnitError> {
 		this.lineNumber = lineNumber;
 		this.columnNumber = columnNumber;
  		this.compilationUnit = compilationUnit;
+ 		if ( compilationUnit instanceof CompilationUnit ) {
+ 			CompilationUnit cunit = (CompilationUnit ) compilationUnit;
+ 			Annotation annot = cunit.getCyanPackage().searchAnnotationCreatedPrototype(objectInterfaceName);
+ 			if ( annot != null ) {
+ 				this.message += ". Prototype '" + objectInterfaceName + "' was created by the metaobject associated with annotation '" +
+ 						annot.getCyanMetaobject().getName() + "' of line " + annot.getFirstSymbol().getLineNumber() +
+ 						" of file " + annot.getFirstSymbol().getCompilationUnit().getFullFileNamePath();
+ 			}
+ 		}
 	}
 
 	public WrUnitError getI() {

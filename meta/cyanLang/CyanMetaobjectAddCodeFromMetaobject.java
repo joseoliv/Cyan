@@ -5,9 +5,9 @@ import meta.AnnotationArgumentsKind;
 import meta.AttachedDeclarationKind;
 import meta.CyanMetaobjectAtAnnot;
 import meta.IActionFunction;
-import meta.IAction_afti;
-import meta.ICompiler_afti;
-import meta.ISlotInterface;
+import meta.IAction_afterResTypes;
+import meta.ICompiler_afterResTypes;
+import meta.ISlotSignature;
 import meta.IStayPrototypeInterface;
 import meta.MetaHelper;
 import meta.Tuple2;
@@ -16,11 +16,11 @@ import meta.WrAnnotation;
 import meta.WrAnnotationAt;
 import meta.WrEnv;
 import meta.WrGenericParameter;
-import meta.WrProgramUnit;
+import meta.WrPrototype;
 import meta.WrType;
 
 public class CyanMetaobjectAddCodeFromMetaobject extends CyanMetaobjectAtAnnot
-  implements IAction_afti, IStayPrototypeInterface {
+  implements IAction_afterResTypes, IStayPrototypeInterface {
 
 	public CyanMetaobjectAddCodeFromMetaobject() {
 		super("addCodeFromMetaobject", AnnotationArgumentsKind.ZeroParameters, new AttachedDeclarationKind[] {
@@ -29,33 +29,33 @@ public class CyanMetaobjectAddCodeFromMetaobject extends CyanMetaobjectAtAnnot
 
 
 	@Override
-	public Tuple2<StringBuffer, String> afti_codeToAdd(
-			ICompiler_afti compiler, List<Tuple2<WrAnnotation, List<ISlotInterface>>> infoList) {
+	public Tuple2<StringBuffer, String> afterResTypes_codeToAdd(
+			ICompiler_afterResTypes compiler, List<Tuple2<WrAnnotation, List<ISlotSignature>>> infoList) {
 
 		StringBuffer s = null;
 
 
 
 
-		WrProgramUnit currentProgramUnit = (WrProgramUnit ) this.getMetaobjectAnnotation().getDeclaration();
+		WrPrototype currentPrototype = (WrPrototype ) this.getAnnotation().getDeclaration();
 		WrEnv env = compiler.getEnv();
-		if ( currentProgramUnit.isGeneric(env) ) { return null; }
-		List<List<WrGenericParameter>> gpListList = currentProgramUnit.getGenericParameterListList(env);
+		if ( currentPrototype.isGeneric(env) ) { return null; }
+		List<List<WrGenericParameter>> gpListList = currentPrototype.getGenericParameterListList(env);
 		if ( gpListList == null || gpListList.size() == 0 ) {
 			this.addError("This annotation should only be attached to a generic prototype");
 			return null;
 		}
 		WrGenericParameter gp = gpListList.get(0).get(0);
 		WrType tgp = gp.getType();
-		if ( !(tgp instanceof WrProgramUnit) || ((WrProgramUnit ) tgp).isInterface() ) {
+		if ( !(tgp instanceof WrPrototype) || ((WrPrototype ) tgp).isInterface() ) {
 			return null;
 		}
-		String outerGenericPrototypeName = currentProgramUnit.getFullName();
+		String outerGenericPrototypeName = currentPrototype.getFullName();
 		outerGenericPrototypeName = outerGenericPrototypeName.substring(0, outerGenericPrototypeName.indexOf('<'));
 		if ( outerGenericPrototypeName.startsWith(MetaHelper.cyanLanguagePackageNameDot) ) {
 			outerGenericPrototypeName = outerGenericPrototypeName.substring(MetaHelper.cyanLanguagePackageNameDot.length());
 		}
-		WrProgramUnit proto = (WrProgramUnit ) tgp;
+		WrPrototype proto = (WrPrototype ) tgp;
 		String innerGenericPrototypeName = proto.getFullName();
 
 		String tagInfo = null;
@@ -79,7 +79,7 @@ public class CyanMetaobjectAddCodeFromMetaobject extends CyanMetaobjectAtAnnot
 			//if ( !(tgp2 instanceof ObjectDec) ) {
 				return null;
 			}
-			WrProgramUnit proto2 = (WrProgramUnit ) tgp2;
+			WrPrototype proto2 = (WrPrototype ) tgp2;
 			List<List<WrGenericParameter>> gpListList3 = proto2.getGenericParameterListList(env);
 			if ( gpListList3 != null && gpListList3.size() != 0 ) {
 				/**
@@ -92,19 +92,24 @@ public class CyanMetaobjectAddCodeFromMetaobject extends CyanMetaobjectAtAnnot
 				 * is proto2 a prototype created by the compiler through an instantiation of
 				 * a generic prototype?
 				 */
-				boolean compilerCreated = false;
-				List<WrAnnotationAt> annotList =
-						proto.getAttachedMetaobjectAnnotationList(compiler.getEnv());
-				if ( annotList != null ) {
-					for ( WrAnnotationAt annot : annotList ) {
-						if ( annot.getCyanMetaobject() instanceof CyanMetaobjectGenericPrototypeInstantiationInfo ) {
-							compilerCreated = true;
-						}
-					}
-				}
-				if ( ! compilerCreated ) {
-					return null;
-				}
+				//#$ {
+
+//				boolean compilerCreated = false;
+//				List<WrAnnotationAt> annotList =
+//						proto.getAttachedAnnotationList(compiler.getEnv());
+
+//				if ( annotList != null ) {
+//					for ( WrAnnotationAt annot : annotList ) {
+//						if ( annot.getCyanMetaobject() instanceof CyanMetaobjectGenericPrototypeInstantiationInfo ) {
+//							compilerCreated = true;
+//						}
+//					}
+//				}
+//				if ( ! compilerCreated ) {
+//					return null;
+//				}
+				//#$ }
+
 				proto = proto2;
 
 
@@ -139,12 +144,12 @@ public class CyanMetaobjectAddCodeFromMetaobject extends CyanMetaobjectAtAnnot
 		}
 
 		String strSlotList = "";
-		if ( proto.getAttachedMetaobjectAnnotationList(env) != null ) {
-			for ( WrAnnotationAt annot : proto.getAttachedMetaobjectAnnotationList(env) ) {
+		if ( proto.getAttachedAnnotationList(env) != null ) {
+			for ( WrAnnotationAt annot : proto.getAttachedAnnotationList(env) ) {
 				CyanMetaobjectAtAnnot metaobject = annot.getCyanMetaobject();
 				/**
 				 * test if it implements such and such interface. Asks a method to generate code.
-				 * metaobject.afti_codeToAddPrototype(currentProgramUnit)
+				 * metaobject.afterResTypes_codeToAddPrototype(currentPrototype)
 				 */
 				if ( metaobject instanceof IActionFunction ) {
 

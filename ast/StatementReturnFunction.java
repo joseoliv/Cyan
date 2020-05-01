@@ -17,8 +17,9 @@ import saci.Env;
  */
 public class StatementReturnFunction extends Statement {
 
-	public StatementReturnFunction(Symbol returnSymbol, Expr expr, ExprFunction currentFunction) {
-		super(false);
+	public StatementReturnFunction(Symbol returnSymbol, Expr expr, ExprFunction currentFunction,
+			MethodDec currentMethod) {
+		super(currentMethod, false);
 		this.expr = expr;
 		this.returnSymbol = returnSymbol;
 	}

@@ -1,11 +1,12 @@
 package meta.cyanLang;
 
 import meta.AnnotationArgumentsKind;
+import meta.AttachedDeclarationKind;
 import meta.CyanMetaobject;
 import meta.CyanMetaobjectAtAnnot;
-import meta.IActionAttachedType_dsa;
-import meta.ICompiler_dpa;
-import meta.ICompiler_dsa;
+import meta.IActionAttachedType_semAn;
+import meta.ICompiler_parsing;
+import meta.ICompiler_semAn;
 import meta.LeftHandSideKind;
 import meta.MetaHelper;
 import meta.Token;
@@ -14,10 +15,10 @@ import meta.WrExpr;
 import meta.WrType;
 
 public class CyanMetaobjectAttachedTypeRestrictTo extends CyanMetaobjectAtAnnot
-       implements meta.IParseWithCyanCompiler_dpa, IActionAttachedType_dsa  {
+       implements meta.IParseWithCyanCompiler_parsing, IActionAttachedType_semAn  {
 
 	public CyanMetaobjectAttachedTypeRestrictTo() {
-		super("restrictTo", AnnotationArgumentsKind.ZeroParameters);
+		super("restrictTo", AnnotationArgumentsKind.ZeroParameters, new AttachedDeclarationKind[] { AttachedDeclarationKind.TYPE });
 	}
 
 
@@ -25,7 +26,7 @@ public class CyanMetaobjectAttachedTypeRestrictTo extends CyanMetaobjectAtAnnot
 	@Override
 	public void checkAnnotation() {
 		/*
-		AnnotationAt annot = this.getMetaobjectAnnotation();
+		AnnotationAt annot = this.getAnnotation();
 		if ( ! "Int".equals(annot.getTypeAttached().getName()) ) {
 			this.addError("The type of the limits is '" + this.typeNameLimits + "' and the type itself is " + annot.getTypeAttached().getName());
 		}
@@ -33,7 +34,7 @@ public class CyanMetaobjectAttachedTypeRestrictTo extends CyanMetaobjectAtAnnot
 	}
 
 	@Override
-	public StringBuffer dsa_checkLeftTypeChangeRightExpr(ICompiler_dsa compiler_dsa, WrType leftType, Object leftASTNode,
+	public StringBuffer semAn_checkLeftTypeChangeRightExpr(ICompiler_semAn compiler_semAn, WrType leftType, Object leftASTNode,
 			LeftHandSideKind leftKind,
 			WrType rightType, WrExpr rightExpr) {
 
@@ -44,7 +45,7 @@ public class CyanMetaobjectAttachedTypeRestrictTo extends CyanMetaobjectAtAnnot
 		 *    n = { Int tmp = k; if  !(Text with self replaced by tmp)  { throw: ExceptionStr() } ^tmp } eval
 		 */
 
-		final WrAnnotationAt annot = this.getMetaobjectAnnotation();
+		final WrAnnotationAt annot = this.getAnnotation();
 		final char []charText = annot.getTextAttachedDSL();
 		String text = new String(charText);
 
@@ -65,7 +66,7 @@ public class CyanMetaobjectAttachedTypeRestrictTo extends CyanMetaobjectAtAnnot
 		final String attachedTypeName = annot.getTypeAttached().getName();
 
 		final String msg = "In line " + rightExpr.getFirstSymbol().getLineNumber() + " of file '"
-				+ CyanMetaobject.escapeString(compiler_dsa.getEnv().getCurrentCompilationUnit().getFullFileNamePath()) +
+				+ CyanMetaobject.escapeString(compiler_semAn.getEnv().getCurrentCompilationUnit().getFullFileNamePath()) +
 				"' expression '" + rightExpr.asString() + "' should obey the restriction '" + new String(charText) +
 				"'.  The expression value is $" + tmpVar;
 		sb.append("{ let " + attachedTypeName + " " + tmpVar + " = " + rightExpr.asString() + "; \r\n" +
@@ -84,7 +85,7 @@ public class CyanMetaobjectAttachedTypeRestrictTo extends CyanMetaobjectAtAnnot
 
 
 	@Override
-	public void dpa_parse(ICompiler_dpa compiler) {
+	public void parsing_parse(ICompiler_parsing compiler) {
 		compiler.next();
 		compiler.expr();
 		if ( compiler.getSymbol().token != Token.EOLO ) {

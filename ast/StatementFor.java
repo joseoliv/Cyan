@@ -13,7 +13,9 @@ public class StatementFor extends Statement {
 
 
 	public StatementFor(Symbol forSymbol, Expr typeInDec, StatementLocalVariableDec localVariableDec, Expr forExpression,
-			StatementList statementList, Symbol rightCBEndsIf) {
+			StatementList statementList, Symbol rightCBEndsIf,
+			MethodDec method) {
+		super(method);
 		this.forSymbol = forSymbol;
 		this.typeInDec = typeInDec;
 		this.localVariableDec = localVariableDec;
@@ -62,15 +64,20 @@ public class StatementFor extends Statement {
 					ee.error(this.getFirstSymbol(), "Method 'hasNext' of the 'for' iterator returned null");
 					return null;
 				}
-				if ( hasNext.getClass() != ee.getCyBoolean() ) {
-					ee.error(this.getFirstSymbol(), "A Boolean expression was expected");
-				}
 				try {
 
-					Field f;
-					f = hasNext.getClass().getField("b");
-					if ( ! (Boolean ) f.get(hasNext) ) 	{
-						break;
+					if ( hasNext instanceof Boolean ) {
+						if (! ((Boolean ) hasNext) ) { break; }
+					}
+					else if ( hasNext.getClass() != ee.getCyBoolean() ) {
+						ee.error(this.getFirstSymbol(), "A Boolean expression was expected");
+					}
+					else {
+						Field f;
+						f = hasNext.getClass().getField("b");
+						if ( ! (Boolean ) f.get(hasNext) ) 	{
+							break;
+						}
 					}
 
 					Object next = Statement.sendMessage(iterator, "_next", "next", null, "next",

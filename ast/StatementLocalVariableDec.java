@@ -26,7 +26,10 @@ import saci.NameServer;
  */
 public class StatementLocalVariableDec extends Statement implements VariableDecInterface, Declaration {
 
-	public StatementLocalVariableDec(SymbolIdent variableSymbol, Expr typeInDec, Expr expr, MethodDec declaringMethod, int level, boolean isReadonly) {
+	public StatementLocalVariableDec(SymbolIdent variableSymbol, Expr typeInDec,
+			Expr expr, MethodDec declaringMethod, int level,
+			boolean isReadonly, MethodDec method) {
+		super(method);
 		this.variableSymbol = variableSymbol;
 		this.typeInDec = typeInDec;
 		this.expr = expr;
@@ -161,11 +164,11 @@ public class StatementLocalVariableDec extends Statement implements VariableDecI
     					catch ( final error.CompileErrorException e ) {
     					}
     					catch ( final NoClassDefFoundError e ) {
-    						final Annotation annotation = meta.GetHiddenItem.getHiddenCyanMetaobjectAnnotation(((CyanMetaobjectAtAnnot) changeCyanMetaobject).getMetaobjectAnnotation());
+    						final Annotation annotation = meta.GetHiddenItem.getHiddenCyanAnnotation(((CyanMetaobjectAtAnnot) changeCyanMetaobject).getAnnotation());
     						env.error(annotation.getFirstSymbol(), e.getMessage() + " " + NameServer.messageClassNotFoundException);
     					}
     					catch ( final RuntimeException e ) {
-    						final Annotation annotation = meta.GetHiddenItem.getHiddenCyanMetaobjectAnnotation(((CyanMetaobjectAtAnnot) changeCyanMetaobject).getMetaobjectAnnotation());
+    						final Annotation annotation = meta.GetHiddenItem.getHiddenCyanAnnotation(((CyanMetaobjectAtAnnot) changeCyanMetaobject).getAnnotation());
     						env.thrownException(annotation, annotation.getFirstSymbol(), e);
     					}
     					finally {
@@ -199,7 +202,7 @@ public class StatementLocalVariableDec extends Statement implements VariableDecI
     		else {
 
     			/*
-    			if ( type instanceof TypeJavaRef && rightType.getInsideType() instanceof ProgramUnit ) {
+    			if ( type instanceof TypeJavaRef && rightType.getInsideType() instanceof Prototype ) {
     				// java = cyan
     				String puName = rightType.getName();
     				if ( NameServer.isBasicType(puName) ) {
@@ -209,7 +212,7 @@ public class StatementLocalVariableDec extends Statement implements VariableDecI
     					tmpExpr = tmpExpr + "." + NameServer.getFieldBasicType(puName);
     				}
     			}
-    			else if ( rightType instanceof TypeJavaRef && type.getInsideType() instanceof ProgramUnit ) {
+    			else if ( rightType instanceof TypeJavaRef && type.getInsideType() instanceof Prototype ) {
     				// cyan = java
     				String javaClass = rightType.getName();
     				tmpExpr = "new " + NameServer.cyanNameFromJavaBasicType(javaClass) + "(" + tmpExpr + ")";
@@ -311,7 +314,7 @@ public class StatementLocalVariableDec extends Statement implements VariableDecI
 	public void calcInternalTypes(Env env) {
 
 
-		final String protoName = env.getCurrentProgramUnit().getName();
+		final String protoName = env.getCurrentPrototype().getName();
 		/*
 		 * if the method is bindToFunction  in a context function, all message sends
 		 * to self are considered as message sends to newSelf__ whose type is

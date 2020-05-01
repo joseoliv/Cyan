@@ -5,14 +5,14 @@ import java.util.List;
 import meta.AnnotationArgumentsKind;
 import meta.AttachedDeclarationKind;
 import meta.CyanMetaobjectAtAnnot;
-import meta.IAction_afti;
-import meta.ICompiler_afti;
-import meta.ISlotInterface;
+import meta.IAction_afterResTypes;
+import meta.ICompiler_afterResTypes;
+import meta.ISlotSignature;
 import meta.Tuple2;
 import meta.WrAnnotation;
 import meta.WrFieldDec;
 
-public class CyanMetaobjectObservable extends CyanMetaobjectAtAnnot implements IAction_afti  {
+public class CyanMetaobjectObservable extends CyanMetaobjectAtAnnot implements IAction_afterResTypes  {
 
 	public CyanMetaobjectObservable() {
 		super("observable", AnnotationArgumentsKind.ZeroParameters,
@@ -22,14 +22,14 @@ public class CyanMetaobjectObservable extends CyanMetaobjectAtAnnot implements I
 
 	@Override
 	public void check() {
-		if ( this.getMetaobjectAnnotation().getExprStatList() != null && this.getMetaobjectAnnotation().getExprStatList().size() == 0 ) {
+		if ( this.getAnnotation().getExprStatList() != null && this.getAnnotation().getExprStatList().size() == 0 ) {
 			addError("This metaobject takes zero parameters");
 		}
 	}
 
 	@Override
-	public Tuple2<StringBuffer, String> afti_codeToAdd(
-			ICompiler_afti compiler, List<Tuple2<WrAnnotation, List<ISlotInterface>>> infoList)  {
+	public Tuple2<StringBuffer, String> afterResTypes_codeToAdd(
+			ICompiler_afterResTypes compiler, List<Tuple2<WrAnnotation, List<ISlotSignature>>> infoList)  {
 
 		final List<StringBuffer> tupleList = new ArrayList<>();
 

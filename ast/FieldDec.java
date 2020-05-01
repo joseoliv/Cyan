@@ -27,12 +27,12 @@ public class FieldDec extends SlotDec implements VariableDecInterface, GetNameAs
 			                    Expr expr,
 			                    Token visibility,
 			                    boolean shared,
-			                    List<AnnotationAt> nonAttachedSlotMetaobjectAnnotationList,
-			                    List<AnnotationAt> attachedSlotMetaobjectAnnotationList,
+			                    List<AnnotationAt> nonAttachedSlotAnnotationList,
+			                    List<AnnotationAt> attachedSlotAnnotationList,
 			                    Symbol firstSymbol, boolean isReadonly,
 			                    Stack<Tuple5<String, String, String, String, Integer>> annotContextStack) {
 
-		super(currentObj, visibility, attachedSlotMetaobjectAnnotationList, nonAttachedSlotMetaobjectAnnotationList);
+		super(currentObj, visibility, attachedSlotAnnotationList, nonAttachedSlotAnnotationList);
 		this.variableSymbol= variableSymbol;
 		this.typeInDec = typeInDec;
 		this.expr = expr;
@@ -110,11 +110,11 @@ public class FieldDec extends SlotDec implements VariableDecInterface, GetNameAs
 			typeInDec.genCyan(pw, false, cyanEnv, genFunctions);
 		else {
 			   // used only in inner objects
-			String name = type.getFullName();
-			final int indexOfCyanLang = name.indexOf(MetaHelper.cyanLanguagePackageName);
+			String name1 = type.getFullName();
+			final int indexOfCyanLang = name1.indexOf(MetaHelper.cyanLanguagePackageName);
 			if ( indexOfCyanLang >= 0 )
-				name = name.substring(indexOfCyanLang);
-			pw.print( name);
+				name1 = name1.substring(indexOfCyanLang);
+			pw.print( name1);
 		}
 		pw.print(" ");
 		switch ( variableKind ) {

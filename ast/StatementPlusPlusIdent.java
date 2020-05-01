@@ -6,11 +6,11 @@ package ast;
 import java.lang.reflect.Field;
 import java.util.List;
 import cyan.reflect._CyanMetaobject;
-import cyan.reflect._IActionFieldAccess__dsa;
+import cyan.reflect._IActionFieldAccess__semAn;
 import lexer.Symbol;
 import meta.CyanMetaobject;
 import meta.CyanMetaobjectAtAnnot;
-import meta.IActionFieldAccess_dsa;
+import meta.IActionFieldAccess_semAn;
 import meta.IdentStarKind;
 import meta.Token;
 import meta.WrStatementPlusPlusIdent;
@@ -27,7 +27,8 @@ import saci.NameServer;
 public class StatementPlusPlusIdent extends Statement {
 
 
-	public StatementPlusPlusIdent(Symbol plusPlus, ExprIdentStar varId) {
+	public StatementPlusPlusIdent(Symbol plusPlus, ExprIdentStar varId, MethodDec method) {
+		super(method);
 		this.plusPlus = plusPlus;
 		this.varId = varId;
 	}
@@ -163,16 +164,18 @@ public class StatementPlusPlusIdent extends Statement {
 
 		if ( varId.getIdentStarKind() == IdentStarKind.instance_variable_t ) {
 			StatementPlusPlusIdent.replaceOpOpFieldAccessIfAsked(env,
-					this, (IActionFieldAccess_dsa access, Statement stat) -> {
+					this, (IActionFieldAccess_semAn access, Statement stat) -> {
 						_CyanMetaobject other = ((CyanMetaobject ) access).getMetaobjectInCyan();
 						if ( other == null ) {
-							return access.dsa_replacePlusPlusField(stat.getI(), env.getI());
+							return access.semAn_replacePlusPlusField(stat.getI(), env.getI());
 						}
-						else if ( other instanceof _IActionFieldAccess__dsa ) {
-							return new StringBuffer( ((_IActionFieldAccess__dsa ) other)._dsa__replacePlusPlusField_2(
+						else
+							if ( other instanceof _IActionFieldAccess__semAn ) {
+							return new StringBuffer( ((_IActionFieldAccess__semAn ) other)._semAn__replacePlusPlusField_2(
 									stat.getI(), env.getI()).s);
 						}
-						else {
+						else
+						{
 							return null;
 						}
 					} );
@@ -241,10 +244,10 @@ public class StatementPlusPlusIdent extends Statement {
 
 
 	public static void replaceOpOpFieldAccessIfAsked( Env env, Statement opOpField,
-			Function2R<IActionFieldAccess_dsa, Statement, StringBuffer> f
+			Function2R<IActionFieldAccess_semAn, Statement, StringBuffer> f
 			) {
 
-		List<AnnotationAt> annotList = env.getCurrentProgramUnit().getAttachedMetaobjectAnnotationList();
+		List<AnnotationAt> annotList = env.getCurrentPrototype().getAttachedAnnotationList();
 
 		if ( annotList == null ) {
 			return ;
@@ -253,13 +256,13 @@ public class StatementPlusPlusIdent extends Statement {
 
 			CyanMetaobjectAtAnnot cyanMetaobject = annot.getCyanMetaobject();
 
-			if ( cyanMetaobject instanceof IActionFieldAccess_dsa ) {
-				IActionFieldAccess_dsa access = (IActionFieldAccess_dsa ) cyanMetaobject;
+			if ( cyanMetaobject instanceof IActionFieldAccess_semAn ) {
+				IActionFieldAccess_semAn access = (IActionFieldAccess_semAn ) cyanMetaobject;
 				StringBuffer sb = null;
 				try {
-					// StringBuffer dsa_replacePlusPlusField(Statement plusPlusField, Expr rightHandSideAssignment)
+					// StringBuffer semAn_replacePlusPlusField(Statement plusPlusField, Expr rightHandSideAssignment)
 					sb = f.eval(access, opOpField);
-					//sb = access.dsa_replacePlusPlusField(plusPlusField);
+					//sb = access.semAn_replacePlusPlusField(plusPlusField);
 				}
 				catch ( error.CompileErrorException e ) {
 				}
@@ -280,17 +283,17 @@ public class StatementPlusPlusIdent extends Statement {
 						/*
 						 * this field access has already been replaced by another expression
 						 */
-						if ( opOpField.getCyanMetaobjectAnnotationThatReplacedMSbyExpr() != null ) {
+						if ( opOpField.getCyanAnnotationThatReplacedMSbyExpr() != null ) {
 							env.warning(symForError, "Metaobject annotation '" + cyanMetaobject.getName() +
 									"' at line " + annot.getFirstSymbol().getLineNumber()  +
 									" of prototype " + annot.getPackageOfAnnotation() + "." +
 									annot.getPackageOfAnnotation() +
 									" is trying to replace the field access '" + opOpField.asString() +
 									"' by an expression. But this has already been asked by metaobject annotation '" +
-									opOpField.getCyanMetaobjectAnnotationThatReplacedMSbyExpr().getCyanMetaobject().getName() + "'" +
-									" at line " + opOpField.getCyanMetaobjectAnnotationThatReplacedMSbyExpr().getFirstSymbol().getLineNumber() +
-									" of prototype " + opOpField.getCyanMetaobjectAnnotationThatReplacedMSbyExpr().getPackageOfAnnotation() + "." +
-									opOpField.getCyanMetaobjectAnnotationThatReplacedMSbyExpr().getPackageOfAnnotation());
+									opOpField.getCyanAnnotationThatReplacedMSbyExpr().getCyanMetaobject().getName() + "'" +
+									" at line " + opOpField.getCyanAnnotationThatReplacedMSbyExpr().getFirstSymbol().getLineNumber() +
+									" of prototype " + opOpField.getCyanAnnotationThatReplacedMSbyExpr().getPackageOfAnnotation() + "." +
+									opOpField.getCyanAnnotationThatReplacedMSbyExpr().getPackageOfAnnotation());
 						}
 						else {
 							env.warning(symForError, "Metaobject annotation '" + cyanMetaobject.getName() +
@@ -321,7 +324,7 @@ public class StatementPlusPlusIdent extends Statement {
 					// removeCodeFromToOffset(int offsetStart, int offsetNext, CompilationUnitSuper compilationUnit,
 					// AnnotationAt annotation)
 
-					opOpField.setCyanMetaobjectAnnotationThatReplacedMSbyExpr(annot);
+					opOpField.setCyanAnnotationThatReplacedMSbyExpr(annot);
 
 					return ;
 				}

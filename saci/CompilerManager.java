@@ -29,10 +29,10 @@ import java.util.Hashtable;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import ast.CompilationUnit;
-import ast.CompilationUnitDSL;
 import ast.Annotation;
 import ast.AnnotationAt;
+import ast.CompilationUnit;
+import ast.CompilationUnitDSL;
 import ast.CyanPackage;
 import ast.Expr;
 import ast.ExprGenericPrototypeInstantiation;
@@ -40,7 +40,7 @@ import ast.ExprIdentStar;
 import ast.InterfaceDec;
 import ast.PW;
 import ast.Program;
-import ast.ProgramUnit;
+import ast.Prototype;
 import ast.Type;
 import ast.TypeJavaRef;
 import cyan.lang.CyInt;
@@ -48,7 +48,7 @@ import cyan.lang._Array_LT_GP__Tuple_LT_GP_CyString_GP_CyString_GT__GT;
 import cyan.lang._Tuple_LT_GP_CyString_GP_CyString_GT;
 import cyan.reflect._CyanMetaobject;
 import cyan.reflect._IActionFunction;
-import cyan.reflect._IActionNewPrototypes__afti;
+import cyan.reflect._IActionNewPrototypes__afterResTypes;
 import error.CompileErrorException;
 import error.ErrorKind;
 import error.UnitError;
@@ -57,34 +57,36 @@ import meta.AttachedDeclarationKind;
 import meta.CompilationInstruction;
 import meta.CompilationStep;
 import meta.CyanMetaobject;
+import meta.CyanMetaobjectAtAnnot;
 import meta.CyanMetaobjectFromDSL_toPrototype;
 import meta.CyanMetaobjectLiteralObjectSeq;
-import meta.CyanMetaobjectAtAnnot;
 import meta.CyanMetaobject_wrapperActionFunction_inCyan;
 import meta.DirectoryKindPPP;
 import meta.FileError;
-import meta.IActionAttachedType_dsa;
-import meta.IActionFieldAccess_dsa;
-import meta.IActionFieldMissing_dsa;
-import meta.IActionNewPrototypes_afti;
-import meta.IAction_dpa;
-import meta.IAction_dsa;
-import meta.ICheckOverride_afsa;
-import meta.ICheckSubprototype_afsa;
-import meta.ICompiler_afti;
-import meta.ICompiler_dpa;
-import meta.IParse_dpa;
+import meta.IActionAttachedType_semAn;
+import meta.IActionFieldAccess_semAn;
+import meta.IActionFieldMissing_semAn;
+import meta.IActionMethodMissing_semAn;
+import meta.IActionNewPrototypes_afterResTypes;
+import meta.IAction_parsing;
+import meta.IAction_semAn;
+import meta.ICheckOverride_afterSemAn;
+import meta.ICheckSubprototype_afterSemAn;
+import meta.ICompiler_afterResTypes;
+import meta.ICompiler_parsing;
+import meta.IParse_parsing;
 import meta.InitMetaobjectErrorException;
 import meta.MetaHelper;
 import meta.ReplacementPolicyInGenericInstantiation;
+import meta.Token;
 import meta.Tuple2;
 import meta.Tuple3;
 import meta.Tuple4;
 import meta.Tuple5;
 import meta.WrCyanPackage;
-import metaRealClasses.Compiler_afti;
-import metaRealClasses.Compiler_dpa;
+import metaRealClasses.Compiler_afterResTypes;
 import metaRealClasses.Compiler_dsl;
+import metaRealClasses.Compiler_parsing;
 /**
  * Compiles a Cyan program described by a project.
  * @author José
@@ -106,7 +108,7 @@ public class CompilerManager {
 	 * return a compiler for compiling <code>sourceCode</code> of file 'sourceCodeCanonicalPath/sourceCodeFilename' of
 	 * package 'cyanPackage'
 	 */
-	public static ICompiler_dpa getCompilerToInternalDSL(char []sourceCode, String sourceCodeFilename,
+	public static ICompiler_parsing getCompilerToInternalDSL(char []sourceCode, String sourceCodeFilename,
 			String sourceCodeCanonicalPath, WrCyanPackage cyanPackage) {
 
 		final CompilationUnitDSL dslCompilationUnit = new CompilationUnitDSL(sourceCodeFilename, sourceCodeCanonicalPath,
@@ -115,8 +117,8 @@ public class CompilerManager {
 		final HashSet<CompilationInstruction> compInstSet = new HashSet<>();
 		try {
 			final Compiler comp = new Compiler( dslCompilationUnit, compInstSet, CompilationStep.step_1, null, null );
-			final Compiler_dpa compiler_dpa = new Compiler_dpa(comp, null, null);
-			return compiler_dpa;
+			final Compiler_parsing compiler_parsing = new Compiler_parsing(comp, null, null);
+			return compiler_parsing;
 		}
 		catch (RuntimeException e ) {
 			throw new CompileErrorException("Unknown internal error in getCompilerToInternalDSL");
@@ -261,7 +263,7 @@ public class CompilerManager {
 						final Compiler_dsl compiler_dsl = getCompilerToDSL_sourceFile(moDSL.getText(),
 								name, moDSL.getFileNameDSLSourceCode(), cp);
 						compiler_dsl.setCyanPackage(cp);
-						final List<Tuple3<String, String, char []>> protoNameFileNameCodeList = moDSL.dpa_NewPrototype(compiler_dsl);
+						final List<Tuple3<String, String, char []>> protoNameFileNameCodeList = moDSL.parsing_NewPrototype(compiler_dsl);
 						/**
 						 * important: if the file name starts with an upper-case letter, protoNameFileNameCodeList
 						 * should be just one element whose prototype name is exactly the file name of the DSL file
@@ -503,12 +505,12 @@ public class CompilerManager {
 					}
 
 //					if ( inCompilationStep4 ) {
-//						if ( ! compilationUnit.getSourceCodeChanged_inPhaseAfti() ) {
+//						if ( ! compilationUnit.getSourceCodeChanged_inPhaseafterResTypes() ) {
 //							continue;
 //						}
 //					}
 //					else if ( inCompilationStep7 ) {
-//						if ( ! compilationUnit.getSourceCodeChanged_inPhaseDsa() ) {
+//						if ( ! compilationUnit.getSourceCodeChanged_inPhasesemAn() ) {
 //							continue;
 //						}
 //					}
@@ -658,7 +660,7 @@ public class CompilerManager {
 
 		/*
 		HashSet<saci.CompilationInstruction> compInstSet = new HashSet<>();
-		compInstSet.add(CompilationInstruction.dpa_actions);
+		compInstSet.add(CompilationInstruction.parsing_actions);
 		compInstSet.add(CompilationInstruction.pp_addCode);
 		if ( compilationStep.compareTo(CompilationStep.step_5) >= 0 )
 			compInstSet.add(CompilationInstruction.new_addCode);
@@ -694,7 +696,7 @@ public class CompilerManager {
 			}
 
 
-			if ( t.f2 instanceof ProgramUnit ) {
+			if ( t.f2 instanceof Prototype ) {
 				return t.f2;
 			}
 			else {
@@ -811,7 +813,7 @@ public class CompilerManager {
 		}
 		/*
 		 * if the generic prototype was created from phase (4), included, onwards, then execute
-		 * the afti actions. A generic prototype instantiation can only change itself and
+		 * the AF_RES_TYPES actions. A generic prototype instantiation can only change itself and
 		 * no other prototype can change it.
 		 */
 		if ( env.getProject().getCompilerManager().getCompilationStep().ordinal() > CompilationStep.step_3.ordinal() ) {
@@ -819,7 +821,7 @@ public class CompilerManager {
 
 			boolean changesWereMade = false;
 			try {
-				changesWereMade = apply_afti_ActionsToGenericPrototype(newEnv, compUnit);
+				changesWereMade = apply_afterResTypes_ActionsToGenericPrototype(newEnv, compUnit);
 			}
 			catch (error.ErrorInMetaobjectException e ) {
 				env.getProject().getProgram().addCompilationUnit(compUnit);
@@ -829,7 +831,7 @@ public class CompilerManager {
 
 			if (  interfaceCompilationUnit != null )  {
 				try {
-					changesWereMade = changesWereMade || apply_afti_ActionsToGenericPrototype(env, interfaceCompilationUnit);
+					changesWereMade = changesWereMade || apply_afterResTypes_ActionsToGenericPrototype(env, interfaceCompilationUnit);
 				}
 				catch (error.ErrorInMetaobjectException e ) {
 					env.getProject().getProgram().addCompilationUnit(compUnit);
@@ -856,7 +858,7 @@ public class CompilerManager {
 				}
 
 				final HashSet<meta.CompilationInstruction> compInstSet = new HashSet<>();
-				compInstSet.add(CompilationInstruction.dpa_actions);
+				compInstSet.add(CompilationInstruction.parsing_actions);
 
 				compUnit.reset();
 
@@ -964,29 +966,29 @@ public class CompilerManager {
 	}
 
 	/**
-	 * Apply afti action to a generic prototype. Return true if any changes were made.
+	 * Apply AF_RES_TYPES action to a generic prototype. Return true if any changes were made.
 	 *
 	   @param env
 	   @param compUnit
 	   @return
 	 */
-	private static boolean apply_afti_ActionsToGenericPrototype(Env env, CompilationUnit compUnit) {
+	private static boolean apply_afterResTypes_ActionsToGenericPrototype(Env env, CompilationUnit compUnit) {
 
-		final ICompiler_afti compiler_afti = new Compiler_afti(env);
-		final CompilerManager_afti compilerManager_afti = new CompilerManager_afti(env);
+		final ICompiler_afterResTypes compiler_afterResTypes = new Compiler_afterResTypes(env);
+		final CompilerManager_afterResTypes compilerManager_afterResTypes = new CompilerManager_afterResTypes(env);
 
 
 		compUnit.getCyanPackage().addPackageMetaToClassPath_and_Run( () -> {
-			compUnit.afti_actions(compiler_afti, compilerManager_afti);
+			compUnit.afterResTypes_actions(compiler_afterResTypes, compilerManager_afterResTypes);
 		} );
 
 
 
 		/*
 		 * all changes demanded by metaobject annotations collected above are made in the call
-		 * to CompilerManager_afti#changeCheckProgram.
+		 * to CompilerManager_afterResTypes#changeCheckProgram.
 		 */
-		return compilerManager_afti.changeCheckProgram();
+		return compilerManager_afterResTypes.changeCheckProgram();
 
 	}
 
@@ -1021,10 +1023,10 @@ public class CompilerManager {
 		final ExprIdentStar typeIdent = gt.getTypeIdent();
 		if ( typeIdent.getIdentSymbolArray().size() == 1 ) {
 			// no package preceding the generic prototype name as in "Stack<Int>"
-			ProgramUnit pu = env.searchProgramUnitBySourceFileName(genSourceFileName, gt.getFirstSymbol(), false);
+			Prototype pu = env.searchPrototypeBySourceFileName(genSourceFileName, gt.getFirstSymbol(), false);
 			if ( pu != null ) {
 				genericProto = pu.getCompilationUnit();
-				final ProgramUnit pu2 = env.searchProgramUnitBySourceFileName(genSourceFileNameVaryingNumberOfParameters, gt.getFirstSymbol(), false);
+				final Prototype pu2 = env.searchPrototypeBySourceFileName(genSourceFileNameVaryingNumberOfParameters, gt.getFirstSymbol(), false);
 				if ( pu2 != null )
 					/* found both generic prototype and generic prototype with varying number of parameters
 					 * Example: found both Tuple<T> and Tuple<T+>
@@ -1036,7 +1038,7 @@ public class CompilerManager {
 
 			}
 			if ( genericProto == null ) {
-				pu = env.searchProgramUnitBySourceFileName(genSourceFileNameVaryingNumberOfParameters, gt.getFirstSymbol(), false);
+				pu = env.searchPrototypeBySourceFileName(genSourceFileNameVaryingNumberOfParameters, gt.getFirstSymbol(), false);
 				if ( pu != null )
 					genericProto = pu.getCompilationUnit();
 			}
@@ -1119,7 +1121,7 @@ public class CompilerManager {
 					env.error(gt.getFirstSymbol(), "Attempt to create a generic prototype, " + gt.asString() + " after step 6 of the compilation." +
 					         "This is caused by code introduced in step 6, semantic analysis, that introduced a new generic prototype instantiation. " +
 								"This could be a new type of variable or a new literal object such as an anonymous function or tuple. To solve that, " +
-					         "create this generic prototype before this step. If necessary, use method 'createNewGenericPrototype' of interface ICompiler_dsa"
+					         "create this generic prototype before this step. If necessary, use method 'createNewGenericPrototype' of interface ICompiler_semAn"
 								);
 						return null;
 
@@ -1162,7 +1164,7 @@ public class CompilerManager {
 			newCompilationUnit.readSourceFile();
 
 			final HashSet<meta.CompilationInstruction> compInstSet = new HashSet<>();
-			compInstSet.add(CompilationInstruction.dpa_actions);
+			compInstSet.add(CompilationInstruction.parsing_actions);
 			compInstSet.add(CompilationInstruction.pp_addCode);
 //			if ( compilationStep.compareTo(CompilationStep.step_5) >= 0 )  // ##
 //				compInstSet.add(CompilationInstruction.new_addCode);
@@ -1501,24 +1503,27 @@ public class CompilerManager {
 
 	/**
 	 * check inheritance and interfaces implemented by that metaobject <code>cyanMetaobject</code>. Some combinations are illegal
-	 * such as a macro metaobject implement {@link meta#IParseWithoutCyanCompiler_dpa}. However, most illegal combinations are not
+	 * such as a macro metaobject implement {@link meta#IParseWithoutCyanCompiler_parsing}. However, most illegal combinations are not
 	 * checked. This will be a future work.
 	   @param cyanMetaobject
 	 */
 	private static void checkMetaobject(CyanMetaobject cyanMetaobject, Compiler compiler, String packageName) {
 
-
+		_CyanMetaobject moCyan = cyanMetaobject.getMetaobjectInCyan();
+		if ( moCyan != null ) {
+			cyanMetaobject = moCyan._getHidden();
+		}
 
 		if ( cyanMetaobject instanceof CyanMetaobjectAtAnnot ) {
 			final CyanMetaobjectAtAnnot withAt = (CyanMetaobjectAtAnnot ) cyanMetaobject;
-			if ( withAt.shouldTakeText() && withAt instanceof IAction_dpa ) {
+			if ( withAt.shouldTakeText() && withAt instanceof IAction_parsing ) {
 				compiler.error2(false, compiler.symbol, "Metaobject '" + cyanMetaobject.getName() + "' imported from package '"
 						+ packageName + "' should take a text as in @concept{* ... *} and it implements interface '"
-						+ meta.IAction_dpa.class.getName() + "'. This is illegal. Metaobjects that take text should implement one "
-						+ "of the '" +IParse_dpa.class.getName() + "' sub-interfaces. To produce code, they should implement " +
-						"interface '" + IAction_dpa.class.getName() + "' to produce code in phase 'dsa'", true);
+						+ meta.IAction_parsing.class.getName() + "'. This is illegal. Metaobjects that take text should implement one "
+						+ "of the '" +IParse_parsing.class.getName() + "' sub-interfaces. To produce code, they should implement " +
+						"interface '" + IAction_parsing.class.getName() + "' to produce code in phase 'SEM_AN'", true);
 			}
-			if ( cyanMetaobject instanceof ICheckSubprototype_afsa ) {
+			if ( cyanMetaobject instanceof ICheckSubprototype_afterSemAn ) {
 				AttachedDeclarationKind[] decKindList = withAt.getAttachedDecKindList();
 				boolean ok_cs = true;
 				if ( decKindList == null ) { ok_cs = false; }
@@ -1531,7 +1536,7 @@ public class CompilerManager {
 				}
 				if ( !ok_cs ) {
 					compiler.error2(false,  compiler.symbol, "Metaobject '" + withAt.getName()
-					   + "' implements interface '" + ICheckSubprototype_afsa.class.getName() +
+					   + "' implements interface '" + ICheckSubprototype_afterSemAn.class.getName() +
 					   "'. Therefore, its annotations can only be attached to prototypes. But"
 					   + " method 'getAttachedDecKindList' of the metaobject either returns null"
 					   + " or something different from 'PROTOTYPE_DEC'");
@@ -1542,32 +1547,32 @@ public class CompilerManager {
 		}
 
 		/*
-		if ( cyanMetaobject instanceof IActionPackage_afti || cyanMetaobject instanceof IActionProgram_afti ) {
-			if ( cyanMetaobject instanceof IAction_dpa || cyanMetaobject instanceof IParse_dpa ||
-				 cyanMetaobject instanceof IAction_dsa || cyanMetaobject instanceof IActionVariableDeclaration_dsa ||
-				 cyanMetaobject instanceof IActionMessageSend_dsa || cyanMetaobject instanceof IActionMethodMissing_dsa ||
+		if ( cyanMetaobject instanceof IActionPackage_afterResTypes || cyanMetaobject instanceof IActionProgram_afterResTypes ) {
+			if ( cyanMetaobject instanceof IAction_parsing || cyanMetaobject instanceof IParse_parsing ||
+				 cyanMetaobject instanceof IAction_semAn || cyanMetaobject instanceof IActionVariableDeclaration_semAn ||
+				 cyanMetaobject instanceof IActionMessageSend_semAn || cyanMetaobject instanceof IActionMethodMissing_semAn ||
 				 cyanMetaobject instanceof IAction_cge || cyanMetaobject instanceof IActionAssignment_cge ||
-				 cyanMetaobject instanceof ICheck_afti_afsa ) {
+				 cyanMetaobject instanceof ICheck_afterResTypes_afterSemAn ) {
 				incompatibleInterfaceNameList = new ArrayList<>();
 				compiler.error2(false, compiler.symbol, "Metaobject '" + cyanMetaobject.getName() + "' imported from package '"
-						+ packageName + "' implements interface '" + IActionPackage_afti.class.getName() + "' or '" +
-						IActionProgram_afti.class.getName() + "' and at least one other interface that should be implemented only " +
-						"by metaobjects that should not be attached to a package or the program such as '" + IAction_dpa.class.getName() + "'", true);
+						+ packageName + "' implements interface '" + IActionPackage_afterResTypes.class.getName() + "' or '" +
+						IActionProgram_afterResTypes.class.getName() + "' and at least one other interface that should be implemented only " +
+						"by metaobjects that should not be attached to a package or the program such as '" + IAction_parsing.class.getName() + "'", true);
 
 			}
 		}
 		*/
-//		if ( cyanMetaobject instanceof IParse_dpa && cyanMetaobject instanceof IAction_dpa ) {
+//		if ( cyanMetaobject instanceof IParse_parsing && cyanMetaobject instanceof IAction_parsing ) {
 //			compiler.error2( false, compiler.symbol, "Metaobject '" + cyanMetaobject.getName() + "' imported from package '"
-//					+ packageName + "' implements a subinterface of '" + IParse_dpa.class.getName() + "' and interface '" +
-//					IAction_dpa.class.getName() + "'. They are incompatible, only one of them should be implemented", true);
+//					+ packageName + "' implements a subinterface of '" + IParse_parsing.class.getName() + "' and interface '" +
+//					IAction_parsing.class.getName() + "'. They are incompatible, only one of them should be implemented", true);
 //
 //		}
-		if ( cyanMetaobject instanceof IParse_dpa &&
+		if ( cyanMetaobject instanceof IParse_parsing &&
 				cyanMetaobject instanceof CyanMetaobjectAtAnnot ) {
 			if ( ! ((CyanMetaobjectAtAnnot ) cyanMetaobject).shouldTakeText() ) {
 				compiler.error2( false, compiler.symbol, "Metaobject '" + cyanMetaobject.getName() + "' imported from package '"
-						+ packageName + "' implements a subinterface of '" + IParse_dpa.class.getName() + "'. Therefore a text (DSL) should be " +
+						+ packageName + "' implements a subinterface of '" + IParse_parsing.class.getName() + "'. Therefore a text (DSL) should be " +
 						"attached to the metaobject annotation. However, this is not possible because method 'shouldTakeText' returns false",
 						true);
 			}
@@ -1590,10 +1595,10 @@ public class CompilerManager {
 
 
 
-		if ( cyanMetaobject instanceof ICheckOverride_afsa ) {
+		if ( cyanMetaobject instanceof ICheckOverride_afterSemAn ) {
 			if ( !(cyanMetaobject instanceof CyanMetaobjectAtAnnot) ) {
 				compiler.error2( false, compiler.symbol, "Metaobject '" + cyanMetaobject.getName() + "' imported from package '"
-						+ packageName + "' implements interface '" + ICheckOverride_afsa.class.getName() +
+						+ packageName + "' implements interface '" + ICheckOverride_afterSemAn.class.getName() +
 						"'. Therefore it should inherit from '" + CyanMetaobjectAtAnnot.class.getName() + "'. It does not", true);
 			}
 			else {
@@ -1603,17 +1608,17 @@ public class CompilerManager {
 						decList[0] != AttachedDeclarationKind.METHOD_DEC &&
 						decList[0] != AttachedDeclarationKind.METHOD_SIGNATURE_DEC ) {
 					compiler.error2( false, compiler.symbol, "Metaobject '" + cyanMetaobject.getName() + "' imported from package '"
-							+ packageName + "' implements interface '" + ICheckOverride_afsa.class.getName() +
+							+ packageName + "' implements interface '" + ICheckOverride_afterSemAn.class.getName() +
 							"'. Therefore its annotations should only be attached to methods or method interfaces", true);
 
 				}
 			}
 		}
-		if ( cyanMetaobject instanceof IActionFieldAccess_dsa )  {
+		if ( cyanMetaobject instanceof IActionFieldAccess_semAn )  {
 
 			if ( !(cyanMetaobject instanceof CyanMetaobjectAtAnnot) ) {
 				compiler.error2( false, compiler.symbol, "Metaobject '" + cyanMetaobject.getName() + "' imported from package '"
-						+ packageName + "' implements interface '" + IActionFieldAccess_dsa.class.getName() +
+						+ packageName + "' implements interface '" + IActionFieldAccess_semAn.class.getName() +
 						"'. Therefore it should inherit from '" + CyanMetaobjectAtAnnot.class.getName() + "'. It does not", true);
 			}
 			else {
@@ -1622,18 +1627,18 @@ public class CompilerManager {
 				if ( decList.length != 1 || decList.length == 1 &&
 						decList[0] != AttachedDeclarationKind.FIELD_DEC ) {
 					compiler.error2( false, compiler.symbol, "Metaobject '" + cyanMetaobject.getName() + "' imported from package '"
-							+ packageName + "' implements interface '" + IActionFieldAccess_dsa.class.getName() +
+							+ packageName + "' implements interface '" + IActionFieldAccess_semAn.class.getName() +
 							"'. Therefore its annotations should only be attached to fields", true);
 
 				}
 			}
 
 		}
-		if ( cyanMetaobject instanceof IActionFieldMissing_dsa )  {
+		if ( cyanMetaobject instanceof IActionFieldMissing_semAn )  {
 
 			if ( !(cyanMetaobject instanceof CyanMetaobjectAtAnnot) ) {
 				compiler.error2( false, compiler.symbol, "Metaobject '" + cyanMetaobject.getName() + "' imported from package '"
-						+ packageName + "' implements interface '" + IActionFieldMissing_dsa.class.getName() +
+						+ packageName + "' implements interface '" + IActionFieldMissing_semAn.class.getName() +
 						"'. Therefore it should inherit from '" + CyanMetaobjectAtAnnot.class.getName() + "'. It does not", true);
 			}
 			else {
@@ -1642,29 +1647,108 @@ public class CompilerManager {
 				if ( decList.length != 1 || decList.length == 1 &&
 						decList[0] != AttachedDeclarationKind.PROTOTYPE_DEC ) {
 					compiler.error2( false, compiler.symbol, "Metaobject '" + cyanMetaobject.getName() + "' imported from package '"
-							+ packageName + "' implements interface '" + IActionFieldMissing_dsa.class.getName() +
+							+ packageName + "' implements interface '" + IActionFieldMissing_semAn.class.getName() +
 							"'. Therefore its annotations should only be attached to prototypes", true);
 
 				}
 			}
 
 		}
-		if ( cyanMetaobject instanceof IActionAttachedType_dsa )  {
-			if ( cyanMetaobject instanceof IAction_dpa || cyanMetaobject instanceof  IAction_dsa ) {
+		if ( cyanMetaobject instanceof IActionAttachedType_semAn )  {
+			if ( cyanMetaobject instanceof IAction_parsing || cyanMetaobject instanceof  IAction_semAn ) {
 				compiler.error2( false, compiler.symbol, "Metaobject '" + cyanMetaobject.getName() + "' imported from package '"
-						+ packageName + "' implements interface '" + IActionAttachedType_dsa.class.getName() +
-						"'. Therefore it cannot also implement interfaces '" + IAction_dpa.class.getName() + "' or '" +
-						IAction_dsa.class.getName() + "'"
+						+ packageName + "' implements interface '" + IActionAttachedType_semAn.class.getName() +
+						"'. Therefore it cannot also implement interfaces '" + IAction_parsing.class.getName() + "' or '" +
+						IAction_semAn.class.getName() + "'"
 						, true);
 
 			}
 		}
 
+		if ( cyanMetaobject instanceof IActionMethodMissing_semAn ) {
+			if ( !(cyanMetaobject instanceof CyanMetaobjectAtAnnot) ) {
+				compiler.error2( false, compiler.symbol, "Metaobject '" +
+					      cyanMetaobject.getName() + "' imported from package '"
+								+ packageName + "' implements interface '" +
+					      IActionMethodMissing_semAn.class.getName() +
+								"'. Therefore its class or prototype should inherits from '" +
+								CyanMetaobjectAtAnnot.class.getName() + "'"
+								, true);
+
+
+			}
+			else {
+				CyanMetaobjectAtAnnot mo = (CyanMetaobjectAtAnnot ) cyanMetaobject;
+				AttachedDeclarationKind[] decKindList = mo.getAttachedDecKindList();
+				boolean onlyMethodPrototype = false;
+				if ( decKindList != null ) {
+					for (AttachedDeclarationKind decKind : decKindList ) {
+						if ( decKind == AttachedDeclarationKind.METHOD_DEC ||
+							 decKind == AttachedDeclarationKind.PROTOTYPE_DEC ||
+							 decKind == AttachedDeclarationKind.METHOD_SIGNATURE_DEC ) {
+							onlyMethodPrototype = true;
+						}
+						else {
+							onlyMethodPrototype = false;
+							break;
+						}
+					}
+				}
+				if ( !onlyMethodPrototype ) {
+					compiler.error2( false, compiler.symbol, "Metaobject '" +
+						      cyanMetaobject.getName() + "' imported from package '"
+									+ packageName + "' implements interface '" + IActionMethodMissing_semAn.class.getName() +
+									"'. Therefore, its list of allowed attached declarations should include " +
+									"only methods, method signatures, and prototypes"
+									, true);
+				}
+				if ( mo.getVisibility() != Token.PUBLIC ) {
+					compiler.error2( false, compiler.symbol, "Metaobject '" +
+				      cyanMetaobject.getName() + "' imported from package '"
+							+ packageName + "' implements interface '" + IActionMethodMissing_semAn.class.getName() +
+							"'. Therefore it should have 'PUBLIC' visibility. It does not"
+							, true);
+
+				}
+			}
+		}
+		if ( cyanMetaobject instanceof IActionAttachedType_semAn ) {
+			if (! (cyanMetaobject instanceof CyanMetaobjectAtAnnot) ) {
+				compiler.error2( false, compiler.symbol, "Metaobject '" +
+					      cyanMetaobject.getName() + "' imported from package '"
+								+ packageName + "' implements interface '" + IActionAttachedType_semAn.class.getName() +
+								"'. Therefore its class or prototype should inherit from CyanMetaobjectAtAnnot. It does not"
+								, true);
+
+			}
+			else {
+				CyanMetaobjectAtAnnot mo = (CyanMetaobjectAtAnnot ) cyanMetaobject;
+				AttachedDeclarationKind[] kindList = mo.getAttachedDecKindList();
+				boolean atError = false;
+				if ( kindList != null && kindList.length == 1 ) {
+					if ( kindList[0] != AttachedDeclarationKind.TYPE ) {
+						atError = true;
+					}
+				}
+				else {
+					atError = true;
+				}
+				if ( atError ) {
+					compiler.error2( false, compiler.symbol, "Metaobject '" +
+						      cyanMetaobject.getName() + "' imported from package '"
+									+ packageName + "' implements interface '" + IActionAttachedType_semAn.class.getName() +
+									"'. Therefore its method getAttachedDecKindList() should return an array with just one element: " +
+									AttachedDeclarationKind.TYPE.name()
+									, true);
+				}
+			}
+		}
+
 //		List<String> incompatibleInterfaceNameList = new ArrayList<>();
-//		if ( cyanMetaobject instanceof meta.IParse_dpa && cyanMetaobject instanceof meta.IAction_dpa ) {
+//		if ( cyanMetaobject instanceof meta.IParse_parsing && cyanMetaobject instanceof meta.IAction_parsing ) {
 //			incompatibleInterfaceNameList = new ArrayList<>();
-//			incompatibleInterfaceNameList.add(meta.IParse_dpa.class.getName());
-//			incompatibleInterfaceNameList.add(meta.IAction_dpa.class.getName());
+//			incompatibleInterfaceNameList.add(meta.IParse_parsing.class.getName());
+//			incompatibleInterfaceNameList.add(meta.IAction_parsing.class.getName());
 //		}
 //		if ( incompatibleInterfaceNameList != null ) {
 //			String all = "";
@@ -1680,12 +1764,12 @@ public class CompilerManager {
 
 
 	/**
-	   @param compiler_afti
+	   @param compiler_afterResTypes
 	   @param env
 	   @param annotation
 	   @param cyanMetaobject
 	 */
-	public static void createNewPrototypes(ICompiler_afti compiler_afti, Env env,
+	public static void createNewPrototypes(ICompiler_afterResTypes compiler_afterResTypes, Env env,
 			Annotation annotation,
 			CyanMetaobject cyanMetaobject, CompilationUnit compilationUnit) {
 
@@ -1696,17 +1780,17 @@ public class CompilerManager {
 			_CyanMetaobject other = cyanMetaobject.getMetaobjectInCyan();
 			List<Tuple2<String, StringBuffer>> prototypeNameCodeList = null;
 
-			try { // afti_NewPrototypeList
+			try { // afterResTypes_NewPrototypeList
 
 
 				if ( other == null ) {
-					final IActionNewPrototypes_afti metaobject = (IActionNewPrototypes_afti) cyanMetaobject;
-					prototypeNameCodeList = metaobject.afti_NewPrototypeList(compiler_afti);
+					final IActionNewPrototypes_afterResTypes metaobject = (IActionNewPrototypes_afterResTypes) cyanMetaobject;
+					prototypeNameCodeList = metaobject.afterResTypes_NewPrototypeList(compiler_afterResTypes);
 				}
 				else {
-					_IActionNewPrototypes__afti anp = (_IActionNewPrototypes__afti ) other;
+					_IActionNewPrototypes__afterResTypes anp = (_IActionNewPrototypes__afterResTypes ) other;
 					_Array_LT_GP__Tuple_LT_GP_CyString_GP_CyString_GT__GT array =
-							anp._afti__NewPrototypeList_1(compiler_afti);
+							anp._afterResTypes__NewPrototypeList_1(compiler_afterResTypes);
 					int size = array._size().n;
 					if ( size > 0 ) {
 						prototypeNameCodeList = new ArrayList<>();
@@ -1737,14 +1821,18 @@ public class CompilerManager {
 				env.errorInMetaobjectCatchExceptions(cyanMetaobject);
 			}
 			if ( prototypeNameCodeList != null ) {
+				CyanPackage cyanPackage = compilationUnit.getCyanPackage();
 				for ( final Tuple2<String, StringBuffer> prototypeNameCode : prototypeNameCodeList ) {
-					final Tuple2<CompilationUnit, String> t = env.getProject().getCompilerManager().createNewPrototype(prototypeNameCode.f1, prototypeNameCode.f2,
-							compilationUnit.getCompilerOptions(), compilationUnit.getCyanPackage());
+					String prototypeName = prototypeNameCode.f1;
+					final Tuple2<CompilationUnit, String> t = env.getProject().getCompilerManager()
+							.createNewPrototype(prototypeName, prototypeNameCode.f2,
+							compilationUnit.getCompilerOptions(), cyanPackage);
 					if ( t != null && t.f2 != null ) {
 						env.error(
-								meta.GetHiddenItem.getHiddenSymbol(cyanMetaobject.getMetaobjectAnnotation().getFirstSymbol()),
+								meta.GetHiddenItem.getHiddenSymbol(cyanMetaobject.getAnnotation().getFirstSymbol()),
 								t.f2);
 					}
+					cyanPackage.addPrototypeNameAnnotationInfo(prototypeName, annotation);
 				}
 			}
 		}

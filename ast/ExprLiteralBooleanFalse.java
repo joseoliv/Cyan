@@ -14,9 +14,9 @@ public class ExprLiteralBooleanFalse extends ExprLiteralBoolean {
 	/**
 	 * @param symbol
 	 */
-	public ExprLiteralBooleanFalse(Symbol symbol) {
-		super(symbol);
+	public ExprLiteralBooleanFalse(Symbol symbol, MethodDec currentMethod) {
+		super(symbol, currentMethod);
 	}
-	
+
 
 }

@@ -15,14 +15,15 @@ import saci.NameServer;
 
 public class ExprMessageSendUnaryChainToSuper extends ExprMessageSendUnaryChain {
 
-	public ExprMessageSendUnaryChainToSuper(Symbol superSymbol, Symbol nextSymbol) {
-		super(nextSymbol);
+	public ExprMessageSendUnaryChainToSuper(Symbol superSymbol, Symbol nextSymbol,
+			MethodDec currentMethod) {
+		super(nextSymbol, currentMethod);
 		this.superSymbol = superSymbol;
 
 	}
 
-	public ExprMessageSendUnaryChainToSuper(Symbol superSymbol) {
-		super();
+	public ExprMessageSendUnaryChainToSuper(Symbol superSymbol, MethodDec currentMethod) {
+		super(currentMethod);
 		this.superSymbol = superSymbol;
 
 	}
@@ -119,8 +120,8 @@ public class ExprMessageSendUnaryChainToSuper extends ExprMessageSendUnaryChain 
 		receiverType = superObjectDec = currentObj.getSuperobject();
 		if ( receiverType == null ) {
 			env.error(true, getFirstSymbol(),
-					"Prototype " + env.getCurrentProgramUnit().getName() + " does not have a super-prototype",
-					env.getCurrentProgramUnit().getName(), ErrorKind.use_of_super_without_a_super_prototype);
+					"Prototype " + env.getCurrentPrototype().getName() + " does not have a super-prototype",
+					env.getCurrentPrototype().getName(), ErrorKind.use_of_super_without_a_super_prototype);
 			return ;
 		}
 		methodName = unarySymbol.getSymbolString();
@@ -167,9 +168,9 @@ public class ExprMessageSendUnaryChainToSuper extends ExprMessageSendUnaryChain 
 
 			methodSignatureList = receiverType.searchMethodProtectedPublicPackageSuperProtectedPublicPackage(methodName, env);
 
-			List<ProgramUnit> superList = currentObj.get_this_and_all_superPrototypes();
+			List<Prototype> superList = currentObj.get_this_and_all_superPrototypes();
 
-			for ( ProgramUnit current : superList ) {
+			for ( Prototype current : superList ) {
 				List<MethodSignature> currentMSList = current.searchMethodProtectedPublicPackage(methodName, env);
 				if ( currentMSList != null ) {
 					allMethodSignatureList.addAll(currentMSList);
@@ -266,7 +267,7 @@ public class ExprMessageSendUnaryChainToSuper extends ExprMessageSendUnaryChain 
 			type = receiverType;
 
 
-			ExprSelf exprSelf = new ExprSelf(superSymbol, env.getCurrentProgramUnit());
+			ExprSelf exprSelf = new ExprSelf(superSymbol, env.getCurrentPrototype(), currentMethod);
 
 			if ( env.getProject().getCompilerManager().getCompilationStep() == CompilationStep.step_9 ) {
 				MetaInfoServer.checkMessageSendWithMethodMetaobject(allMethodSignatureList, receiverType,

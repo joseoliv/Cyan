@@ -4,7 +4,7 @@ import java.util.List;
 import ast.Expr;
 import ast.ExprFunction;
 import ast.ParameterDec;
-import ast.ProgramUnit;
+import ast.Prototype;
 import ast.Type;
 
 public class WrParameterDec extends WrASTNode implements IDeclarationWritable, IVariableDecInterface {
@@ -41,12 +41,6 @@ public class WrParameterDec extends WrASTNode implements IDeclarationWritable, I
 	public void addDocumentText(String doc, String docKind, WrEnv env) {
 		checkSecurity(env);
 
-    	CompilationStep step = env.getCompilationStep();
-    	if ( step != CompilationStep.step_1 &&
-       		 step != CompilationStep.step_4 &&
-       		 step != CompilationStep.step_7 ) {
-    		throw new MetaSecurityException();
-    	}
 		hidden.addDocumentText(doc, docKind);
 	}
 
@@ -54,25 +48,12 @@ public class WrParameterDec extends WrASTNode implements IDeclarationWritable, I
 	public void addFeature(Tuple2<String, WrExprAnyLiteral> feature, WrEnv env) {
 		checkSecurity(env);
 
-    	CompilationStep step = env.getCompilationStep();
-    	if ( step != CompilationStep.step_1 &&
-       		 step != CompilationStep.step_4 &&
-       		 step != CompilationStep.step_7 ) {
-    		throw new MetaSecurityException();
-    	}
 		hidden.addFeature(feature);
 	}
 
 	@Override
 	public void addDocumentExample(String example, String exampleKind, WrEnv env) {
 		checkSecurity(env);
-
-    	CompilationStep step = env.getCompilationStep();
-    	if ( step != CompilationStep.step_1 &&
-       		 step != CompilationStep.step_4 &&
-       		 step != CompilationStep.step_7 ) {
-    		throw new MetaSecurityException();
-    	}
 
 		hidden.addDocumentExample(example, exampleKind);
 	}
@@ -81,15 +62,22 @@ public class WrParameterDec extends WrASTNode implements IDeclarationWritable, I
 	   @param env
 	 */
 	private void checkSecurity(WrEnv env) {
+    	CompilationStep step = env.getCompilationStep();
+    	if ( step != CompilationStep.step_1 &&
+       		 step != CompilationStep.step_4 &&
+       		 step != CompilationStep.step_7 ) {
+    		throw new MetaSecurityException();
+    	}
+
 		ExprFunction ef = hidden.getDeclaringFunction();
-		ProgramUnit pu;
+		Prototype pu;
 		if ( ef != null ) {
-			pu = ef.getCurrentProgramUnit();
+			pu = ef.getCurrentPrototype();
 		}
 		else {
 			pu = hidden.getDeclaringMethod().getDeclaringObject();
 		}
-    	if ( env.getCurrentProgramUnit().hidden != pu ) {
+    	if ( env.getCurrentPrototype().hidden != pu ) {
     		throw new MetaSecurityException();
     	}
 	}
@@ -97,22 +85,26 @@ public class WrParameterDec extends WrASTNode implements IDeclarationWritable, I
 
 	@Override
 	public List<Tuple2<String, String>> getDocumentTextList(WrEnv env) {
+    	checkGetInfo(env);
 		return hidden.getDocumentTextList();
 	}
 
 	@Override
 	public List<Tuple2<String, String>> getDocumentExampleList(WrEnv env) {
+    	checkGetInfo(env);
 		return hidden.getDocumentExampleList();
 	}
 
 
 	@Override
 	public List<Tuple2<String, WrExprAnyLiteral>> getFeatureList(WrEnv env) {
+    	checkGetInfo(env);
 		return hidden.getFeatureList();
 	}
 
 	@Override
 	public List<WrExprAnyLiteral> searchFeature(String name, WrEnv env) {
+    	checkGetInfo(env);
 		return hidden.searchFeature(name);
 	}
 

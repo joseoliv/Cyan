@@ -5,12 +5,13 @@ import error.CompileErrorException;
 import meta.AnnotationArgumentsKind;
 import meta.AttachedDeclarationKind;
 import meta.CyanMetaobjectAtAnnot;
-import meta.ICheckOverride_afsa;
-import meta.ICompiler_dpa;
-import meta.ICompiler_dsa;
-import meta.IParseWithCyanCompiler_dpa;
+import meta.ICheckOverride_afterSemAn;
+import meta.ICompiler_parsing;
+import meta.ICompiler_semAn;
+import meta.IParseWithCyanCompiler_parsing;
 import meta.InterpretationErrorException;
 import meta.MetaHelper;
+import meta.Token;
 import meta.WrMethodDec;
 import meta.WrStatement;
 
@@ -41,17 +42,18 @@ import meta.WrStatement;
 </code></pre>
 <p>Inside the attached DSL code three variables can be used:</p>
 <ul>
-<li><code>compiler</code>, whose type is <code>ICompiler_dsa</code>, the first parameter to method <code>afsa_checkOverride</code>;</li>
-<li><code>overridedMethod</code>, whose type is <code>WrMethodDec</code>, the second parameter to <code>afsa_checkOverride</code>;</li>
+<li><code>compiler</code>, whose type is <code>ICompiler_semAn</code>, the first parameter to method <code>afterSemAn_checkOverride</code>;</li>
+<li><code>overridedMethod</code>, whose type is <code>WrMethodDec</code>, the second parameter to <code>afterSemAn_checkOverride</code>;</li>
 <li>env, whose type is <code>WrEnv</code>, the same as <code>compiler getEnv</code>.</li>
 </ul>
  */
 public class CyanMetaobjectOnOverride extends CyanMetaobjectAtAnnot
-implements ICheckOverride_afsa, IParseWithCyanCompiler_dpa {
+implements ICheckOverride_afterSemAn, IParseWithCyanCompiler_parsing {
 
 	public CyanMetaobjectOnOverride() {
 		super("onOverride", AnnotationArgumentsKind.ZeroParameters,
-				new AttachedDeclarationKind[] { AttachedDeclarationKind.METHOD_DEC });
+				new AttachedDeclarationKind[] { AttachedDeclarationKind.METHOD_DEC },
+				Token.PUBLIC);
 	}
 
 
@@ -59,14 +61,13 @@ implements ICheckOverride_afsa, IParseWithCyanCompiler_dpa {
 	public boolean shouldTakeText() { return true; }
 
 	@Override
-	public void afsa_checkOverride(ICompiler_dsa compiler,
+	public void afterSemAn_checkOverride(ICompiler_semAn compiler,
 			WrMethodDec method) {
-
 		MetaHelper.interpreterFor_MOPInterfaceMethod(
 				statList,
 				compiler,
 				this,
-				"afsa_checkOverride",
+				"afterSemAn_checkOverride",
 				new String [] { "compiler", "method" },
 				new Object [] { compiler, method } ,
 				null);
@@ -77,12 +78,12 @@ implements ICheckOverride_afsa, IParseWithCyanCompiler_dpa {
 //
 //		final CyanMetaobjectAtAnnot thisMetaobject = this;
 //		try {
-//			WrEvalEnv ee = MetaHelper.getNewWrEvalEnv(compiler_dsa.getEnv(), null,
+//			WrEvalEnv ee = MetaHelper.getNewWrEvalEnv(compiler_semAn.getEnv(), null,
 //					fs.getFirstSymbol(), new String[] { "compiler", "overridedMethod", "metaobject" },
-//					new Object[] { compiler_dsa, overridedMethod, this } );
-//			ee.addVariable("env", compiler_dsa.getEnv());
+//					new Object[] { compiler_semAn, overridedMethod, this } );
+//			ee.addVariable("env", compiler_semAn.getEnv());
 //			ee.setCurrentMethod(overridedMethod);
-//			Object selfObject = MetaHelper.createSelfObject(compiler_dsa, thisMetaobject, ee);
+//			Object selfObject = MetaHelper.createSelfObject(compiler_semAn, thisMetaobject, ee);
 //			ee.setSelfObject(selfObject);
 //
 //			Object obj = MetaHelper.evalCode(statList, ee);
@@ -98,7 +99,7 @@ implements ICheckOverride_afsa, IParseWithCyanCompiler_dpa {
 
 
 	@Override
-	public void dpa_parse(ICompiler_dpa cp) {
+	public void parsing_parse(ICompiler_parsing cp) {
 
 		try {
 			cp.next();

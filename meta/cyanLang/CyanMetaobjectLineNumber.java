@@ -3,8 +3,8 @@ package meta.cyanLang;
 import meta.AnnotationArgumentsKind;
 import meta.CyanMetaobjectLiteralObject;
 import meta.CyanMetaobjectAtAnnot;
-import meta.IAction_dpa;
-import meta.ICompilerAction_dpa;
+import meta.IAction_parsing;
+import meta.ICompilerAction_parsing;
 import meta.WrAnnotationAt;
 
 /**
@@ -13,7 +13,7 @@ import meta.WrAnnotationAt;
  *
    @author José
  */public class CyanMetaobjectLineNumber extends CyanMetaobjectAtAnnot
-       implements IAction_dpa {
+       implements IAction_parsing {
 
 	public CyanMetaobjectLineNumber() {
 		super("lineNumber", AnnotationArgumentsKind.ZeroParameters);
@@ -21,9 +21,9 @@ import meta.WrAnnotationAt;
 
 
 	@Override
-	public StringBuffer dpa_codeToAdd( ICompilerAction_dpa compiler ) {
-		final WrAnnotationAt cyanMetaobjectAnnotation = this.getMetaobjectAnnotation();
-		return new StringBuffer("" +  cyanMetaobjectAnnotation.getSymbolMetaobjectAnnotation().getLineNumber() );
+	public StringBuffer parsing_codeToAdd( ICompilerAction_parsing compiler ) {
+		final WrAnnotationAt cyanAnnotation = this.getAnnotation();
+		return new StringBuffer("" +  cyanAnnotation.getSymbolAnnotation().getLineNumber() );
 	}
 
 

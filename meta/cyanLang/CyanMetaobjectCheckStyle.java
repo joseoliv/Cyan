@@ -6,8 +6,8 @@ package meta.cyanLang;
 import meta.AnnotationArgumentsKind;
 import meta.AttachedDeclarationKind;
 import meta.CyanMetaobjectAtAnnot;
-import meta.ICheckDeclaration_afsa;
-import meta.ICompiler_dsa;
+import meta.ICheckDeclaration_afterSemAn;
+import meta.ICompiler_semAn;
 import meta.IDeclaration;
 import meta.WrASTVisitor;
 import meta.WrEnv;
@@ -16,7 +16,7 @@ import meta.WrMethodDec;
 import meta.WrMethodSignature;
 import meta.WrMethodSignatureUnary;
 import meta.WrMethodSignatureWithKeywords;
-import meta.WrProgramUnit;
+import meta.WrPrototype;
 import meta.WrSymbol;
 
 /**
@@ -28,7 +28,7 @@ import meta.WrSymbol;
    @author José
 
  */
-public class CyanMetaobjectCheckStyle extends CyanMetaobjectAtAnnot implements ICheckDeclaration_afsa {
+public class CyanMetaobjectCheckStyle extends CyanMetaobjectAtAnnot implements ICheckDeclaration_afterSemAn {
 
 	public CyanMetaobjectCheckStyle() {
 		super("checkStyle", AnnotationArgumentsKind.ZeroParameters,
@@ -41,17 +41,17 @@ public class CyanMetaobjectCheckStyle extends CyanMetaobjectAtAnnot implements I
 	/*
 	@Override
 	public
-	StringBuffer dsa_codeToAdd(ICompiler_dsa compiler_dsa) {
-		System.out.println("dsa_codeToAdd in checkStyle");
+	StringBuffer semAn_codeToAdd(ICompiler_semAn compiler_semAn) {
+		System.out.println("semAn_codeToAdd in checkStyle");
 		return null;
 	}
 	*/
 
 	@Override
-	public void afsa_checkDeclaration(ICompiler_dsa compiler_dsa) {
+	public void afterSemAn_checkDeclaration(ICompiler_semAn compiler_semAn) {
 		final IDeclaration declaration = this.getAttachedDeclaration();
 		final String name = declaration.getName();
-		WrEnv env = compiler_dsa.getEnv();
+		WrEnv env = compiler_semAn.getEnv();
 		switch ( declaration.getKind(null) ) {
 //		case PROGRAM_DEC:
 //			final WrProgram p = (WrProgram ) declaration;
@@ -68,7 +68,7 @@ public class CyanMetaobjectCheckStyle extends CyanMetaobjectAtAnnot implements I
 		case METHOD_DEC:
 			final WrMethodDec method = (WrMethodDec ) declaration;
 			final String pp2 = method.getDeclaringObject().getCompilationUnit(env).getCyanPackage().getName() + "." + method.getDeclaringObject().getName();
-			checkMethodName(pp2, name, method.getFirstSymbol(compiler_dsa.getEnv()));
+			checkMethodName(pp2, name, method.getFirstSymbol(compiler_semAn.getEnv()));
 			break;
 		case METHOD_SIGNATURE_DEC:
 			final WrMethodSignature ms = (WrMethodSignature ) declaration;
@@ -76,15 +76,15 @@ public class CyanMetaobjectCheckStyle extends CyanMetaobjectAtAnnot implements I
 			checkMethodName(pp3, name, ms.getFirstSymbol());
 			break;
 		case PROTOTYPE_DEC:
-			final WrProgramUnit pu = (WrProgramUnit) declaration;
-			checkPrototype(pu, compiler_dsa.getEnv());
+			final WrPrototype pu = (WrPrototype) declaration;
+			checkPrototype(pu, compiler_semAn.getEnv());
 			break;
 		case FIELD_DEC:
 			for (int i = 0; i < name.length(); ++i) {
 				final char ch = name.charAt(i);
 				if ( ch == '_' ) {
 					this.addError(
-							((WrFieldDec ) declaration).getFirstSymbol(compiler_dsa.getEnv()),
+							((WrFieldDec ) declaration).getFirstSymbol(compiler_semAn.getEnv()),
 							    "A variable name should not have underscores");
 				}
 			}
@@ -103,7 +103,7 @@ public class CyanMetaobjectCheckStyle extends CyanMetaobjectAtAnnot implements I
 //		checkPackageName(aPackage.getName());
 //		aPackage.accept( new ASTVisitor() {
 //			@Override
-//			public void visit(ProgramUnit node) {
+//			public void visit(Prototype node) {
 //				checkPrototype(node.getI());
 //			}
 //		});
@@ -115,7 +115,7 @@ public class CyanMetaobjectCheckStyle extends CyanMetaobjectAtAnnot implements I
 	   @param name
 	   @param pu
 	 */
-	private void checkPrototype(WrProgramUnit pu, WrEnv wrEnv) {
+	private void checkPrototype(WrPrototype pu, WrEnv wrEnv) {
 		final String name = pu.getName();
 		pu.accept( new WrASTVisitor() {
 			@Override

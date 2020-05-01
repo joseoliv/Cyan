@@ -5,11 +5,10 @@ import java.util.List;
 import meta.AnnotationArgumentsKind;
 import meta.AttachedDeclarationKind;
 import meta.CyanMetaobjectAtAnnot;
-import meta.IAction_afti;
-import meta.ICompiler_afti;
+import meta.IAction_afterResTypes;
+import meta.ICompiler_afterResTypes;
 import meta.MetaHelper;
 import meta.Tuple3;
-import meta.WrAnnotationAt;
 
 /** This is a demonstration metaobject. <br>
  * Usage of this metaobject: use it with parameters that are the prototype, method name, and code that should be
@@ -19,7 +18,7 @@ import meta.WrAnnotationAt;
  * }
    @author jose
  */
-public class CyanMetaobjectAddBeforeMethod extends CyanMetaobjectAtAnnot implements IAction_afti
+public class CyanMetaobjectAddBeforeMethod extends CyanMetaobjectAtAnnot implements IAction_afterResTypes
 {
 
 	public CyanMetaobjectAddBeforeMethod() {
@@ -29,9 +28,9 @@ public class CyanMetaobjectAddBeforeMethod extends CyanMetaobjectAtAnnot impleme
 
 
 	@Override
-	public List<Tuple3<String, StringBuffer, Boolean>> afti_beforeMethodCodeList(
-			ICompiler_afti compiler) {
-		final List<Object> parameterList = ((WrAnnotationAt ) metaobjectAnnotation).getJavaParameterList();
+	public List<Tuple3<String, StringBuffer, Boolean>> afterResTypes_beforeMethodCodeList(
+			ICompiler_afterResTypes compiler) {
+		final List<Object> parameterList = getAnnotation().getJavaParameterList();
 		final List<Tuple3<String, StringBuffer, Boolean>> tupleList = new ArrayList<>();
 		tupleList.add( new Tuple3<String, StringBuffer, Boolean>(
 				MetaHelper.removeQuotes((String ) parameterList.get(0)),

@@ -5,13 +5,13 @@ import error.CompileErrorException;
 import meta.AnnotationArgumentsKind;
 import meta.AttachedDeclarationKind;
 import meta.CyanMetaobjectAtAnnot;
-import meta.ICheckSubprototype_afsa;
-import meta.ICompiler_dpa;
-import meta.ICompiler_dsa;
-import meta.IParseWithCyanCompiler_dpa;
+import meta.ICheckSubprototype_afterSemAn;
+import meta.ICompiler_parsing;
+import meta.ICompiler_semAn;
+import meta.IParseWithCyanCompiler_parsing;
 import meta.InterpretationErrorException;
 import meta.MetaHelper;
-import meta.WrProgramUnit;
+import meta.WrPrototype;
 import meta.WrStatement;
 
 /**
@@ -20,7 +20,7 @@ import meta.WrStatement;
    @author jose
  */
 public class CyanMetaobjectOnSubprototype extends CyanMetaobjectAtAnnot
-implements ICheckSubprototype_afsa, IParseWithCyanCompiler_dpa {
+implements ICheckSubprototype_afterSemAn, IParseWithCyanCompiler_parsing {
 
 	public CyanMetaobjectOnSubprototype() {
 		super("onSubprototype", AnnotationArgumentsKind.ZeroParameters,
@@ -34,14 +34,14 @@ implements ICheckSubprototype_afsa, IParseWithCyanCompiler_dpa {
 	public boolean shouldTakeText() { return true; }
 
 	@Override
-	public void afsa_checkSubprototype(ICompiler_dsa compiler,
-			WrProgramUnit subPrototype) {
+	public void afterSemAn_checkSubprototype(ICompiler_semAn compiler,
+			WrPrototype subPrototype) {
 
 		MetaHelper.interpreterFor_MOPInterfaceMethod(
 				statList,
 				compiler,
 				this,
-				"afsa_checkSubprototype",
+				"afterSemAn_checkSubprototype",
 				new String [] { "compiler", "subPrototype" },
 				new Object [] { compiler, subPrototype } ,
 				null);
@@ -49,7 +49,7 @@ implements ICheckSubprototype_afsa, IParseWithCyanCompiler_dpa {
 
 
 	@Override
-	public void dpa_parse(ICompiler_dpa cp) {
+	public void parsing_parse(ICompiler_parsing cp) {
 
 		try {
 			cp.next();

@@ -5,9 +5,9 @@ package ast;
 
 import lexer.Symbol;
 import lexer.SymbolFloatLiteral;
-import meta.WrExprLiteralFloat;
 import meta.MetaHelper;
 import meta.Token;
+import meta.WrExprLiteralFloat;
 import saci.Env;
 
 /** Represents a float literal such as 2.71F
@@ -19,12 +19,12 @@ public class ExprLiteralFloat extends ExprLiteralNumber {
 	/**
 	 * @param symbol
 	 */
-	public ExprLiteralFloat(Symbol symbol) {
-		super(symbol);
+	public ExprLiteralFloat(Symbol symbol, MethodDec currentMethod) {
+		super(symbol, currentMethod);
 	}
 
-	public ExprLiteralFloat(Symbol symbol, Symbol prefix) {
-		super(symbol);
+	public ExprLiteralFloat(Symbol symbol, Symbol prefix, MethodDec currentMethod) {
+		super(symbol, currentMethod);
 		this.prefix = prefix;
 	}
 

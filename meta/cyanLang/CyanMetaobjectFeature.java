@@ -4,8 +4,8 @@ import meta.AnnotationArgumentsKind;
 import meta.AttachedDeclarationKind;
 import meta.CyanMetaobjectAtAnnot;
 import meta.IAction_dpp;
-import meta.ICompilerAction_dpa;
-import meta.ICompilerInfo_dpa;
+import meta.ICompilerAction_parsing;
+import meta.ICompilerInfo_parsing;
 import meta.ICompiler_dpp;
 import meta.IDeclaration;
 import meta.IDeclarationWritable;
@@ -34,7 +34,7 @@ import meta.WrProgram_dpp;
    @author José
  */
 public class CyanMetaobjectFeature extends CyanMetaobjectAtAnnot
-    implements ICompilerInfo_dpa, IAction_dpp {
+    implements ICompilerInfo_parsing, IAction_dpp {
 
 	public CyanMetaobjectFeature() {
 		super("feature", AnnotationArgumentsKind.TwoParameters,
@@ -47,14 +47,14 @@ public class CyanMetaobjectFeature extends CyanMetaobjectAtAnnot
 
 	@Override
 	public void check() {
-		if ( ((WrAnnotationAt ) metaobjectAnnotation).getRealParameterList() == null ||
-				((WrAnnotationAt ) metaobjectAnnotation).getRealParameterList().size() != 2 )  {
+		if ( getAnnotation().getRealParameterList() == null ||
+				getAnnotation().getRealParameterList().size() != 2 )  {
 			addError("This metaobject annotation should have exactly two parameters");
 			return ;
 		}
-		final String featureName = ((WrAnnotationAt ) metaobjectAnnotation).javaParameterAt(0);
-		final Object featureValue = ((WrAnnotationAt ) metaobjectAnnotation).getRealParameterList().get(1);
-		WrExprAnyLiteral firstParameter = ((WrAnnotationAt ) metaobjectAnnotation).getRealParameterList().get(0);
+		final String featureName = getAnnotation().javaParameterAt(0);
+		final Object featureValue = getAnnotation().getRealParameterList().get(1);
+		WrExprAnyLiteral firstParameter = getAnnotation().getRealParameterList().get(0);
 		if ( !(firstParameter instanceof WrExprLiteralString) && !(firstParameter instanceof WrExprAnyLiteralIdent)) {
 			addError("This metaobject annotation should have the first parameter of type 'String'");
 			return ;
@@ -75,8 +75,6 @@ public class CyanMetaobjectFeature extends CyanMetaobjectAtAnnot
 			return ;
 		}
 
-		// // cyanMetaobjectAnnotation.setInfo_dpa( new Tuple2<String, ExprAnyLiteral>( removeQuotes((String ) featureName),
-         // //				(ExprAnyLiteral ) featureValue));
 		String featureNameWithoutQuotes = MetaHelper.removeQuotes( featureName );
 		info = new Tuple2<String, WrExprAnyLiteral>( featureNameWithoutQuotes,
 		        				((WrExprAnyLiteral ) featureValue));
@@ -102,30 +100,18 @@ public class CyanMetaobjectFeature extends CyanMetaobjectAtAnnot
 
 	}
 
-	/**
-	 * @feature(name, [ "o", "a" ] )   Object []array
-	 */
-//	@Override
-//	public List<Tuple2<String, WrExprAnyLiteral>> infoListToDeclaration() {
-//		// List<Expr> exprList = ((AnnotationAt ) metaobjectAnnotation).getRealParameterList();
-//		//Tuple2<String, ExprAnyLiteral> t = (Tuple2<String, ExprAnyLiteral> ) getMetaobjectAnnotation().getInfo_dpa();
-//		final List<Tuple2<String, WrExprAnyLiteral>> array = new ArrayList<>();
-//		array.add(info);
-//		return array;
-//	}
-//
 	@Override
 	public
-//	Tuple2<StringBuffer, String> afti_codeToAdd(
-//			ICompiler_afti compiler, List<Tuple2<Annotation, List<ISlotInterface>>> infoList)
-	void action_dpa(ICompilerAction_dpa compiler)	{
+	void action_parsing(ICompilerAction_parsing compiler)	{
 		IDeclaration idec = this.getAttachedDeclaration();
 
 		if ( idec instanceof IDeclarationWritable ) {
 			IDeclarationWritable idw = (IDeclarationWritable ) idec;
 			idw.addFeature(info, compiler.getEnv());
 		}
-		// else should be an internal compiler error
+		else {
+			this.addError("In metaobject 'feature', there is probably an internal error");
+		}
 	}
 
 	private Tuple2<String, WrExprAnyLiteral> info;

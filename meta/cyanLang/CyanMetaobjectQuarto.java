@@ -3,8 +3,8 @@ package meta.cyanLang;
 import meta.AnnotationArgumentsKind;
 import meta.AttachedDeclarationKind;
 import meta.CyanMetaobjectAtAnnot;
-import meta.ICheckDeclaration_afsa;
-import meta.ICompiler_dsa;
+import meta.ICheckDeclaration_afterSemAn;
+import meta.ICompiler_semAn;
 import meta.IDeclaration;
 import meta.IVariableDecInterface;
 import meta.WrASTNode;
@@ -64,7 +64,7 @@ import meta.WrMethodSignatureOperator;
 import meta.WrMethodSignatureUnary;
 import meta.WrMethodSignatureWithKeywords;
 import meta.WrParameterDec;
-import meta.WrProgramUnit;
+import meta.WrPrototype;
 import meta.WrSlotDec;
 import meta.WrStatement;
 import meta.WrStatementAssignmentList;
@@ -75,7 +75,7 @@ import meta.WrStatementIf;
 import meta.WrStatementList;
 import meta.WrStatementLocalVariableDec;
 import meta.WrStatementLocalVariableDecList;
-import meta.WrStatementMetaobjectAnnotation;
+import meta.WrStatementAnnotation;
 import meta.WrStatementMinusMinusIdent;
 import meta.WrStatementNull;
 import meta.WrStatementPlusPlusIdent;
@@ -86,7 +86,7 @@ import meta.WrStatementType;
 import meta.WrStatementWhile;
 
 public class CyanMetaobjectQuarto extends CyanMetaobjectAtAnnot
-implements ICheckDeclaration_afsa {
+implements ICheckDeclaration_afterSemAn {
 
 
 	public CyanMetaobjectQuarto() {
@@ -98,13 +98,13 @@ implements ICheckDeclaration_afsa {
 	}
 
 	@Override
-	public void afsa_checkDeclaration(ICompiler_dsa compiler) {
+	public void afterSemAn_checkDeclaration(ICompiler_semAn compiler) {
 		IDeclaration dec = this.getAttachedDeclaration();
-		WrProgramUnit pu = (WrProgramUnit ) dec;
+		WrPrototype pu = (WrPrototype ) dec;
 		final CyanMetaobjectAtAnnot metaobject = this;
 		WrASTVisitorAll visitor = new WrASTVisitorAll();
 		pu.accept( visitor, compiler.getEnv() );
-		System.out.println("End of afsa quarto");
+		System.out.println("End of AFTER_SEM_AN quarto");
 	}
 
 }
@@ -129,7 +129,7 @@ class WrASTVisitorAll extends WrASTVisitor {
 		System.out.println("WrCompilationUnit " + node.getFilename() + " ");
 	}
 	@Override
-	public void visit(WrProgramUnit node, WrEnv env) {	}
+	public void visit(WrPrototype node, WrEnv env) {	}
 	@Override
 	public void visit(WrMethodDec node, WrEnv env) { }
 	@Override
@@ -160,7 +160,7 @@ class WrASTVisitorAll extends WrASTVisitor {
 	@Override
 	public void preVisit(WrCompilationUnit node, WrEnv env) { }
 	@Override
-	public void preVisit(WrProgramUnit node, WrEnv env) { }
+	public void preVisit(WrPrototype node, WrEnv env) { }
 
 	@Override
 	public void preVisit(WrMethodDec node, WrEnv env) { }
@@ -505,8 +505,8 @@ class WrASTVisitorAll extends WrASTVisitor {
 		else if ( node instanceof WrStatementBreak ) {
 			this.visit( (WrStatementBreak ) node, env );
 		}
-		else if ( node instanceof WrStatementMetaobjectAnnotation ) {
-			this.visit( (WrStatementMetaobjectAnnotation ) node, env );
+		else if ( node instanceof WrStatementAnnotation ) {
+			this.visit( (WrStatementAnnotation ) node, env );
 		}
 		else if ( node instanceof WrStatementFor ) {
 			this.visit( (WrStatementFor ) node, env );
@@ -561,7 +561,7 @@ class WrASTVisitorAll extends WrASTVisitor {
 	@Override
 	public void visit(WrStatementBreak node, WrEnv env) { }
 	@Override
-	public void visit(WrStatementMetaobjectAnnotation node, WrEnv env) { }
+	public void visit(WrStatementAnnotation node, WrEnv env) { }
 
 	@Override
 	public void visit(WrStatementFor node, WrEnv env) {

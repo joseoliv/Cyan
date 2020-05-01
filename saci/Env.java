@@ -40,7 +40,7 @@ import ast.MethodSignatureWithKeywords;
 import ast.ObjectDec;
 import ast.PWCharArray;
 import ast.ParameterDec;
-import ast.ProgramUnit;
+import ast.Prototype;
 import ast.SlotDec;
 import ast.Statement;
 import ast.StatementLocalVariableDec;
@@ -54,7 +54,7 @@ import error.ErrorKind;
 import error.UnitError;
 import lexer.CompilerPhase;
 import lexer.Symbol;
-import lexer.SymbolCyanMetaobjectAnnotation;
+import lexer.SymbolCyanAnnotation;
 import meta.CompilationPhase;
 import meta.CompilationStep;
 import meta.CyanMetaobject;
@@ -62,12 +62,12 @@ import meta.CyanMetaobjectError;
 import meta.DirectoryKindPPP;
 import meta.FileError;
 import meta.IActionFunction;
-import meta.IAction_dsa;
-import meta.ISlotInterface;
+import meta.IAction_semAn;
+import meta.ISlotSignature;
 import meta.LocalVarInfo;
 import meta.MetaHelper;
 import meta.SourceCodeChangeAddText;
-import meta.SourceCodeChangeByMetaobjectAnnotation;
+import meta.SourceCodeChangeByAnnotation;
 import meta.SourceCodeChangeDeleteText;
 import meta.SourceCodeChangeShiftPhase;
 import meta.Token;
@@ -77,7 +77,7 @@ import meta.Tuple4;
 import meta.Tuple5;
 import meta.WrCyanPackage;
 import meta.WrEnv;
-import meta.WrProgramUnit;
+import meta.WrPrototype;
 import meta.WrType;
 import meta.lexer.MetaLexer;
 
@@ -102,8 +102,8 @@ public class Env implements Cloneable {
 
 	public Env(Project project) {
 		this.project = project;
-		publicSourceFileNameTable = new Hashtable<String, ProgramUnit>();
-		privateProgramUnitTable = new Hashtable<String, ProgramUnit>();
+		publicSourceFileNameTable = new Hashtable<String, Prototype>();
+		privatePrototypeTable = new Hashtable<String, Prototype>();
 		slotDecTable = new Hashtable<String, SlotDec>();
 		variableDecTable = new Hashtable<String, VariableDecInterface>();
 		functionList = new ArrayList<ExprFunction>();
@@ -159,7 +159,7 @@ public class Env implements Cloneable {
 			newObj.variableDecTable = (Hashtable<String, VariableDecInterface>) newObj.variableDecTable.clone();
 			newObj.variableDecStack = (Stack<VariableDecInterface>) newObj.variableDecStack.clone();
 			newObj.slotDecTable = (Hashtable<String, SlotDec>) newObj.slotDecTable.clone();
-			newObj.privateProgramUnitTable = (Hashtable<String, ProgramUnit>) newObj.privateProgramUnitTable.clone();
+			newObj.privatePrototypeTable = (Hashtable<String, Prototype>) newObj.privatePrototypeTable.clone();
 			if ( newObj.genericPrototypeFormalParameterTable != null ) {
 				newObj.genericPrototypeFormalParameterTable = (Hashtable<String, GenericParameter>) newObj.genericPrototypeFormalParameterTable
 						.clone();
@@ -170,14 +170,14 @@ public class Env implements Cloneable {
 			 * newObj.currentCompilationUnit =
 			 * newObj.currentCompilationUnit.clone(); }
 			 */
-//			if ( newObj.currentProgramUnit != null ) {
-//				newObj.currentProgramUnit = newObj.currentProgramUnit.clone();
+//			if ( newObj.currentPrototype != null ) {
+//				newObj.currentPrototype = newObj.currentPrototype.clone();
 //			}
 			newObj.functionList = (List<ExprFunction>) ((ArrayList<ExprFunction> )  newObj.functionList).clone();
 			newObj.statementStack = (Stack<CodeWithError>) newObj.statementStack.clone();
 			newObj.functionStack = (Stack<ExprFunction>) newObj.functionStack.clone();
 			newObj.cyanMetaobjectCompilationContextStack =
-					(Stack<Tuple7<String, String, String, String, Integer, Integer, List<ISlotInterface>>>) newObj.cyanMetaobjectCompilationContextStack
+					(Stack<Tuple7<String, String, String, String, Integer, Integer, List<ISlotSignature>>>) newObj.cyanMetaobjectCompilationContextStack
 					.clone();
 			newObj.metaobjectAnnotationParseWithCompilerStack = (Stack<Annotation>) newObj.metaobjectAnnotationParseWithCompilerStack
 					.clone();
@@ -187,9 +187,9 @@ public class Env implements Cloneable {
 			}
 			newObj.offsetPushCompilationContextStack = (Stack<Integer>) newObj.offsetPushCompilationContextStack
 					.clone();
-			if ( newObj.programUnitForGenericPrototypeList != null ) {
-				newObj.programUnitForGenericPrototypeList = (ArrayList<ProgramUnit>)
-						((ArrayList<ProgramUnit>) newObj.programUnitForGenericPrototypeList).clone();
+			if ( newObj.prototypeForGenericPrototypeList != null ) {
+				newObj.prototypeForGenericPrototypeList = (ArrayList<Prototype>)
+						((ArrayList<Prototype>) newObj.prototypeForGenericPrototypeList).clone();
 			}
 			if ( stackLocalVarInfo!= null ) {
 				newObj.stackLocalVarInfo = stackLocalVarInfo;
@@ -222,7 +222,7 @@ public class Env implements Cloneable {
 	 * @return
 	 */
 	public String getNewUniqueVariableName() {
-		if ( this.currentCompilationUnit == null || this.currentProgramUnit == null ) {
+		if ( this.currentCompilationUnit == null || this.currentPrototype == null ) {
 			return null;
 		}
 		else {
@@ -242,13 +242,13 @@ public class Env implements Cloneable {
 	}
 
 	/**
-	 * execute the dsa actions asked through the call to methods
-	 * {@link #addCodeAtMetaobjectAnnotation(CyanMetaobject, StringBuffer, boolean)},
-	 * {@link #removeCodeMetaobjectAnnotation(CyanMetaobject)}, and
+	 * execute the SEM_AN actions asked through the call to methods
+	 * {@link #addCodeAtAnnotation(CyanMetaobject, StringBuffer, boolean)},
+	 * {@link #removeCodeAnnotation(CyanMetaobject)}, and
 	 * {@link #addSuffixToChange(CyanMetaobject)}.
 	 */
-	public void dsa_actions() {
-		Saci.makeChanges(setOfChanges, this, CompilationPhase.dsa);
+	public void semAn_actions() {
+		Saci.makeChanges(setOfChanges, this, CompilationPhase.semAn);
 	}
 
 	/**
@@ -261,29 +261,29 @@ public class Env implements Cloneable {
 	 * @param codeToAdd
 	 * @return
 	 */
-	public String addCodeAtMetaobjectAnnotation(CyanMetaobject cyanMetaobject, StringBuffer codeToAdd, int offsetToAdd) {
+	public String addCodeAtAnnotation(CyanMetaobject cyanMetaobject, StringBuffer codeToAdd, int offsetToAdd) {
 
-		final Annotation cyanMetaobjectAnnotation = meta.GetHiddenItem.getHiddenCyanMetaobjectAnnotation(cyanMetaobject.getMetaobjectAnnotation());
-		final CompilationUnitSuper compilationUnitMetaobjectAnnotation = cyanMetaobjectAnnotation.getCompilationUnit();
+		final Annotation cyanAnnotation = meta.GetHiddenItem.getHiddenCyanAnnotation(cyanMetaobject.getAnnotation());
+		final CompilationUnitSuper compilationUnitAnnotation = cyanAnnotation.getCompilationUnit();
 		/*
 		 * add change to the list of changes
 		 */
-		List<SourceCodeChangeByMetaobjectAnnotation> changeList = setOfChanges.get(compilationUnitMetaobjectAnnotation);
+		List<SourceCodeChangeByAnnotation> changeList = setOfChanges.get(compilationUnitAnnotation);
 		if ( changeList == null ) {
-			changeList = new ArrayList<SourceCodeChangeByMetaobjectAnnotation>();
-			setOfChanges.put(compilationUnitMetaobjectAnnotation, changeList);
+			changeList = new ArrayList<SourceCodeChangeByAnnotation>();
+			setOfChanges.put(compilationUnitAnnotation, changeList);
 		}
 		final String code = " " + Env.getCodeToAddWithContext(cyanMetaobject, codeToAdd.toString(), null, null) + " ";
 		/*
-		if ( cyanMetaobjectAnnotation.getInExpr() ) {
+		if ( cyanAnnotation.getInExpr() ) {
 			code = " ( " + code + " ) ";
 		}
 		*/
 
-		// if ( offsetToAdd < 0 ) offsetToAdd = cyanMetaobjectAnnotation.getNextSymbol().getOffset() - 1;
-		final Symbol lastSymbol = cyanMetaobjectAnnotation.getLastSymbol();
+		// if ( offsetToAdd < 0 ) offsetToAdd = cyanAnnotation.getNextSymbol().getOffset() - 1;
+		final Symbol lastSymbol = cyanAnnotation.getLastSymbol();
 		if ( offsetToAdd < 0 ) {
-			if ( lastSymbol instanceof SymbolCyanMetaobjectAnnotation ) {
+			if ( lastSymbol instanceof SymbolCyanAnnotation ) {
 				offsetToAdd = lastSymbol.getOffset() + lastSymbol.getSymbolString().length() + 1;
 			}
 			else {
@@ -293,7 +293,7 @@ public class Env implements Cloneable {
 		String annotStr = "" + lastSymbol.getCompilationUnit().getText()[offsetToAdd];
 		annotStr = lastSymbol.getSymbolString() + "  " + lastSymbol.getSymbolString().length();
 		// for (int k = 0; k < )
-		changeList.add(new SourceCodeChangeAddText(offsetToAdd, new StringBuffer(code), cyanMetaobjectAnnotation));
+		changeList.add(new SourceCodeChangeAddText(offsetToAdd, new StringBuffer(code), cyanAnnotation));
 
 		return code;
 	}
@@ -303,26 +303,26 @@ public class Env implements Cloneable {
 	 *
 	 * @return
 	 */
-	public boolean removeCodeMetaobjectAnnotation(CyanMetaobject cyanMetaobject) {
+	public boolean removeCodeAnnotation(CyanMetaobject cyanMetaobject) {
 
-		if ( cyanMetaobject instanceof IAction_dsa ) {
-			// IAction_dsa cyanMetaobjectCodeGen = (IAction_dsa )
+		if ( cyanMetaobject instanceof IAction_semAn ) {
+			// IAction_semAn cyanMetaobjectCodeGen = (IAction_semAn )
 			// cyanMetaobject;
 
-			final Annotation cyanMetaobjectAnnotation = meta.GetHiddenItem.getHiddenCyanMetaobjectAnnotation(cyanMetaobject.getMetaobjectAnnotation());
-			final CompilationUnitSuper compilationUnitMetaobjectAnnotation = cyanMetaobjectAnnotation.getCompilationUnit();
+			final Annotation cyanAnnotation = meta.GetHiddenItem.getHiddenCyanAnnotation(cyanMetaobject.getAnnotation());
+			final CompilationUnitSuper compilationUnitAnnotation = cyanAnnotation.getCompilationUnit();
 			/*
 			 * add change to the list of changes
 			 */
-			List<SourceCodeChangeByMetaobjectAnnotation> changeList = setOfChanges.get(compilationUnitMetaobjectAnnotation);
+			List<SourceCodeChangeByAnnotation> changeList = setOfChanges.get(compilationUnitAnnotation);
 			if ( changeList == null ) {
-				changeList = new ArrayList<SourceCodeChangeByMetaobjectAnnotation>();
-				setOfChanges.put(compilationUnitMetaobjectAnnotation, changeList);
+				changeList = new ArrayList<SourceCodeChangeByAnnotation>();
+				setOfChanges.put(compilationUnitAnnotation, changeList);
 			}
 
-			final int offsetStart = cyanMetaobject.getMetaobjectAnnotation().getFirstSymbol().getOffset();
+			final int offsetStart = cyanMetaobject.getAnnotation().getFirstSymbol().getOffset();
 
-			final Annotation annotation = meta.GetHiddenItem.getHiddenCyanMetaobjectAnnotation(cyanMetaobject.getMetaobjectAnnotation());
+			final Annotation annotation = meta.GetHiddenItem.getHiddenCyanAnnotation(cyanMetaobject.getAnnotation());
 			if ( annotation instanceof AnnotationMacroCall ) {
 				/*
 				 * this instanceof should not be here. I know that.
@@ -332,12 +332,12 @@ public class Env implements Cloneable {
 				final Symbol lastSymbol = macroCall.getLastSymbolMacroCall();
 				final int offsetEndLastMacroSymbol = lastSymbol.getOffset() + lastSymbol.getSymbolString().length();
 
-				final SourceCodeChangeByMetaobjectAnnotation thisChange = new SourceCodeChangeDeleteText(offsetStart,
+				final SourceCodeChangeByAnnotation thisChange = new SourceCodeChangeDeleteText(offsetStart,
 						offsetEndLastMacroSymbol - offsetStart, annotation);
 
 				int numSourceCodeChanges = 1;
 				changeList.add(thisChange);
-				final int numLinesToDelete = this.numLinesBetween(compilationUnitMetaobjectAnnotation.getText(), offsetStart,
+				final int numLinesToDelete = this.numLinesBetween(compilationUnitAnnotation.getText(), offsetStart,
 						offsetEndLastMacroSymbol);
 
 				if ( numLinesToDelete > 0 ) {
@@ -354,23 +354,23 @@ public class Env implements Cloneable {
 
 			}
 			else {
-				int offsetNext = cyanMetaobject.getMetaobjectAnnotation().getNextSymbol().getOffset();
+				int offsetNext = cyanMetaobject.getAnnotation().getNextSymbol().getOffset();
 				/*
 				 * keep the spaces before the next token till the start of the
 				 * line
 				 */
-				final char[] text = compilationUnitMetaobjectAnnotation.getText();
+				final char[] text = compilationUnitAnnotation.getText();
 				int i = offsetNext - 1;
 				while (i > 0 && Character.isWhitespace(text[i]) && text[i] != '\n') {
 					--i;
 				}
 				if ( i >= 0 && text[i] == '\n' || i > 0 && !Character.isWhitespace(text[i]) ) offsetNext = i + 1;
 
-				final SourceCodeChangeByMetaobjectAnnotation thisChange = new SourceCodeChangeDeleteText(offsetStart,
+				final SourceCodeChangeByAnnotation thisChange = new SourceCodeChangeDeleteText(offsetStart,
 						offsetNext - offsetStart, annotation);
 				changeList.add(thisChange);
 				int numSourceCodeChanges = 1;
-				final int numLinesToDelete = this.numLinesBetween(compilationUnitMetaobjectAnnotation.getText(), offsetStart,
+				final int numLinesToDelete = this.numLinesBetween(compilationUnitAnnotation.getText(), offsetStart,
 						offsetNext);
 
 				if ( numLinesToDelete > 0 ) {
@@ -479,9 +479,9 @@ public class Env implements Cloneable {
 			/*
 			 * add change to the list of changes
 			 */
-			List<SourceCodeChangeByMetaobjectAnnotation> changeList = setOfChanges.get(compilationUnit);
+			List<SourceCodeChangeByAnnotation> changeList = setOfChanges.get(compilationUnit);
 			if ( changeList == null ) {
-				changeList = new ArrayList<SourceCodeChangeByMetaobjectAnnotation>();
+				changeList = new ArrayList<SourceCodeChangeByAnnotation>();
 				setOfChanges.put(compilationUnit, changeList);
 			}
 
@@ -501,7 +501,7 @@ public class Env implements Cloneable {
 			if ( i == 0 ) return false;
 			offsetNext = i + 1;
 
-			final SourceCodeChangeByMetaobjectAnnotation thisChange = new SourceCodeChangeDeleteText(offsetStart, offsetNext - offsetStart,
+			final SourceCodeChangeByAnnotation thisChange = new SourceCodeChangeDeleteText(offsetStart, offsetNext - offsetStart,
 					annotation);
 			changeList.add(thisChange);
 			int numSourceCodeChanges = 1;
@@ -524,33 +524,33 @@ public class Env implements Cloneable {
 
 
 
-	private boolean addCodeAtOffset(Annotation cyanMetaobjectAnnotation, CompilationUnitSuper compilationUnit,
+	private boolean addCodeAtOffset(Annotation cyanAnnotation, CompilationUnitSuper compilationUnit,
 			StringBuffer codeToAdd, Type codeType, int offsetToAdd) {
 
-		final CyanMetaobject cyanMetaobject = cyanMetaobjectAnnotation.getCyanMetaobject();
+		final CyanMetaobject cyanMetaobject = cyanAnnotation.getCyanMetaobject();
 		/*
 		 * add change to the list of changes
 		 */
-		List<SourceCodeChangeByMetaobjectAnnotation> changeList = setOfChanges.get(compilationUnit);
+		List<SourceCodeChangeByAnnotation> changeList = setOfChanges.get(compilationUnit);
 		if ( changeList == null ) {
-			changeList = new ArrayList<SourceCodeChangeByMetaobjectAnnotation>();
+			changeList = new ArrayList<SourceCodeChangeByAnnotation>();
 			setOfChanges.put(compilationUnit, changeList);
 		}
 		String code = " " + Env.getCodeToAddWithContext(cyanMetaobject, codeToAdd.toString(), codeType, null);
-		if ( cyanMetaobjectAnnotation.getInExpr() ) {
+		if ( cyanAnnotation.getInExpr() ) {
 			code = " ( " + code + " ) ";
 		}
 
-		changeList.add(new SourceCodeChangeAddText(offsetToAdd, new StringBuffer(code), cyanMetaobjectAnnotation));
+		changeList.add(new SourceCodeChangeAddText(offsetToAdd, new StringBuffer(code), cyanAnnotation));
 
 		return true;
 	}
 
-	private static void removeChangesFromTo(List<SourceCodeChangeByMetaobjectAnnotation> changeList, int offsetStart,
+	private static void removeChangesFromTo(List<SourceCodeChangeByAnnotation> changeList, int offsetStart,
 			int offsetNext, int numSourceCodeChanges) {
 		final List<Integer> indexToDelete = new ArrayList<>();
 		for (int i = 0; i < changeList.size() - numSourceCodeChanges; ++i) {
-			final SourceCodeChangeByMetaobjectAnnotation change = changeList.get(i);
+			final SourceCodeChangeByAnnotation change = changeList.get(i);
 			if ( change.offset >= offsetStart && change.offset < offsetNext ) {
 				indexToDelete.add(i);
 			}
@@ -563,35 +563,35 @@ public class Env implements Cloneable {
 	/**
 	 * add a metaobject annotation that should change the suffix. That is, something
 	 * like <code>{@literal @}myMO(10)</code> should be changed to
-	 * <code>{@literal @}myMO#dsa(10)</code>.
+	 * <code>{@literal @}myMO#semAn(10)</code>.
 	 */
 	public boolean addSuffixToChange(CyanMetaobject cyanMetaobject) {
 
-		if ( cyanMetaobject instanceof IAction_dsa ) {
-			final Annotation cyanMetaobjectAnnotation = meta.GetHiddenItem.getHiddenCyanMetaobjectAnnotation(cyanMetaobject.getMetaobjectAnnotation());
-			final CompilationUnitSuper compilationUnitMetaobjectAnnotation = cyanMetaobjectAnnotation.getCompilationUnit();
+		if ( cyanMetaobject instanceof IAction_semAn ) {
+			final Annotation cyanAnnotation = meta.GetHiddenItem.getHiddenCyanAnnotation(cyanMetaobject.getAnnotation());
+			final CompilationUnitSuper compilationUnitAnnotation = cyanAnnotation.getCompilationUnit();
 			/*
 			 * add change to the list of changes
 			 */
-			List<SourceCodeChangeByMetaobjectAnnotation> changeList = setOfChanges.get(compilationUnitMetaobjectAnnotation);
+			List<SourceCodeChangeByAnnotation> changeList = setOfChanges.get(compilationUnitAnnotation);
 			if ( changeList == null ) {
-				changeList = new ArrayList<SourceCodeChangeByMetaobjectAnnotation>();
-				setOfChanges.put(compilationUnitMetaobjectAnnotation, changeList);
+				changeList = new ArrayList<SourceCodeChangeByAnnotation>();
+				setOfChanges.put(compilationUnitAnnotation, changeList);
 			}
-			changeList.add(new SourceCodeChangeShiftPhase(compilationUnitMetaobjectAnnotation.getText(), this,
-					cyanMetaobjectAnnotation.getFirstSymbol().getOffset(), CompilerPhase.DSA, compilationUnitMetaobjectAnnotation,
-					cyanMetaobjectAnnotation));
+			changeList.add(new SourceCodeChangeShiftPhase(compilationUnitAnnotation.getText(), this,
+					cyanAnnotation.getFirstSymbol().getOffset(), CompilerPhase.SEM_AN, compilationUnitAnnotation,
+					cyanAnnotation));
 		}
 		return true;
 	}
 
 	/**
 	 * for each compilation unit that should be changed by metaobjects or by
-	 * adding "#dsa" to metaobject annotations, there is associated list of code
+	 * adding "#SEM_AN" to metaobject annotations, there is associated list of code
 	 * changes
 	 */
 
-	private HashMap<CompilationUnitSuper, List<SourceCodeChangeByMetaobjectAnnotation>> setOfChanges = new HashMap<>();
+	private HashMap<CompilationUnitSuper, List<SourceCodeChangeByAnnotation>> setOfChanges = new HashMap<>();
 
 	public GenericParameter getGenericPrototypeFormalParameter(String key) {
 		return genericPrototypeFormalParameterTable.get(key);
@@ -735,22 +735,22 @@ public class Env implements Cloneable {
 	 *
 	 *
 	 *
-	 * public ProgramUnit searchPublicProgramUnit(String prototypeName) { return
-	 * publicProgramUnitTable.get(prototypeName); }
+	 * public Prototype searchPublicPrototype(String prototypeName) { return
+	 * publicPrototypeTable.get(prototypeName); }
 	 */
 
 
 
-	public Object addSourceFileName(String key, ProgramUnit value) {
+	public Object addSourceFileName(String key, Prototype value) {
 		return publicSourceFileNameTable.put(key, value);
 	}
 
-	public ProgramUnit searchPrivateProgramUnit(String key) {
-		return privateProgramUnitTable.get(key);
+	public Prototype searchPrivatePrototype(String key) {
+		return privatePrototypeTable.get(key);
 	}
 
-	public Object addPrivateProgramUnit(String key, ProgramUnit value) {
-		return privateProgramUnitTable.put(key, value);
+	public Object addPrivatePrototype(String key, Prototype value) {
+		return privatePrototypeTable.put(key, value);
 	}
 
 	public VariableDecInterface getLocalVariableDec(String key) {
@@ -795,13 +795,13 @@ public class Env implements Cloneable {
 		lineShift = 0;
 
 		/**
-		 * add all private program units to table privateProgramUnitTable
+		 * add all private program units to table privatePrototypeTable
 		 */
-		if ( currentCompilationUnit1.getProgramUnitList() != null ) {
+		if ( currentCompilationUnit1.getPrototypeList() != null ) {
 			// it is null in a .pyan file
-			for (final ProgramUnit programUnit : currentCompilationUnit1.getProgramUnitList()) {
-				if ( !programUnit.isGeneric() && programUnit.getVisibility() == Token.PRIVATE )
-					this.addPrivateProgramUnit(programUnit.getName(), programUnit);
+			for (final Prototype prototype : currentCompilationUnit1.getPrototypeList()) {
+				if ( !prototype.isGeneric() && prototype.getVisibility() == Token.PRIVATE )
+					this.addPrivatePrototype(prototype.getName(), prototype);
 			}
 
 		}
@@ -811,7 +811,7 @@ public class Env implements Cloneable {
 	public void atEndOfCurrentCompilationUnit() {
 
 		currentCompilationUnit = null;
-		privateProgramUnitTable.clear();
+		privatePrototypeTable.clear();
 		functionList.clear();
 		if ( mapNewTypeToType != null ) {
 			mapNewTypeToType.clear();
@@ -853,7 +853,7 @@ public class Env implements Cloneable {
 	 * @return
 	 */
 	public static String addContextMessage(
-			Stack<Tuple7<String, String, String, String, Integer, Integer, List<ISlotInterface>>> contextStack,
+			Stack<Tuple7<String, String, String, String, Integer, Integer, List<ISlotSignature>>> contextStack,
 			String msg) {
 
 		if ( !contextStack.isEmpty() ) {
@@ -861,7 +861,7 @@ public class Env implements Cloneable {
 			 * there is a context. Then the code that caused this compilation
 			 * error was introduced by some metaobject annotation or by the compiler
 			 */
-			Tuple7<String, String, String, String, Integer, Integer, List<ISlotInterface>> t = contextStack.peek();
+			Tuple7<String, String, String, String, Integer, Integer, List<ISlotSignature>> t = contextStack.peek();
 
 			if ( t.f3 == null || t.f4 == null || t.f5 == null ) {
 				msg = msg + " This internal error was caused by code introduced by the compiler in step '" + t.f2
@@ -1256,7 +1256,7 @@ public class Env implements Cloneable {
 				sielCode.add("identifier = \"" + identifier + "\"");
 				break;
 			case "statementText":
-				if ( !(getCurrentProgramUnit() instanceof InterfaceDec) ) {
+				if ( !(getCurrentPrototype() instanceof InterfaceDec) ) {
 					sielCode.add("statementText = \"" + stringCurrentStatement() + "\"");
 				}
 				break;
@@ -1294,12 +1294,12 @@ public class Env implements Cloneable {
 				break;
 			case "supertype":
 				String supertypeName = "";
-				if ( currentProgramUnit instanceof ObjectDec ) {
-					final ObjectDec superProto = ((ObjectDec) currentProgramUnit).getSuperobject();
+				if ( currentPrototype instanceof ObjectDec ) {
+					final ObjectDec superProto = ((ObjectDec) currentPrototype).getSuperobject();
 					if ( superProto != null ) supertypeName = superProto.getFullName();
 				}
-				else if ( currentProgramUnit instanceof InterfaceDec ) {
-					final List<Expr> superInterfaceList = ((InterfaceDec) currentProgramUnit)
+				else if ( currentPrototype instanceof InterfaceDec ) {
+					final List<Expr> superInterfaceList = ((InterfaceDec) currentPrototype)
 							.getSuperInterfaceExprList();
 					if ( superInterfaceList != null && superInterfaceList.size() > 0 ) {
 						supertypeName = "";
@@ -1314,8 +1314,8 @@ public class Env implements Cloneable {
 				break;
 			case "implementedInterfaces":
 				String implInterfacesStr = "";
-				if ( currentProgramUnit instanceof ObjectDec ) {
-					final List<Expr> superInterfaceList = ((ObjectDec) currentProgramUnit).getInterfaceList();
+				if ( currentPrototype instanceof ObjectDec ) {
+					final List<Expr> superInterfaceList = ((ObjectDec) currentPrototype).getInterfaceList();
 					if ( superInterfaceList != null && superInterfaceList.size() > 0 ) {
 						implInterfacesStr = "";
 						int size = superInterfaceList.size();
@@ -1447,8 +1447,8 @@ public class Env implements Cloneable {
 	 */
 	public String getStringFieldList() {
 
-		if ( currentProgramUnit != null && currentProgramUnit instanceof ObjectDec ) {
-			final ObjectDec prototype = (ObjectDec) currentProgramUnit;
+		if ( currentPrototype != null && currentPrototype instanceof ObjectDec ) {
+			final ObjectDec prototype = (ObjectDec) currentPrototype;
 			final List<FieldDec> fieldDecList = prototype.getFieldList();
 			int count = fieldDecList.size();
 			if ( count > 0 ) {
@@ -1494,11 +1494,11 @@ public class Env implements Cloneable {
 	/**
 	 * at the beginning of an object or interface declaration
 	 */
-	public void atBeginningOfObjectDec(ProgramUnit currentObjectDec) {
+	public void atBeginningOfObjectDec(Prototype currentObjectDec) {
 
-		this.currentProgramUnit = currentObjectDec;
-		if ( currentProgramUnit.getVisibility() == Token.PRIVATE )
-			this.privateProgramUnitTable.put(currentProgramUnit.getName(), currentProgramUnit);
+		this.currentPrototype = currentObjectDec;
+		if ( currentPrototype.getVisibility() == Token.PRIVATE )
+			this.privatePrototypeTable.put(currentPrototype.getName(), currentPrototype);
 
 		if ( currentObjectDec instanceof ObjectDec )
 			this.enclosingObjectDec = ((ObjectDec) currentObjectDec).getOuterObject();
@@ -1522,23 +1522,23 @@ public class Env implements Cloneable {
 	 * should be eliminated from the environment
 	 */
 	public void atEndOfObjectDec() {
-		this.currentProgramUnit = null;
+		this.currentPrototype = null;
 		slotDecTable.clear();
 		genericPrototypeFormalParameterTable.clear();
 		this.enclosingObjectDec = null;
 	}
 
 	public ObjectDec getCurrentObjectDec() {
-		if ( currentProgramUnit instanceof ObjectDec )
-			return (ObjectDec) currentProgramUnit;
+		if ( currentPrototype instanceof ObjectDec )
+			return (ObjectDec) currentPrototype;
 		else
 			return null;
 	}
 
 	public ObjectDec getCurrentOuterObjectDec() {
-		if ( currentProgramUnit instanceof ObjectDec ) {
+		if ( currentPrototype instanceof ObjectDec ) {
 
-			final ObjectDec currentObjectDec = (ObjectDec) currentProgramUnit;
+			final ObjectDec currentObjectDec = (ObjectDec) currentPrototype;
 			if ( currentObjectDec.getOuterObject() == null ) {
 				return currentObjectDec;
 			}
@@ -1636,8 +1636,8 @@ public class Env implements Cloneable {
 	 */
 	public String getStringSignatureAllMethods() {
 		String s;
-		if ( currentProgramUnit instanceof ObjectDec ) {
-			final ObjectDec currentObjectDec = (ObjectDec) currentProgramUnit;
+		if ( currentPrototype instanceof ObjectDec ) {
+			final ObjectDec currentObjectDec = (ObjectDec) currentPrototype;
 			final List<MethodDec> methodDecList = currentObjectDec.getMethodDecList();
 			int count = methodDecList.size();
 			if ( count > 0 ) {
@@ -1654,8 +1654,8 @@ public class Env implements Cloneable {
 				s = "(Array<String> new)";
 			}
 		}
-		else if ( currentProgramUnit instanceof InterfaceDec ) {
-			final InterfaceDec currentInterfaceDec = (InterfaceDec) currentProgramUnit;
+		else if ( currentPrototype instanceof InterfaceDec ) {
+			final InterfaceDec currentInterfaceDec = (InterfaceDec) currentPrototype;
 			final List<MethodSignature> methodSignatureList = currentInterfaceDec.getMethodSignatureList();
 			int count = methodSignatureList.size();
 			if ( count > 0 ) {
@@ -1687,8 +1687,8 @@ public class Env implements Cloneable {
 	 */
 	public String getStringSignatureAllMethods2() {
 		final PWCharArray pwChar = new PWCharArray();
-		if ( currentProgramUnit instanceof ObjectDec ) {
-			final ObjectDec currentObjectDec = (ObjectDec) currentProgramUnit;
+		if ( currentPrototype instanceof ObjectDec ) {
+			final ObjectDec currentObjectDec = (ObjectDec) currentPrototype;
 			final List<MethodDec> methodDecList = currentObjectDec.getMethodDecList();
 			int count = methodDecList.size();
 			if ( count > 0 ) {
@@ -1706,8 +1706,8 @@ public class Env implements Cloneable {
 				pwChar.println("(Array<String> new)");
 			}
 		}
-		else if ( currentProgramUnit instanceof InterfaceDec ) {
-			final InterfaceDec currentInterfaceDec = (InterfaceDec) currentProgramUnit;
+		else if ( currentPrototype instanceof InterfaceDec ) {
+			final InterfaceDec currentInterfaceDec = (InterfaceDec) currentPrototype;
 			final List<MethodSignature> methodSignatureList = currentInterfaceDec.getMethodSignatureList();
 			int count = methodSignatureList.size();
 			if ( count > 0 ) {
@@ -1729,12 +1729,12 @@ public class Env implements Cloneable {
 
 	}
 
-	public ProgramUnit getCurrentProgramUnit() {
-		return currentProgramUnit;
+	public Prototype getCurrentPrototype() {
+		return currentPrototype;
 	}
 
-	public void setCurrentProgramUnit(ProgramUnit currentProgramUnit) {
-		this.currentProgramUnit = currentProgramUnit;
+	public void setCurrentPrototype(Prototype currentPrototype) {
+		this.currentPrototype = currentPrototype;
 	}
 
 	/**
@@ -1742,7 +1742,7 @@ public class Env implements Cloneable {
 	 * imported by the current compilation unit.
 	 */
 
-	public ProgramUnit searchProgramUnitBySourceFileName(String sourceFileName, Symbol firstSymbol,
+	public Prototype searchPrototypeBySourceFileName(String sourceFileName, Symbol firstSymbol,
 			boolean insideMethod) {
 		// return this.publicSourceFileNameTable.get(sourceFileName);
 
@@ -1761,7 +1761,7 @@ public class Env implements Cloneable {
 			if ( aPackage == null )
 				return null;
 			else {
-				return aPackage.searchProgramUnitBySourceFileName(realPrototypeName);
+				return aPackage.searchPrototypeBySourceFileName(realPrototypeName);
 			}
 		}
 		else {
@@ -1777,12 +1777,12 @@ public class Env implements Cloneable {
 				return this.currentCompilationUnit.getPublicPrototype();
 			}
 
-			Map<String, String> conflictProgramUnitTable = this.currentCompilationUnit.getConflictProgramUnitTable();
-			if ( conflictProgramUnitTable != null && conflictProgramUnitTable.get(rawPrototypeName) != null ) {
+			Map<String, String> conflictPrototypeTable = this.currentCompilationUnit.getConflictPrototypeTable();
+			if ( conflictPrototypeTable != null && conflictPrototypeTable.get(rawPrototypeName) != null ) {
 				// prototypeName is imported from two or more packages
 				String packageNameList = "";
 				for (final CyanPackage cp : this.currentCompilationUnit.getImportedCyanPackageSet()) {
-					if ( cp.searchProgramUnitBySourceFileName(rawPrototypeName) != null )
+					if ( cp.searchPrototypeBySourceFileName(rawPrototypeName) != null )
 						packageNameList += cp.getPackageName() + " ";
 				}
 				if ( insideMethod )
@@ -1800,8 +1800,8 @@ public class Env implements Cloneable {
 				Set<CyanPackage> importedCyanPackageTable = this.currentCompilationUnit.getImportedCyanPackageSet();
 				if ( importedCyanPackageTable != null ) {
 					for (final CyanPackage cp : importedCyanPackageTable ) {
-						ProgramUnit pu;
-						if ( (pu = cp.searchProgramUnitBySourceFileName(sourceFileName)) != null ) {
+						Prototype pu;
+						if ( (pu = cp.searchPrototypeBySourceFileName(sourceFileName)) != null ) {
 							return pu;
 						}
 
@@ -1814,7 +1814,7 @@ public class Env implements Cloneable {
 	}
 
 
-	public ProgramUnit searchVisibleProgramUnit(String prototypeName, Function1<String> inErrorCall ) {
+	public Prototype searchVisiblePrototype(String prototypeName, Function1<String> inErrorCall ) {
 
 		// prototype name without the generic parameters
 		String rawPrototypeName = prototypeName;
@@ -1832,7 +1832,7 @@ public class Env implements Cloneable {
 				return null;
 			}
 			else {
-				return aPackage.searchPublicNonGenericProgramUnit(realPrototypeName);
+				return aPackage.searchPublicNonGenericPrototype(realPrototypeName);
 			}
 		}
 		else {
@@ -1843,23 +1843,23 @@ public class Env implements Cloneable {
 			/**
 			 * search in inner prototypes first
 			 */
-			if ( currentProgramUnit != null ) {
+			if ( currentPrototype != null ) {
 				List<ObjectDec> innerPrototypeList = null;
-				if ( currentProgramUnit.getOuterObject() != null ) {
+				if ( currentPrototype.getOuterObject() != null ) {
 					/*
 					 * if the current prototype is an inner prototype, search in
 					 * the inner prototypes of the outer prototype. The test
-					 * "currentProgramUnit.getOuterObject().getInnerPrototypeList()"
+					 * "currentPrototype.getOuterObject().getInnerPrototypeList()"
 					 * should always return a value != null, so nowadays this
 					 * test is unnecessary
 					 */
-					if ( currentProgramUnit.getOuterObject().getInnerPrototypeList() != null )
-						innerPrototypeList = currentProgramUnit.getOuterObject().getInnerPrototypeList();
+					if ( currentPrototype.getOuterObject().getInnerPrototypeList() != null )
+						innerPrototypeList = currentPrototype.getOuterObject().getInnerPrototypeList();
 				}
 				else {
 					// current prototype is NOT an inner prototype. Search in
 					// its inner prototypes
-					innerPrototypeList = currentProgramUnit.getInnerPrototypeList();
+					innerPrototypeList = currentPrototype.getInnerPrototypeList();
 				}
 				if ( innerPrototypeList != null ) {
 					for (final ObjectDec innerObj : innerPrototypeList) {
@@ -1873,31 +1873,31 @@ public class Env implements Cloneable {
 			 * program units defined in the current compilation unit have
 			 * precedence over the imported ones.
 			 */
-			if ( currentCompilationUnit.getProgramUnitList() != null ) {
+			if ( currentCompilationUnit.getPrototypeList() != null ) {
 				/*
 				 * it is null if the compilation unit is the project file, the
 				 * .pyan file
 				 */
-				for (final ProgramUnit programUnit : this.currentCompilationUnit.getProgramUnitList()) {
-					if ( prototypeName.compareTo(programUnit.getName()) == 0 ) {
-						return programUnit;
+				for (final Prototype prototype : this.currentCompilationUnit.getPrototypeList()) {
+					if ( prototypeName.compareTo(prototype.getName()) == 0 ) {
+						return prototype;
 					}
 				}
 
 			}
 
-			Map<String, String> conflictProgramUnitTable = this.currentCompilationUnit.getConflictProgramUnitTable();
+			Map<String, String> conflictPrototypeTable = this.currentCompilationUnit.getConflictPrototypeTable();
 
-			if ( conflictProgramUnitTable != null &&
-					conflictProgramUnitTable.get(rawPrototypeName) != null ) {
+			if ( conflictPrototypeTable != null &&
+					conflictPrototypeTable.get(rawPrototypeName) != null ) {
 				// prototypeName is imported from two or more packages
-				final String packageNameList = this.currentCompilationUnit.getConflictProgramUnitTable()
+				final String packageNameList = this.currentCompilationUnit.getConflictPrototypeTable()
 						.get(rawPrototypeName);
 
 				/*
 				 * for ( CyanPackage cp :
 				 * this.currentCompilationUnit.getImportedCyanPackageTable() ) {
-				 * if ( cp.searchPublicNonGenericProgramUnit(prototypeName) !=
+				 * if ( cp.searchPublicNonGenericPrototype(prototypeName) !=
 				 * null ) packageNameList += cp.getPackageName() + " "; }
 				 */
 				inErrorCall.eval(packageNameList);
@@ -1906,20 +1906,20 @@ public class Env implements Cloneable {
 				Set<CyanPackage> importedCyanPackageTable = currentCompilationUnit.getImportedCyanPackageSet();
 				if ( importedCyanPackageTable != null ) {
 					for (final CyanPackage cp : importedCyanPackageTable ) {
-						ProgramUnit pu;
-						if ( (pu = cp.searchPublicNonGenericProgramUnit(prototypeName)) != null ) {
+						Prototype pu;
+						if ( (pu = cp.searchPublicNonGenericPrototype(prototypeName)) != null ) {
 							return pu;
 						}
 
 					}
 				}
 				/**
-				 * if programUnitForGenericPrototypeList is not null, then we
+				 * if prototypeForGenericPrototypeList is not null, then we
 				 * are doing semantic analysis in a generic prototype. This is
 				 * only done by metaobject 'concept'.
 				 */
-				if ( programUnitForGenericPrototypeList != null ) {
-					for (final ProgramUnit pu : programUnitForGenericPrototypeList) {
+				if ( prototypeForGenericPrototypeList != null ) {
+					for (final Prototype pu : prototypeForGenericPrototypeList) {
 						if ( pu.getName().equals(prototypeName) ) {
 							return pu;
 						}
@@ -1933,8 +1933,8 @@ public class Env implements Cloneable {
 	}
 
 	@SuppressWarnings("unused")
-	public ProgramUnit searchVisibleProgramUnit(String prototypeName, Symbol firstSymbol, boolean insideMethod) {
-		return searchVisibleProgramUnit(prototypeName,
+	public Prototype searchVisiblePrototype(String prototypeName, Symbol firstSymbol, boolean insideMethod) {
+		return searchVisiblePrototype(prototypeName,
 		    (String packageNameList) -> {
 		    	this.error( firstSymbol, "Prototype '" + prototypeName + "' is imported from two or more packages: "
 				            + packageNameList);
@@ -2000,7 +2000,7 @@ public class Env implements Cloneable {
 	}
 
 	public boolean wasCyanPrototypedImported(String prototypeName) {
-		return this.searchVisibleProgramUnit(prototypeName, (String s) -> { } ) != null ;
+		return this.searchVisiblePrototype(prototypeName, (String s) -> { } ) != null ;
 	}
 
 	public boolean wasCyanPackageImported(String packageName) {
@@ -2121,7 +2121,7 @@ public class Env implements Cloneable {
 		VariableDecInterface ret = this.searchLocalVariableParameter(name);
 
 		if ( ret == null ) {
-			ret = currentProgramUnit.searchFieldPrivateProtectedSuperProtected(name);
+			ret = currentPrototype.searchFieldPrivateProtectedSuperProtected(name);
 		}
 		return ret;
 	}
@@ -2143,7 +2143,7 @@ public class Env implements Cloneable {
 		VariableDecInterface ret = this.searchLocalVariableParameter(name);
 
 		if ( ret == null ) {
-			ret = currentProgramUnit.searchFieldDec(name);
+			ret = currentPrototype.searchFieldDec(name);
 			if ( ret == null || !(ret instanceof ContextParameter) ) {
 				/*
 				 * found a field of the inner prototype that is not
@@ -2172,7 +2172,7 @@ public class Env implements Cloneable {
 		VariableDecInterface ret = this.searchLocalVariableParameter(name);
 
 		if ( ret == null ) {
-			ret = currentProgramUnit.searchFieldDec(name);
+			ret = currentPrototype.searchFieldDec(name);
 			if ( ret != null && ret instanceof ContextParameter ) ret = null;
 		}
 		return ret;
@@ -2194,7 +2194,7 @@ public class Env implements Cloneable {
 		VariableDecInterface ret = this.searchLocalVariableParameter(name);
 
 		if ( ret == null ) {
-			ret = currentProgramUnit.searchFieldDec(name);
+			ret = currentPrototype.searchFieldDec(name);
 			if ( ret != null && ret instanceof ContextParameter ) {
 				ret = null;
 				/*
@@ -2211,13 +2211,13 @@ public class Env implements Cloneable {
 		 * if ( enclosingObjectDec != null ) return
 		 * enclosingObjectDec.searchFieldDec(name); else
 		 */
-		FieldDec iv = currentProgramUnit.searchFieldDec(name);
+		FieldDec iv = currentPrototype.searchFieldDec(name);
 		if ( iv != null ) {
 			return iv;
 		}
 		else {
-			if ( currentProgramUnit instanceof ObjectDec ) {
-				ObjectDec proto = ((ObjectDec) currentProgramUnit).getSuperobject();
+			if ( currentPrototype instanceof ObjectDec ) {
+				ObjectDec proto = ((ObjectDec) currentPrototype).getSuperobject();
 				while (proto != null && proto != Type.Any) {
 					iv = proto.searchField(name);
 					if ( iv != null && iv.getVisibility() == Token.PROTECTED )
@@ -2231,14 +2231,14 @@ public class Env implements Cloneable {
 	}
 
 
-	public WrType createNewGenericPrototype(Symbol symUsedInError, CompilationUnitSuper compUnit, ProgramUnit currentPU,
+	public WrType createNewGenericPrototype(Symbol symUsedInError, CompilationUnitSuper compUnit, Prototype currentPU,
 			String fullPrototypeName, String errorMessage) {
 		try {
 			this.setPrefixErrorMessage(errorMessage);
-			final Expr newProgramUnit = saci.Compiler.parseSingleTypeFromString(fullPrototypeName,
+			final Expr newPrototype = saci.Compiler.parseSingleTypeFromString(fullPrototypeName,
 					symUsedInError, errorMessage, compUnit, currentPU);
-			newProgramUnit.calcInternalTypes(this);
-			Type t = newProgramUnit.getType();
+			newPrototype.calcInternalTypes(this);
+			Type t = newPrototype.getType();
 			return t == null ? null : t.getI();
 		}
 		catch ( final CompileErrorException cee ) {
@@ -2269,31 +2269,31 @@ public class Env implements Cloneable {
 		return project.searchPackage(packageName);
 	}
 
-	public ProgramUnit searchPackagePrototype(String packageName, String prototypeName) {
+	public Prototype searchPackagePrototype(String packageName, String prototypeName) {
 		final CyanPackage pack = project.searchPackage(packageName);
 		if ( pack == null )
 			return null;
 		else
-			return pack.searchPublicNonGenericProgramUnit(prototypeName);
+			return pack.searchPublicNonGenericPrototype(prototypeName);
 	}
 
 	public Type searchPackagePrototype(String packagePrototypeName, Symbol symUsedInError) {
 
 		/*
-		 * ProgramUnit singleTypeFromString(String typeAsString, Symbol
-		 * symUsedInError, String message, CompilationUnit compUnit, ProgramUnit
+		 * Prototype singleTypeFromString(String typeAsString, Symbol
+		 * symUsedInError, String message, CompilationUnit compUnit, Prototype
 		 * currentPU, Env env)
 		 */
 
 		CompilationUnit cunit = this.currentCompilationUnit;
-		ProgramUnit pu = this.currentProgramUnit;
+		Prototype pu = this.currentPrototype;
 		CompilationUnitSuper cunitSuper = symUsedInError.getCompilationUnit();
 		if ( cunitSuper instanceof CompilationUnit ) {
 			cunit = (CompilationUnit ) cunitSuper;
 			pu = cunit.getPublicPrototype();
 			if ( pu == null ) {
 				cunit = this.currentCompilationUnit;
-				pu = this.currentProgramUnit;
+				pu = this.currentPrototype;
 			}
 		}
 
@@ -2327,23 +2327,23 @@ public class Env implements Cloneable {
 	 * compilation context and a pop compilation context. It is considered that
 	 * this code has type codeType if this parameter is not-null. Otherwise, if
 	 * cyanMetaobject is an expression, it is considered that codeToAdd has type
-	 * given by cyanMetaobject.getMetaobjectAnnotation().
+	 * given by cyanMetaobject.getAnnotation().
 	 *
 	 * @param cyanMetaobject
 	 * @param codeToAdd
-	 * @param cyanMetaobjectAnnotation
+	 * @param cyanAnnotation
 	 * @return
 	 */
 	public static String getCodeToAddWithContext(CyanMetaobject cyanMetaobject, String codeToAdd,
 			Type codeType, String strSlotList) {
-		final Annotation cyanMetaobjectAnnotation = meta.GetHiddenItem.getHiddenCyanMetaobjectAnnotation(cyanMetaobject.getMetaobjectAnnotation());
+		final Annotation cyanAnnotation = meta.GetHiddenItem.getHiddenCyanAnnotation(cyanMetaobject.getAnnotation());
 		final String name = cyanMetaobject.getName();
 		String str;
-		if ( cyanMetaobjectAnnotation.getInsideProjectFile() ) {
+		if ( cyanAnnotation.getInsideProjectFile() ) {
 			str = "\"the project file \"";
 		}
 		else {
-			str = cyanMetaobjectAnnotation.getPackageOfAnnotation();
+			str = cyanAnnotation.getPackageOfAnnotation();
 		}
 
 		String codeToAddWithContext;
@@ -2353,37 +2353,37 @@ public class Env implements Cloneable {
 		if ( codeType != null ) {
 			final Tuple2<String, String> packagePrototype = CompilerManager.separatePackagePrototype(codeType.getFullName());
 
-			codeToAddWithContext = " @" + MetaHelper.pushCompilationContextName + "(" + "atiDsa_id_" + Env.atiDsaIdNumber
+			codeToAddWithContext = " @" + MetaHelper.pushCompilationContextName + "(" + "atisemAn_id_" + Env.atisemAnIdNumber
 					+ ", \"" + name + "\", " + str + ", \""
-					+ cyanMetaobjectAnnotation.getCompilationUnit().getFullFileNamePath() + "\", "
-					+ cyanMetaobjectAnnotation.getFirstSymbol().getLineNumber() +
+					+ cyanAnnotation.getCompilationUnit().getFullFileNamePath() + "\", "
+					+ cyanAnnotation.getFirstSymbol().getLineNumber() +
 					 (strSlotList == null ? "" : ", \"" + strSlotList + "\"") +
 					") " +
 					codeToAdd
-					+ " @popCompilationContext(" + "atiDsa_id_" + Env.atiDsaIdNumber + ", \"" + packagePrototype.f1 + "\", \""
+					+ " @popCompilationContext(" + "atisemAn_id_" + Env.atisemAnIdNumber + ", \"" + packagePrototype.f1 + "\", \""
 					+ packagePrototype.f2 + "\") \n";
 		}
 		else if ( cyanMetaobject.isExpression() ) {
-			codeToAddWithContext = " @" + MetaHelper.pushCompilationContextName + "(" + "atiDsa_id_" + Env.atiDsaIdNumber
+			codeToAddWithContext = " @" + MetaHelper.pushCompilationContextName + "(" + "atisemAn_id_" + Env.atisemAnIdNumber
 					+ ", \"" + name + "\", " + str + ", \""
-					+ cyanMetaobjectAnnotation.getCompilationUnit().getFullFileNamePath() + "\", "
-					+ cyanMetaobjectAnnotation.getFirstSymbol().getLineNumber() +
+					+ cyanAnnotation.getCompilationUnit().getFullFileNamePath() + "\", "
+					+ cyanAnnotation.getFirstSymbol().getLineNumber() +
 					 (strSlotList == null ? "" : ", \"" + strSlotList + "\"")  +
 					") " + codeToAdd
-					+ " @popCompilationContext(" + "atiDsa_id_" + Env.atiDsaIdNumber + ", \""
+					+ " @popCompilationContext(" + "atisemAn_id_" + Env.atisemAnIdNumber + ", \""
 					+ cyanMetaobject.getPackageOfType() + "\", \"" + cyanMetaobject.getPrototypeOfType() + "\") \n";
 		}
 		else {
-			codeToAddWithContext = " @" + MetaHelper.pushCompilationContextStatementName + "(" + "atiDsa_id_"
-					+ Env.atiDsaIdNumber + ", \"" + name + "\", " + str + ", \""
-					+ cyanMetaobjectAnnotation.getCompilationUnit().getFullFileNamePath() + "\", "
-					+ cyanMetaobjectAnnotation.getFirstSymbol().getLineNumber() +
+			codeToAddWithContext = " @" + MetaHelper.pushCompilationContextStatementName + "(" + "atisemAn_id_"
+					+ Env.atisemAnIdNumber + ", \"" + name + "\", " + str + ", \""
+					+ cyanAnnotation.getCompilationUnit().getFullFileNamePath() + "\", "
+					+ cyanAnnotation.getFirstSymbol().getLineNumber() +
 					 (strSlotList == null ? "" : ", \"" + strSlotList + "\"") +
 					") " + codeToAdd
-					+ " @popCompilationContext(" + "atiDsa_id_" + Env.atiDsaIdNumber + ") \n";
+					+ " @popCompilationContext(" + "atisemAn_id_" + Env.atisemAnIdNumber + ") \n";
 
 		}
-		++Env.atiDsaIdNumber;
+		++Env.atisemAnIdNumber;
 
 		/*
 		 * msg = msg +
@@ -2422,8 +2422,8 @@ public class Env implements Cloneable {
 	 *            {@link meta#CyanMetaobjectCompilationContextPush}
 	 */
 	public void pushCompilationContext(String id, String cyanMetaobjectName, String packageName, String prototypeName,
-			int lineNumber, int offsetPushContext, List<ISlotInterface> slotList) {
-		cyanMetaobjectCompilationContextStack.push(new Tuple7<String, String, String, String, Integer, Integer, List<ISlotInterface>>(id,
+			int lineNumber, int offsetPushContext, List<ISlotSignature> slotList) {
+		cyanMetaobjectCompilationContextStack.push(new Tuple7<String, String, String, String, Integer, Integer, List<ISlotSignature>>(id,
 				cyanMetaobjectName, packageName, prototypeName, lineNumber, offsetPushContext, slotList));
 		offsetPushCompilationContextStack.push(offsetPushContext);
 
@@ -2459,7 +2459,7 @@ public class Env implements Cloneable {
 				/*
 				 * the "+ 1" in the line below refer to the line of
 				 *
-				 * @popCompilationContext(atiDsa_id_0) which just occupy just one
+				 * @popCompilationContext(atisemAn_id_0) which just occupy just one
 				 * line
 				 */
 				lineShift = lineShift + this.numLinesBetween(this.currentCompilationUnit.getText(),
@@ -2532,26 +2532,26 @@ public class Env implements Cloneable {
 	}
 
 	/**
-	 * push a metaobject annotation that implements IParseWithCyanCompiler_dpa or
-	 * IParseMacro_dpa
+	 * push a metaobject annotation that implements IParseWithCyanCompiler_parsing or
+	 * IParseMacro_parsing
 	 */
-	public void pushMetaobjectAnnotationParseWithCompiler(Annotation cyanMetaobjectAnnotation) {
-		metaobjectAnnotationParseWithCompilerStack.push(cyanMetaobjectAnnotation);
+	public void pushAnnotationParseWithCompiler(Annotation cyanAnnotation) {
+		metaobjectAnnotationParseWithCompilerStack.push(cyanAnnotation);
 	}
 
 	/**
-	 * pop a metaobject annotation that implements IParseWithCyanCompiler_dpa or
-	 * IParseMacro_dpa
+	 * pop a metaobject annotation that implements IParseWithCyanCompiler_parsing or
+	 * IParseMacro_parsing
 	 */
-	public Annotation popMetaobjectAnnotationParseWithCompiler() {
+	public Annotation popAnnotationParseWithCompiler() {
 		return metaobjectAnnotationParseWithCompilerStack.pop();
 	}
 
-	public int sizeStackMetaobjectAnnotationParseWithCompiler() {
+	public int sizeStackAnnotationParseWithCompiler() {
 		return metaobjectAnnotationParseWithCompilerStack.size();
 	}
 
-	public ProgramUnit getCyException() {
+	public Prototype getCyException() {
 		if ( cyException == null ) {
 			cyException = this.searchPackagePrototype(MetaHelper.cyanLanguagePackageName,
 					MetaHelper.cyExceptionPrototype);
@@ -2951,16 +2951,16 @@ public class Env implements Cloneable {
 		this.thereWasError.elem = thereWasError;
 	}
 
-	public boolean getDuring_dsa_actions() {
-		return during_dsa_actions;
+	public boolean getDuring_semAn_actions() {
+		return during_semAn_actions;
 	}
 
-	public List<ProgramUnit> getProgramUnitForGenericPrototypeList() {
-		return programUnitForGenericPrototypeList;
+	public List<Prototype> getPrototypeForGenericPrototypeList() {
+		return prototypeForGenericPrototypeList;
 	}
 
-	public void setProgramUnitForGenericPrototypeList(List<ProgramUnit> programUnitForGenericPrototypeList) {
-		this.programUnitForGenericPrototypeList = programUnitForGenericPrototypeList;
+	public void setPrototypeForGenericPrototypeList(List<Prototype> prototypeForGenericPrototypeList) {
+		this.prototypeForGenericPrototypeList = prototypeForGenericPrototypeList;
 	}
 
 	/**
@@ -3051,7 +3051,7 @@ public class Env implements Cloneable {
 	/**
 	 * points to
 	 */
-	private ProgramUnit cyException;
+	private Prototype cyException;
 
 	/**
 	 * a table of local variables, which includes method parameters, function
@@ -3072,10 +3072,10 @@ public class Env implements Cloneable {
 	private Hashtable<String, SlotDec> slotDecTable;
 
 	/**
-	 * contains all private ProgramUnits of the current compilation Unit. That
+	 * contains all private Prototypes of the current compilation Unit. That
 	 * is, of the current file being compiled.
 	 */
-	private Hashtable<String, ProgramUnit> privateProgramUnitTable;
+	private Hashtable<String, Prototype> privatePrototypeTable;
 
 
 	/**
@@ -3083,7 +3083,7 @@ public class Env implements Cloneable {
 	 * Unit (a file) being analyzed. The importation is made by method
 	 * loadPackage
 	 */
-	private Hashtable<String, ProgramUnit> publicSourceFileNameTable;
+	private Hashtable<String, Prototype> publicSourceFileNameTable;
 
 	/**
 	 * if this object or interface is generic, genericObjectInterfaceTable is
@@ -3113,7 +3113,7 @@ public class Env implements Cloneable {
 	 * this moment, if there is one. null if what is being checked is not an
 	 * object.
 	 */
-	private ProgramUnit	currentProgramUnit;
+	private Prototype	currentPrototype;
 
 	/**
 	 * current method being compiled, if the checking is made inside a method.
@@ -3164,7 +3164,7 @@ public class Env implements Cloneable {
 	 * the metaobject annotation, the prototype name of the metaobject annotation, the
 	 * line number of the call, the offset in the source code of the annotation,
 	 * and a list of fields and methods the metaobject added
-	 * to a prototype in phase afti (phase 3). If this stack is not empty and there is a
+	 * to a prototype in phase AF_RES_TYPES (phase 3). If this stack is not empty and there is a
 	 * compilation error, then the code that caused the error was introduced by
 	 * a metaobject annotation. This code was generated by a metaobject annotation in the
 	 * prototype specified in the tuple. That is, the statement
@@ -3185,14 +3185,14 @@ public class Env implements Cloneable {
 	 * first character of the annotation
 	 * <code>{@literal @}pushCompilationContext</code>
 	 */
-	private Stack<Tuple7<String, String, String, String, Integer, Integer, List<ISlotInterface>>>
+	private Stack<Tuple7<String, String, String, String, Integer, Integer, List<ISlotSignature>>>
 	         cyanMetaobjectCompilationContextStack;
 
 	/**
 	 * number for the next identifier of pushCompilationContext. The identifiers
-	 * will be "atiDsa_id_" + atiDsaIdNumber
+	 * will be "atisemAn_id_" + atisemAnIdNumber
 	 */
-	public static int atiDsaIdNumber	= 0;
+	public static int atisemAnIdNumber	= 0;
 
 	/**
 	 * Code may be inserted into a compilation unit by the compiler itself (see
@@ -3221,7 +3221,7 @@ public class Env implements Cloneable {
 	 *    [* [* 1, 2 *] [* 3 *] *] <br>
 	 * </code> the stack will have two elements when calculating the internal
 	 * types of '2'. These literal objects include all metaobject annotations of
-	 * metaobjects that implement IParseWithCyanCompiler_dpa or IParseMacro_dpa.
+	 * metaobjects that implement IParseWithCyanCompiler_parsing or IParseMacro_parsing.
 	 */
 	private Stack<Annotation>										metaobjectAnnotationParseWithCompilerStack;
 
@@ -3280,12 +3280,12 @@ public class Env implements Cloneable {
 
 	private boolean firstMethodStatement = false;
 
-	public void begin_dsa_actions() {
-		during_dsa_actions = true;
+	public void begin_semAn_actions() {
+		during_semAn_actions = true;
 	}
 
-	public void end_dsa_actions() {
-		during_dsa_actions = false;
+	public void end_semAn_actions() {
+		during_semAn_actions = false;
 
 	}
 
@@ -3294,12 +3294,12 @@ public class Env implements Cloneable {
 	}
 
 	/**
-	 * true if the compiler is during some dsa action. That is, during semantic
+	 * true if the compiler is during some SEM_AN action. That is, during semantic
 	 * analysis in the statements of methods the compiler is adding or removing
 	 * code. This is used to prevent, for example, a macro calling inside it
 	 * another macro or a literal expression
 	 */
-	private boolean					during_dsa_actions;
+	private boolean					during_semAn_actions;
 
 	/**
 	 * stack with the line numbers that start a pushCompilationContext
@@ -3310,30 +3310,30 @@ public class Env implements Cloneable {
 	 * a list of non-existing prototypes, one for each generic parameter. This
 	 * is necessary for metaobject concept
 	 */
-	private List<ProgramUnit>	programUnitForGenericPrototypeList;
+	private List<Prototype>	prototypeForGenericPrototypeList;
 
 	public void calculateSubtypes() {
-		HashMap<String, Set<WrProgramUnit>> m;
-		m = mapPackageSpaceCyanTypeNameToSubtypeList = new HashMap<String, Set<WrProgramUnit>>();
+		HashMap<String, Set<WrPrototype>> m;
+		m = mapPackageSpaceCyanTypeNameToSubtypeList = new HashMap<String, Set<WrPrototype>>();
 		for (final CyanPackage p : this.getProject().getPackageList()) {
 			final String packageName = p.getPackageName() + ".";
 			for (final CompilationUnit cunit : p.getCompilationUnitList()) {
-				final ProgramUnit pu = cunit.getPublicPrototype();
+				final Prototype pu = cunit.getPublicPrototype();
 				if ( !pu.isGeneric() ) {
-					m.put(packageName + pu.getName(), new HashSet<WrProgramUnit>());
+					m.put(packageName + pu.getName(), new HashSet<WrPrototype>());
 				}
 			}
 		}
 
 		for (final CyanPackage p : this.getProject().getPackageList()) {
 			for (final CompilationUnit cunit : p.getCompilationUnitList()) {
-				final ProgramUnit pu = cunit.getPublicPrototype();
+				final Prototype pu = cunit.getPublicPrototype();
 				if ( !pu.isGeneric() ) {
 					if ( pu instanceof ObjectDec ) {
 						final ObjectDec obj = (ObjectDec) pu;
 						if ( obj.getSuperobject() != null ) {
 							final ObjectDec superObj = obj.getSuperobject();
-							final Set<WrProgramUnit> set = m
+							final Set<WrPrototype> set = m
 									.get(superObj.getCompilationUnit().getPackageName() + "." + superObj.getName());
 							if ( set == null ) {
 								this.error(null, "Internal error: prototype '" + superObj.getFullName()
@@ -3354,7 +3354,7 @@ public class Env implements Cloneable {
 											+ "' was not found in calculateSubtypes()");
 								}
 								else {
-									final Set<WrProgramUnit> set = m.get(superInter.getCompilationUnit().getPackageName() + "."
+									final Set<WrPrototype> set = m.get(superInter.getCompilationUnit().getPackageName() + "."
 											+ superInter.getName());
 									if ( set == null ) {
 										this.error(null, "Internal error: prototype '" + superInter.getFullName()
@@ -3374,7 +3374,7 @@ public class Env implements Cloneable {
 						final InterfaceDec inter = (InterfaceDec) pu;
 						if ( inter.getSuperInterfaceList() != null ) {
 							for (final InterfaceDec superInter : inter.getSuperInterfaceList()) {
-								final Set<WrProgramUnit> set = m.get(
+								final Set<WrPrototype> set = m.get(
 										superInter.getCompilationUnit().getPackageName() + "." + superInter.getName());
 								if ( set == null ) {
 									this.error(null, "Internal error: prototype '" + superInter.getFullName()
@@ -3464,7 +3464,7 @@ public class Env implements Cloneable {
 	 *
 	 */
 
-	public HashMap<String, Set<WrProgramUnit>> getMapPrototypeSubtypeList() {
+	public HashMap<String, Set<WrPrototype>> getMapPrototypeSubtypeList() {
 		if ( mapPackageSpaceCyanTypeNameToSubtypeList == null ) {
 			calculateSubtypes();
 			/*
@@ -3492,19 +3492,19 @@ public class Env implements Cloneable {
 
 
 	/**
-	 * A metaobject informs which fields and methods it produces in phase afti (3).
+	 * A metaobject informs which fields and methods it produces in phase AF_RES_TYPES (3).
 	 * This method uses information on the stack of push annotations to check if
 	 * metaobjects produced the fields and methods they said they should produce.
 	   @param methodSignature
 	 */
 	public void checkSlot(GetNameAsInSourceCode slotToCheck) {
-		// Stack<Tuple7<String, String, String, String, Integer, Integer, List<ISlotInterface>>>
+		// Stack<Tuple7<String, String, String, String, Integer, Integer, List<ISlotSignature>>>
 		if ( ! this.cyanMetaobjectCompilationContextStack.isEmpty() ) {
-			Tuple7<String, String, String, String, Integer, Integer, List<ISlotInterface>> t =
+			Tuple7<String, String, String, String, Integer, Integer, List<ISlotSignature>> t =
 					this.cyanMetaobjectCompilationContextStack.peek();
-			List<ISlotInterface> slotList = this.cyanMetaobjectCompilationContextStack.peek().f7;
+			List<ISlotSignature> slotList = this.cyanMetaobjectCompilationContextStack.peek().f7;
 			if ( slotList != null ) {
-				for ( ISlotInterface slot : slotList ) {
+				for ( ISlotSignature slot : slotList ) {
 					if ( slot.getNameAsInSourceCode().equals(slotToCheck.getNameAsInSourceCode()) ) {
 						// found the method or field. Remove it from the list
 						slotList.remove(slot);
@@ -3517,7 +3517,7 @@ public class Env implements Cloneable {
 				 * 	 * each tuple are: an identifier, the metaobject name, the package name of
 	 * the metaobject annotation, the prototype name of the metaobject annotation, the
 	 * line number of the call, and a list of fields and methods the metaobject added
-	 * to a prototype in phase afti (phase 3). If this stack is not empty and there is a
+	 * to a prototype in phase AF_RES_TYPES (phase 3). If this stack is not empty and there is a
 
 				 */
 				this.error(slotToCheck.getFirstSymbol(), "Annotation '" + t.f2 +
@@ -3531,19 +3531,19 @@ public class Env implements Cloneable {
 
 	public void checkPushStackEmpty() {
 		if ( ! this.cyanMetaobjectCompilationContextStack.isEmpty() ) {
-			Tuple7<String, String, String, String, Integer, Integer, List<ISlotInterface>> t =
+			Tuple7<String, String, String, String, Integer, Integer, List<ISlotSignature>> t =
 					this.cyanMetaobjectCompilationContextStack.peek();
-			List<ISlotInterface> slotList = this.cyanMetaobjectCompilationContextStack.peek().f7;
+			List<ISlotSignature> slotList = this.cyanMetaobjectCompilationContextStack.peek().f7;
 			if ( slotList != null && slotList.size() > 0 ) {
 				int size = slotList.size();
 				String s = "";
-				for ( ISlotInterface slot : slotList ) {
+				for ( ISlotSignature slot : slotList ) {
 					s += "'" + slot.getNameAsInSourceCode() + "'";
 					if ( --size > 0 ) {
 						s += ", ";
 					}
 				}
-				this.error(this.getCurrentProgramUnit().getFirstSymbol(), "Annotation '" + t.f2 +
+				this.error(this.getCurrentPrototype().getFirstSymbol(), "Annotation '" + t.f2 +
 					    "' of line '" +
 							t.f5 + "' informed that it would produce a set of fields and methods (possible none). " +
 					    "However, the following fields and methods were not produced: [ " + s + " ]"
@@ -3650,7 +3650,7 @@ public class Env implements Cloneable {
 	 * The package name is "br.main" and the prototype name is "Program".
 	 *
 	 */
-	HashMap<String, Set<WrProgramUnit>>	mapPackageSpaceCyanTypeNameToSubtypeList;
+	HashMap<String, Set<WrPrototype>>	mapPackageSpaceCyanTypeNameToSubtypeList;
 
 	/**
 	 * get a set of all sub prototypes of each program prototype (interfaces

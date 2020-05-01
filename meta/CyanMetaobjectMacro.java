@@ -7,7 +7,7 @@ import java.util.List;
    @author José
  */
 public class CyanMetaobjectMacro extends CyanMetaobject
-                implements IParseMacro_dpa, IAction_dsa {
+                implements IParseMacro_parsing, IAction_semAn {
 
 	public CyanMetaobjectMacro(String []startKeywords, String []macroKeywords) {
 		this.startKeywords = startKeywords;
@@ -107,7 +107,7 @@ public class CyanMetaobjectMacro extends CyanMetaobject
 	/**
 	 *
 	 * This method should be called by a IDE plugin to show the text associated to the metaobject annotation
-	 * <code>metaobjectAnnotation</code> in several colors (text highlighting). Each element of the tuple is composed of<br>
+	 * <code>annotation</code> in several colors (text highlighting). Each element of the tuple is composed of<br>
 	 * <code>
 	 *      (color, offset, size)
 	 * </code><br>
@@ -115,7 +115,7 @@ public class CyanMetaobjectMacro extends CyanMetaobject
 	 * from the beginning of the text, that starts at offset 0, <code>size</code> is the
 	 * number of characters that should have color <code>color</code>.
 	 *
-	 *  <code>metaobjectAnnotation</code> is redundant nowadays because this class already has a field
+	 *  <code>annotation</code> is redundant nowadays because this class already has a field
 	 *  with the same contents.
 	   @return
 	 */
@@ -127,15 +127,21 @@ public class CyanMetaobjectMacro extends CyanMetaobject
 
 
 	@Override
-	public StringBuffer dsa_codeToAdd(ICompiler_dsa compiler_dsa) {
+	public StringBuffer semAn_codeToAdd(ICompiler_semAn compiler_semAn) {
 		return null;
 	}
 
 
 	@Override
-	public void dpa_parseMacro(ICompilerMacro_dpa compiler_dpa) {
+	public void parsing_parseMacro(ICompilerMacro_parsing compiler_parsing) {
 	}
 
+
+
+	@Override
+	public WrAnnotationMacroCall getAnnotation() {
+		return (WrAnnotationMacroCall ) annotation;
+	}
 
 	protected String []startKeywords;
 	protected String []macroKeywords;

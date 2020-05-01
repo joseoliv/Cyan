@@ -6,8 +6,8 @@ package ast;
 
 import lexer.Symbol;
 import meta.Function0;
-import meta.WrExprLiteralBoolean;
 import meta.MetaHelper;
+import meta.WrExprLiteralBoolean;
 import saci.Env;
 import saci.NameServer;
 
@@ -26,8 +26,8 @@ public class ExprLiteralBoolean extends ExprLiteral {
 	/**
 	 * @param symbol
 	 */
-	public ExprLiteralBoolean(Symbol symbol) {
-		super(symbol);
+	public ExprLiteralBoolean(Symbol symbol, MethodDec currentMethod) {
+		super(symbol, currentMethod);
 	}
 
 

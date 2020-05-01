@@ -188,7 +188,7 @@ public class MetaHelper {
 
 			ee.setSelfObject(selfObject);
 			ee.setCurrentMethod(wrEnv.getCurrentMethod());
-			ee.setCurrentProgramUnit(wrEnv.getCurrentProgramUnit());
+			ee.setCurrentPrototype(wrEnv.getCurrentPrototype());
 			ee.setCompilationUnit(wrEnv.getCurrentCompilationUnit());
 
 
@@ -221,7 +221,7 @@ public class MetaHelper {
 	/**
 	 * interpret 'statList' and returns what it returns with a 'return' statement.
 	   @param statList
-	   @param compiler_dsa
+	   @param compiler_semAn
 	   @param cyanMetaobject
 	   @param interfaceMethodName
 	   @param varNameList
@@ -231,7 +231,7 @@ public class MetaHelper {
 	 */
 	static public Object interpreterFor_MOPInterfaceMethod(
 			List<WrStatement> statList,
-			ICompiler_dsa compiler_dsa,
+			ICompiler_semAn compiler_semAn,
 			CyanMetaobjectAtAnnot cyanMetaobject,
 			String interfaceMethodName,
 			String []varNameList, Object []objList,
@@ -241,17 +241,17 @@ public class MetaHelper {
 		WrStatement fs = statList.get(0);
 
 		try {
-			WrEnv env = compiler_dsa.getEnv();
+			WrEnv env = compiler_semAn.getEnv();
 			WrEvalEnv ee = MetaHelper.getNewWrEvalEnv(env, null,
 					fs.getFirstSymbol(), varNameList,
 					objList, cyanMetaobject );
 			ee.addVariable("metaobject", cyanMetaobject);
-			ee.addVariable("env",  compiler_dsa.getEnv());
-			Object selfObject = MetaHelper.createSelfObject(compiler_dsa, cyanMetaobject, ee, compiler_dsa.getEnv());
+			ee.addVariable("env",  compiler_semAn.getEnv());
+			Object selfObject = MetaHelper.createSelfObject(compiler_semAn, cyanMetaobject, ee, compiler_semAn.getEnv());
 
 			ee.setSelfObject(selfObject);
 			ee.setCurrentMethod(env.getCurrentMethod());
-			ee.setCurrentProgramUnit(env.getCurrentProgramUnit());
+			ee.setCurrentPrototype(env.getCurrentPrototype());
 			ee.setCompilationUnit(env.getCurrentCompilationUnit());
 
 
@@ -332,14 +332,14 @@ public class MetaHelper {
 
 
 
-		final ICompiler_dpa newCompiler_dpa = createNewCompiler_dpa(cyanCode);
+		final ICompiler_parsing newCompiler_parsing = createNewCompiler_parsing(cyanCode);
 
 		List<WrStatement> statList = null;
 		try {
-			statList = parseCyanStatementList(newCompiler_dpa);
+			statList = parseCyanStatementList(newCompiler_parsing);
 		}
 		catch ( CompileErrorException e ) {
-			List<WrUnitError> wrUnitErrorList = newCompiler_dpa.getCompilationUnit().getErrorList();
+			List<WrUnitError> wrUnitErrorList = newCompiler_parsing.getCompilationUnit().getErrorList();
 			if ( wrUnitErrorList != null && wrUnitErrorList.size() > 0 ) {
 				// only first error
 				throw new InterpretationErrorException(
@@ -404,7 +404,7 @@ public class MetaHelper {
 				Object obj = actionFunction.eval(
 						new Tuple6<IAbstractCyanCompiler, CyanMetaobjectAtAnnot, List<Object>, WrSymbol, WrMethodDec, WrEnv>(
 								compiler, thisMetaobject, paramList,
-								thisMetaobject.getMetaobjectAnnotation().getFirstSymbol(),
+								thisMetaobject.getAnnotation().getFirstSymbol(),
 								ee.getCurrentMethod(), ee.getWrEnvToBeUsedInVisitor() ));
 				return obj;
 			}
@@ -422,7 +422,7 @@ public class MetaHelper {
 				Object obj = actionFunction.eval(
 						new Tuple6<IAbstractCyanCompiler, CyanMetaobjectAtAnnot, List<Object>, WrSymbol, WrMethodDec, WrEnv>(
 								compiler, thisMetaobject, paramList,
-								thisMetaobject.getMetaobjectAnnotation().getFirstSymbol(),
+								thisMetaobject.getAnnotation().getFirstSymbol(),
 								ee.getCurrentMethod(), ee.getWrEnvToBeUsedInVisitor() ));
 				return obj;
 			}
@@ -914,7 +914,7 @@ public class MetaHelper {
 	static public Tuple2<String, InterpreterPrototype>
     getMapMethodName_Body( String cyanCode ) {
 
-		final ICompiler_dpa cp = createNewCompiler_dpa(cyanCode);
+		final ICompiler_parsing cp = createNewCompiler_parsing(cyanCode);
 		final Tuple2<String, InterpreterPrototype> err_proto = parseCyanCode(cp);
 		return err_proto;
 
@@ -925,7 +925,7 @@ public class MetaHelper {
 	   @param cyanCode
 	   @return
 	 */
-	public static ICompiler_dpa createNewCompiler_dpa(String cyanCode) {
+	public static ICompiler_parsing createNewCompiler_parsing(String cyanCode) {
 		setCyanLangDir();
 
     	Program program = new Program();
@@ -957,7 +957,7 @@ public class MetaHelper {
 			text[i] = nonSlashZeroText[i];
 		}
 		text[cyanCode.length()] = '\0';
-		final ICompiler_dpa cp = CompilerManager.getCompilerToInternalDSL(text, "anonymous source code",
+		final ICompiler_parsing cp = CompilerManager.getCompilerToInternalDSL(text, "anonymous source code",
 				"anonymousPackage\\anonymous source code",
 				cyanPackage.getI());
 		return cp;
@@ -1019,7 +1019,7 @@ public class MetaHelper {
 	}
 
 	/**
-	 * See the documentation for {@link meta.CyanMetaobjectAction_afti_dsa} relating the contents of files with
+	 * See the documentation for {@link meta.CyanMetaobjectAction_afterResTypes_semAn} relating the contents of files with
 	 * extension <code>mo</code> The compiler passed as parameter here is supposed to refer to a text
 	 * with the same contents as a <code>mo</code> file.
 	 * Using Cyan syntax, this method returns either
@@ -1030,7 +1030,7 @@ public class MetaHelper {
 	 *in which <code>proto</proto> represents a Cyan prototype for the interpreter.
 	*/
 
-	static public Tuple2<String, InterpreterPrototype> parseCyanCode(ICompiler_dpa cp) {
+	static public Tuple2<String, InterpreterPrototype> parseCyanCode(ICompiler_parsing cp) {
 
 
 		Map<String, List<WrStatement>> mapMethodName_Body = new HashMap<>();
@@ -1055,7 +1055,8 @@ public class MetaHelper {
 							cp.error(importPackage.getFirstSymbol(), "It is not legal to have a package that starts with 'cyan.lang'");
 						}
 					}
-					importList.add( (new StatementImport( (ExprIdentStar ) meta.GetHiddenItem.getHiddenExpr(importPackage))).getI() );
+					importList.add( (new StatementImport( (ExprIdentStar ) meta.GetHiddenItem.getHiddenExpr(importPackage),
+							null )).getI() );
 				}
 				if ( cp.getSymbol().token == Token.SEMICOLON )
 					cp.next();
@@ -1181,7 +1182,7 @@ public class MetaHelper {
 
 
 
-	public static List<WrStatement> parseCyanStatementList(ICompiler_dpa cp) {
+	public static List<WrStatement> parseCyanStatementList(ICompiler_parsing cp) {
 		List<WrStatement> statList = new ArrayList<>();
 		while ( cp.getSymbol().token == Token.IMPORT ) {
 			cp.next();
@@ -1199,7 +1200,8 @@ public class MetaHelper {
 						cp.error(importPackage.getFirstSymbol(), "It is not legal to have a package that starts with 'cyan.lang'");
 					}
 				}
-				statList.add( (new StatementImport( (ExprIdentStar ) meta.GetHiddenItem.getHiddenExpr(importPackage))).getI() );
+				statList.add( (new StatementImport( (ExprIdentStar ) meta.GetHiddenItem.getHiddenExpr(importPackage),
+						null)).getI() );
 			}
 			if ( cp.getSymbol().token == Token.SEMICOLON )
 				cp.next();
@@ -1337,4 +1339,6 @@ public class MetaHelper {
 
 	public static final String extensionMyanFile = "myan";
 	public static final String dotExtensionMyanFile = ".myan";
+	public static final String maxnumroundsfixmetaStr = "maxnumroundsfixmetaStr";
+	public static final int maxNumRoundsFixMetaDefaultValue = 5;
 }

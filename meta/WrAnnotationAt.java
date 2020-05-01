@@ -3,9 +3,9 @@ package meta;
 import java.util.List;
 import ast.AnnotationAt;
 import ast.ICalcInternalTypes;
-import ast.ProgramUnit;
+import ast.Prototype;
 import ast.Type;
-import lexer.SymbolCyanMetaobjectAnnotation;
+import lexer.SymbolCyanAnnotation;
 
 public class WrAnnotationAt extends WrAnnotation {
 
@@ -41,8 +41,8 @@ public class WrAnnotationAt extends WrAnnotation {
 		return ((AnnotationAt ) hidden).javaParameterAt(i);
 	}
 
-	public WrProgramUnit getProgramUnit() {
-		ProgramUnit pu = ((AnnotationAt ) hidden).getProgramUnit();
+	public WrPrototype getPrototype() {
+		Prototype pu = ((AnnotationAt ) hidden).getPrototype();
 		return pu == null ? null : pu.getI();
 	}
 
@@ -63,8 +63,8 @@ public class WrAnnotationAt extends WrAnnotation {
 	}
 
 	public
-	WrSymbolCyanMetaobjectAnnotation getSymbolMetaobjectAnnotation() {
-		SymbolCyanMetaobjectAnnotation sym = ((AnnotationAt ) hidden).getSymbolMetaobjectAnnotation();
+	WrSymbolCyanAnnotation getSymbolAnnotation() {
+		SymbolCyanAnnotation sym = ((AnnotationAt ) hidden).getSymbolAnnotation();
 		return sym == null ? null : sym.getI();
 	}
 
@@ -76,8 +76,8 @@ public class WrAnnotationAt extends WrAnnotation {
 		((AnnotationAt ) hidden).setCodegInfo(codegFileData);
 	}
 
-	public String filenameMetaobjectAnnotationInfo(String newFirstParameter) {
-		return ((AnnotationAt ) hidden).filenameMetaobjectAnnotationInfo(newFirstParameter);
+	public String filenameAnnotationInfo(String newFirstParameter) {
+		return ((AnnotationAt ) hidden).filenameAnnotationInfo(newFirstParameter);
 	}
 
 	public boolean getInsideMethod() {

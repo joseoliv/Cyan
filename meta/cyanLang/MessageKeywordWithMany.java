@@ -11,7 +11,7 @@ import meta.WrEnv;
 import meta.WrExpr;
 import meta.WrGenericParameter;
 import meta.WrMessageKeywordWithRealParameters;
-import meta.WrProgramUnit;
+import meta.WrPrototype;
 import meta.WrSymbol;
 import meta.WrType;
 
@@ -137,8 +137,8 @@ public class MessageKeywordWithMany extends IMessageKeyword {
 					// s += formalTypeStr + " cast: (" + expr.asString() + ")";
 					boolean isUnion = false;
 					int numF = -1;
-					if ( formalParamType instanceof WrProgramUnit ) {
-						final WrProgramUnit proto = (WrProgramUnit ) formalParamType;
+					if ( formalParamType instanceof WrPrototype ) {
+						final WrPrototype proto = (WrPrototype ) formalParamType;
 						isUnion = proto.getName().startsWith("Union<");
 						for ( final List<WrGenericParameter> gpList : proto.getGenericParameterListList(env) ) {
 							int n = 1;

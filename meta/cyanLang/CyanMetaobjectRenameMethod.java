@@ -5,9 +5,9 @@ import java.util.List;
 import meta.AnnotationArgumentsKind;
 import meta.AttachedDeclarationKind;
 import meta.CyanMetaobjectAtAnnot;
-import meta.IAction_afti;
-import meta.ICompiler_afti;
-import meta.ISlotInterface;
+import meta.IAction_afterResTypes;
+import meta.ICompiler_afterResTypes;
+import meta.ISlotSignature;
 import meta.MetaHelper;
 import meta.Tuple2;
 import meta.WrAnnotation;
@@ -32,7 +32,7 @@ import meta.WrAnnotationAt;
     Overloaded methods cannot be renamed.
    @author jose
  */
-public class CyanMetaobjectRenameMethod extends CyanMetaobjectAtAnnot implements IAction_afti
+public class CyanMetaobjectRenameMethod extends CyanMetaobjectAtAnnot implements IAction_afterResTypes
 {
 
 	public CyanMetaobjectRenameMethod() {
@@ -42,7 +42,7 @@ public class CyanMetaobjectRenameMethod extends CyanMetaobjectAtAnnot implements
 
 	@Override
 	public void check() {
-		final List<Object> parameterList = ((WrAnnotationAt ) metaobjectAnnotation).getJavaParameterList();
+		final List<Object> parameterList = getAnnotation().getJavaParameterList();
 		if ( parameterList.size() < 4 ) {
 			this.addError("This metaobject should take at least four string parameters");
 		}
@@ -55,9 +55,9 @@ public class CyanMetaobjectRenameMethod extends CyanMetaobjectAtAnnot implements
 	}
 
 	@Override
-	public Tuple2<StringBuffer, String> afti_codeToAdd(
-			ICompiler_afti compiler, List<Tuple2<WrAnnotation, List<ISlotInterface>>> infoList) {
-		final List<Object> parameterList = ((WrAnnotationAt ) metaobjectAnnotation).getJavaParameterList();
+	public Tuple2<StringBuffer, String> afterResTypes_codeToAdd(
+			ICompiler_afterResTypes compiler, List<Tuple2<WrAnnotation, List<ISlotSignature>>> infoList) {
+		final List<Object> parameterList = getAnnotation().getJavaParameterList();
 		/*
 		String prototypeName = (String ) parameterList.get(0);
 		prototypeName = MetaHelper.removeQuotes(prototypeName);
@@ -82,9 +82,9 @@ public class CyanMetaobjectRenameMethod extends CyanMetaobjectAtAnnot implements
 
 
 	@Override
-	public List<Tuple2<String, String []>> afti_renameMethod(
-			ICompiler_afti compiler_afti) {
-		final List<Object> parameterList = ((WrAnnotationAt ) metaobjectAnnotation).getJavaParameterList();
+	public List<Tuple2<String, String []>> afterResTypes_renameMethod(
+			ICompiler_afterResTypes compiler_afterResTypes) {
+		final List<Object> parameterList = getAnnotation().getJavaParameterList();
 		final String []strList = new String[parameterList.size()-2];
 		int j = 0;
 		for (int i = 2; i < parameterList.size(); ++i) {

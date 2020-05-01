@@ -5,9 +5,9 @@ import java.util.List;
 import meta.AnnotationArgumentsKind;
 import meta.AttachedDeclarationKind;
 import meta.CyanMetaobjectAtAnnot;
-import meta.IAction_afti;
-import meta.ICompiler_afti;
-import meta.ISlotInterface;
+import meta.IAction_afterResTypes;
+import meta.ICompiler_afterResTypes;
+import meta.ISlotSignature;
 import meta.Token;
 import meta.Tuple2;
 import meta.WrAnnotation;
@@ -20,7 +20,7 @@ import meta.WrFieldDec;
    @author jose
  */
 public class CyanMetaobjectInit extends CyanMetaobjectAtAnnot
-       implements IAction_afti {
+       implements IAction_afterResTypes {
 
 	public CyanMetaobjectInit() {
 		super("init", AnnotationArgumentsKind.OneOrMoreParameters ,
@@ -32,8 +32,8 @@ public class CyanMetaobjectInit extends CyanMetaobjectAtAnnot
 
 
 	@Override
-	public Tuple2<StringBuffer, String> afti_codeToAdd(
-			ICompiler_afti compiler_afti, List<Tuple2<WrAnnotation, List<ISlotInterface>>> infoList) {
+	public Tuple2<StringBuffer, String> afterResTypes_codeToAdd(
+			ICompiler_afterResTypes compiler_afterResTypes, List<Tuple2<WrAnnotation, List<ISlotSignature>>> infoList) {
 
 
 		String strSlotList = "    func init: ";
@@ -41,7 +41,7 @@ public class CyanMetaobjectInit extends CyanMetaobjectAtAnnot
 		methodCode.append("    func init: ");
 		final List<WrFieldDec> varList = new ArrayList<>();
 
-		final List<Object> javaParameterList = ((WrAnnotationAt ) metaobjectAnnotation).getJavaParameterList();
+		final List<Object> javaParameterList = getAnnotation().getJavaParameterList();
 		int n = 1;
 		for (final Object p : javaParameterList) {
 			if ( ! (p instanceof String) ) {
@@ -50,7 +50,7 @@ public class CyanMetaobjectInit extends CyanMetaobjectAtAnnot
 				return null;
 			}
 			final String strParam = (String ) p;
-			final WrFieldDec instVarDec = compiler_afti.searchField(strParam);
+			final WrFieldDec instVarDec = compiler_afterResTypes.searchField(strParam);
 			if ( instVarDec == null ) {
 				addError(strParam + " is not a field");
 				return null;
@@ -78,7 +78,7 @@ public class CyanMetaobjectInit extends CyanMetaobjectAtAnnot
 		final List<Tuple3<String, String, StringBuffer>> tupleList = new ArrayList<>();
 		tupleList.add(
 				new Tuple3<String, String, StringBuffer>(
-				    this.getMetaobjectAnnotation().getProgramUnit().getName(), "init:" + varList.size(), methodCode) );
+				    this.getAnnotation().getPrototype().getName(), "init:" + varList.size(), methodCode) );
 		return tupleList;
 		 */
 		final List<StringBuffer> tupleList = new ArrayList<>();

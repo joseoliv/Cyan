@@ -13,7 +13,8 @@ import saci.NameServer;
  */
 public class ExprBooleanAnd extends Expr {
 
-	public ExprBooleanAnd(Expr leftExpr, SymbolOperator andOp, Expr rightExpr) {
+	public ExprBooleanAnd(Expr leftExpr, SymbolOperator andOp, Expr rightExpr, MethodDec method) {
+		super(method);
 		this.leftExpr = leftExpr;
 		this.andOp = andOp;
 		this.rightExpr = rightExpr;

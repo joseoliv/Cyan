@@ -1,17 +1,23 @@
 package meta;
 
 public enum AttachedDeclarationKind {
-	PROGRAM_DEC("program"),
-	PACKAGE_DEC("package"),
-	PROTOTYPE_DEC("prototype"),
-	METHOD_DEC("method"),
-	METHOD_SIGNATURE_DEC("method signature"),
-	FIELD_DEC("field"),
-	LOCAL_VAR_DEC("local variable"),
-	EXPR("expression"),
-	STATEMENT_DEC("statement"),
+	PROGRAM_DEC("PROGRAM"),
+	PACKAGE_DEC("PACKAGE"),
+	PROTOTYPE_DEC("PROTOTYPE"),
+	METHOD_DEC("METHOD"),
+	METHOD_SIGNATURE_DEC("METHOD SIGNATURE"),
+	FIELD_DEC("FIELD"),
+	LOCAL_VAR_DEC("LOCAL VARIABLE"),
+	EXPR("EXPR"),
+	STATEMENT_DEC("STATEMENT"),
 	NONE_DEC("none"),
-	JAVA_TYPE("java type") ;
+	JAVA_TYPE("JAVA TYPE"),
+	/*
+	 * use this only for annotations attached to types used in declarations
+	 * of local variables, parameters, fields, and return value. Example:<br>
+	 * <code>    var Int@range(1, 12) month; </code>
+	 */
+	TYPE("TYPE");
 
 	AttachedDeclarationKind(String name) {
 		this.name = name;

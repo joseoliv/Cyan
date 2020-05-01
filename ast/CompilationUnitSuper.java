@@ -49,8 +49,8 @@ public class CompilationUnitSuper   implements Cloneable, ASTNode {
 			this.fullFileNamePath = this.canonicalPathUpDir + NameServer.fileSeparatorAsString + this.filename;
 		this.codegList = null;
 		importPackageSet = new HashSet<>();
-		sourceCodeChanged_inPhaseAfti = false;
-		sourceCodeChanged_inPhaseDsa = false;
+		sourceCodeChanged_inPhaseafterResTypes = false;
+		sourceCodeChanged_inPhasesemAn = false;
 	}
 
 
@@ -348,10 +348,10 @@ public class CompilationUnitSuper   implements Cloneable, ASTNode {
 	 * If more than one is found, more than one is returned.
 	   @return
 
-	public List<ProgramUnit> searchProgramUnit(String prototypeName) {
-		for (ProgramUnit pu : programUnitList ) {
+	public List<Prototype> searchPrototype(String prototypeName) {
+		for (Prototype pu : prototypeList ) {
 			if ( pu.getName().equals(prototypeName) ) {
-				List<ProgramUnit> puList = new ArrayList<ProgramUnit>(1);
+				List<Prototype> puList = new ArrayList<Prototype>(1);
 				puList.add(pu);
 				return puList;
 			}
@@ -405,8 +405,8 @@ public class CompilationUnitSuper   implements Cloneable, ASTNode {
 				if ( cyanMetaobject instanceof IStaticTyping ) {
 					if ( !(cyanMetaobject instanceof CyanMetaobjectStaticTyping) ) {
 						this.error(
-								meta.GetHiddenItem.getHiddenSymbol(cyanMetaobject.getMetaobjectAnnotation().getFirstSymbol()),
-								cyanMetaobject.getMetaobjectAnnotation().getFirstSymbol().getLineNumber(),
+								meta.GetHiddenItem.getHiddenSymbol(cyanMetaobject.getAnnotation().getFirstSymbol()),
+								cyanMetaobject.getAnnotation().getFirstSymbol().getLineNumber(),
 								"Metaobject CyanMetaobjectStaticTyping  is the only allowed to implement interface IStaticTyping",
 								 compiler);
 					}
@@ -551,7 +551,7 @@ public class CompilationUnitSuper   implements Cloneable, ASTNode {
 			}
 
 		}
-		compiler.pushStartMacroKeywordsAllMacros();
+		compiler.pushStartMacroKeyworsemAnllMacros();
 
 		//return errorListMetaobject;
 	}
@@ -718,18 +718,18 @@ public class CompilationUnitSuper   implements Cloneable, ASTNode {
 
 		String s = "";
 		if ( this instanceof CompilationUnit ) {
-			CompilationUnit previousCompUnit = (CompilationUnit ) this; // programUnitInstantiation.getCompilationUnit();
+			CompilationUnit previousCompUnit = (CompilationUnit ) this; // prototypeInstantiation.getCompilationUnit();
 			if ( previousCompUnit.getPackageNameInstantiation() != null &&
 					previousCompUnit.getPrototypeNameInstantiation() != null ) {
 				s = "\n" + "Stack of generic prototype instantiations: \n" ;
-				final ProgramUnit previousProgramUnit = previousCompUnit.getPublicPrototype();
-				//System.out.println( previousCompUnit.getProgramUnitList().toString() );
-				if ( previousProgramUnit == null ) {
+				final Prototype previousPrototype = previousCompUnit.getPublicPrototype();
+				//System.out.println( previousCompUnit.getPrototypeList().toString() );
+				if ( previousPrototype == null ) {
 					s += "    " + previousCompUnit.getPackageName() + " file " + previousCompUnit.getFileNameWithoutExtension() + " line " +
 							+  lineNumber + " column " + columnNumber + "\n";
 				}
 				else {
-					final String protoName = previousProgramUnit.getNameWithOuter();
+					final String protoName = previousPrototype.getNameWithOuter();
 					s += "    " + previousCompUnit.getPackageName() + "." + protoName + " line " +
 							+  lineNumber + " column " + columnNumber + "\n";
 				}
@@ -738,7 +738,7 @@ public class CompilationUnitSuper   implements Cloneable, ASTNode {
 						previousCompUnit.getPrototypeNameInstantiation() != null ) {
 					s += "    " + previousCompUnit.getPackageNameInstantiation() + "." + previousCompUnit.getPrototypeNameInstantiation() + " line " +
 							previousCompUnit.getLineNumberInstantiation() + " column " + previousCompUnit.getColumnNumberInstantiation() + "\n";
-					final ProgramUnit pppu = compiler.searchPackagePrototype(previousCompUnit.getPackageNameInstantiation(), previousCompUnit.getPrototypeNameInstantiation());
+					final Prototype pppu = compiler.searchPackagePrototype(previousCompUnit.getPackageNameInstantiation(), previousCompUnit.getPrototypeNameInstantiation());
 					if ( pppu != null ) {
 						previousCompUnit = pppu.getCompilationUnit();
 					}
@@ -757,7 +757,7 @@ public class CompilationUnitSuper   implements Cloneable, ASTNode {
 
 		String s = "";
 		if ( this instanceof CompilationUnit ) {
-			CompilationUnit previousCompUnit = (CompilationUnit ) this; // programUnitInstantiation.getCompilationUnit();
+			CompilationUnit previousCompUnit = (CompilationUnit ) this; // prototypeInstantiation.getCompilationUnit();
 			if ( previousCompUnit.getPackageNameInstantiation() != null &&
 					previousCompUnit.getPrototypeNameInstantiation() != null ) {
 				s = "\n" + "Stack of generic prototype instantiations: \n" ;
@@ -769,7 +769,7 @@ public class CompilationUnitSuper   implements Cloneable, ASTNode {
 						previousCompUnit.getPrototypeNameInstantiation() != null ) {
 					s += "    " + previousCompUnit.getPackageNameInstantiation() + "." + previousCompUnit.getPrototypeNameInstantiation() + " line " +
 							previousCompUnit.getLineNumberInstantiation() + " column " + previousCompUnit.getColumnNumberInstantiation() + "\n";
-					final ProgramUnit pppu = env.searchPackagePrototype(previousCompUnit.getPackageNameInstantiation(), previousCompUnit.getPrototypeNameInstantiation());
+					final Prototype pppu = env.searchPackagePrototype(previousCompUnit.getPackageNameInstantiation(), previousCompUnit.getPrototypeNameInstantiation());
 					if ( pppu != null ) {
 						previousCompUnit = pppu.getCompilationUnit();
 					}
@@ -840,27 +840,27 @@ public class CompilationUnitSuper   implements Cloneable, ASTNode {
 		this.otherCodegList = otherCodegList;
 	}
 
-	public boolean getSourceCodeChanged_inPhaseAfti() {
-		return sourceCodeChanged_inPhaseAfti;
+	public boolean getSourceCodeChanged_inPhaseafterResTypes() {
+		return sourceCodeChanged_inPhaseafterResTypes;
 	}
 
-	public void setSourceCodeChanged_inPhaseAfti(
-			boolean sourceCodeChanged_inPhaseAfti) {
-		this.sourceCodeChanged_inPhaseAfti = sourceCodeChanged_inPhaseAfti;
-	}
-
-
-
-
-	public boolean getSourceCodeChanged_inPhaseDsa() {
-		return sourceCodeChanged_inPhaseDsa;
+	public void setSourceCodeChanged_inPhaseafterResTypes(
+			boolean sourceCodeChanged_inPhaseafterResTypes) {
+		this.sourceCodeChanged_inPhaseafterResTypes = sourceCodeChanged_inPhaseafterResTypes;
 	}
 
 
 
-	public void setSourceCodeChanged_inPhaseDsa(
-			boolean sourceCodeChanged_inPhaseDsa) {
-		this.sourceCodeChanged_inPhaseDsa = sourceCodeChanged_inPhaseDsa;
+
+	public boolean getSourceCodeChanged_inPhasesemAn() {
+		return sourceCodeChanged_inPhasesemAn;
+	}
+
+
+
+	public void setSourceCodeChanged_inPhasesemAn(
+			boolean sourceCodeChanged_inPhasesemAn) {
+		this.sourceCodeChanged_inPhasesemAn = sourceCodeChanged_inPhasesemAn;
 	}
 
 
@@ -997,51 +997,51 @@ public class CompilationUnitSuper   implements Cloneable, ASTNode {
 
 	/**
 	 * true if the source code of this compilation unit was changed by metaobjects
-	 * in phase afti. The value of this field is initialized to false
-	 * before afti. If sourceCodeChanged_inPhaseAfti is true, after phase
-	 * afti the compilation unit should be parsed and typed again. That is,
+	 * in phase AF_RES_TYPES. The value of this field is initialized to false
+	 * before AF_RES_TYPES. If sourceCodeChanged_inPhaseafterResTypes is true, after phase
+	 * AF_RES_TYPES the compilation unit should be parsed and typed again. That is,
 	 * the compilation steps 4 and 5 should be applied to this compilation unit.
-	 * If  sourceCodeChanged_inPhaseAfti is false after afti, the compilation
+	 * If  sourceCodeChanged_inPhaseafterResTypes is false after AF_RES_TYPES, the compilation
 	 * unit should NOT be parsed and typed again.
 	 *
-	 * However, if sourceCodeChanged_inPhaseAfti is true, the compiler should
+	 * However, if sourceCodeChanged_inPhaseafterResTypes is true, the compiler should
 	 * not create again, in phase 4, the the object that represents the program
 	 * unit (ObjectDec or InterfaceDec) of this compilation unit.
 	 * The previous object should be reused in order to
-	 * keep the phase ti valid. That is, if a parameter type is T of a prototype
-	 * AA (that is not parsed again) in a parsing before afti and T is parsed
+	 * keep the phase resTypes valid. That is, if a parameter type is T of a prototype
+	 * AA (that is not parsed again) in a parsing before AF_RES_TYPES and T is parsed
 	 * again in phase 4, the reference to T in the parameter will continue
 	 * to be valid because the same object that represents T will be used in the
-	 * parsing after ti. If a new object is created, parameter type of T in AA
-	 * will refer to an object and T will be represented, after afti, by another
+	 * parsing after resTypes. If a new object is created, parameter type of T in AA
+	 * will refer to an object and T will be represented, after AF_RES_TYPES, by another
 	 * object
 	 */
 
-	private boolean sourceCodeChanged_inPhaseAfti;
+	private boolean sourceCodeChanged_inPhaseafterResTypes;
 
 	/**
 	 * true if the source code of this compilation unit was changed by metaobjects
-	 * in phase dsa. The value of this field is initialized to false
-	 * before dsa. If sourceCodeChanged_inPhaseDsa is true, after phase
-	 * dsa the compilation unit should be parsed and typed again. That is,
+	 * in phase SEM_AN. The value of this field is initialized to false
+	 * before SEM_AN. If sourceCodeChanged_inPhasesemAn is true, after phase
+	 * SEM_AN the compilation unit should be parsed and typed again. That is,
 	 * the compilation steps 7 and 8 should be applied to this compilation unit.
-	 * If  sourceCodeChanged_inPhaseDsa is false after dsa, the compilation
+	 * If  sourceCodeChanged_inPhasesemAn is false after SEM_AN, the compilation
 	 * unit should NOT be parsed and typed again.
 	 *
-	 * However, if sourceCodeChanged_inPhaseDsa is true, the compiler should
+	 * However, if sourceCodeChanged_inPhasesemAn is true, the compiler should
 	 * not create again, in phase 7, the the object that represents the program
 	 * unit (ObjectDec or InterfaceDec) of this compilation unit.
 	 * The previous object should be reused in order to
-	 * keep the phase ti valid. That is, if a parameter type is T of a prototype
-	 * AA (that is not parsed again) in a parsing before dsa and T is parsed
+	 * keep the phase resTypes valid. That is, if a parameter type is T of a prototype
+	 * AA (that is not parsed again) in a parsing before SEM_AN and T is parsed
 	 * again in phase 7, the reference to T in the parameter will continue
 	 * to be valid because the same object that represents T will be used in the
-	 * parsing after ti. If a new object is created, parameter type of T in AA
-	 * will refer to an object and T will be represented, after dsa, by another
+	 * parsing after resTypes. If a new object is created, parameter type of T in AA
+	 * will refer to an object and T will be represented, after SEM_AN, by another
 	 * object
 	 */
 
-	private boolean sourceCodeChanged_inPhaseDsa;
+	private boolean sourceCodeChanged_inPhasesemAn;
 
 	/**
 	 * list of all symbols found in this compilation unit

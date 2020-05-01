@@ -9,7 +9,7 @@ import ast.CyanPackage;
 import ast.FieldDec;
 import ast.MethodDec;
 import ast.ObjectDec;
-import ast.ProgramUnit;
+import ast.Prototype;
 import meta.DirectoryKindPPP;
 import meta.FileError;
 import meta.ICompiler_ded;
@@ -147,7 +147,7 @@ public class Compiler_ded implements ICompiler_ded {
 	public List<Tuple2<String, String>> getFieldList() {
 		if ( compilationUnit instanceof CompilationUnit ) {
 			CompilationUnit cunit = (CompilationUnit ) compilationUnit;
-			ProgramUnit pu = cunit.getPublicPrototype();
+			Prototype pu = cunit.getPublicPrototype();
 			if ( pu == null || !(pu instanceof ObjectDec) ) {
 				return null;
 			}
@@ -174,7 +174,7 @@ public class Compiler_ded implements ICompiler_ded {
 	public List<MethodComplexName> getMethodList() {
 		if ( compilationUnit instanceof CompilationUnit ) {
 			CompilationUnit cunit = (CompilationUnit ) compilationUnit;
-			ProgramUnit pu = cunit.getPublicPrototype();
+			Prototype pu = cunit.getPublicPrototype();
 			if ( pu == null || !(pu instanceof ObjectDec) ) {
 				return null;
 			}

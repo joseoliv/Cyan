@@ -85,7 +85,7 @@ public class SymbolLiteralObject extends Symbol
 	}
 
 	@Override
-	public Annotation getCyanMetaobjectAnnotation() {
+	public Annotation getCyanAnnotation() {
 		return this.cyanMetaobjectLiteralObjectAnnotation;
 	}
 
@@ -117,7 +117,7 @@ public class SymbolLiteralObject extends Symbol
 
 
 	/**
-	 * the metaobject name may be postfixed by compilerPhase.getName() which is "dpa", "afti", "dsa", "afsa", or "cge".
+	 * the metaobject name may be postfixed by compilerPhase.getName() which is "parsing", "AF_RES_TYPES", "SEM_AN", "AFTER_SEM_AN", or "cge".
 	 */
 	private CompilerPhase compilerPhase;
 }

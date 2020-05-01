@@ -1,8 +1,8 @@
 package ast;
 
 import lexer.Symbol;
-import meta.WrExprSelf__PeriodIdent;
 import meta.MetaHelper;
+import meta.WrExprSelf__PeriodIdent;
 import saci.CyanEnv;
 import saci.Env;
 import saci.NameServer;
@@ -18,7 +18,8 @@ public class ExprSelf__PeriodIdent extends Expr implements LeftHandSideAssignmen
 	/**
 	 *
 	 */
-	public ExprSelf__PeriodIdent(Symbol selfSymbol, Symbol identSymbol) {
+	public ExprSelf__PeriodIdent(Symbol selfSymbol, Symbol identSymbol, MethodDec method) {
+		super(method);
 		this.selfSymbol = selfSymbol;
 		this.identSymbol = identSymbol;
 	}

@@ -6,14 +6,14 @@ import meta.AnnotationArgumentsKind;
 import meta.AttachedDeclarationKind;
 import meta.CyanMetaobjectAtAnnot;
 import meta.IActionFunction;
-import meta.IAction_afti;
+import meta.IAction_afterResTypes;
 import meta.IStayPrototypeInterface;
 import meta.Token;
 import meta.Tuple3;
 
 public class CyanMetaobjectAddCodeToGenericPrototype extends CyanMetaobjectAtAnnot
      implements IActionFunction,
-                IAction_afti,  IStayPrototypeInterface {
+                IAction_afterResTypes,  IStayPrototypeInterface {
 
 	public CyanMetaobjectAddCodeToGenericPrototype() {
 		super("addCodeToGenericPrototype", AnnotationArgumentsKind.TwoParameters, new AttachedDeclarationKind[] {
@@ -22,8 +22,8 @@ public class CyanMetaobjectAddCodeToGenericPrototype extends CyanMetaobjectAtAnn
 
 	@Override
 	public void check() {
-		final AnnotationAt cyanMetaobjectAnnotation = meta.GetHiddenItem.getHiddenCyanMetaobjectWithAtAnnotation(this.getMetaobjectAnnotation());
-		final List<Object> javaObjectList = cyanMetaobjectAnnotation.getJavaParameterList();
+		final AnnotationAt cyanAnnotation = meta.GetHiddenItem.getHiddenCyanMetaobjectWithAtAnnotation(this.getAnnotation());
+		final List<Object> javaObjectList = cyanAnnotation.getJavaParameterList();
 		if ( javaObjectList.size() != 2 || !(javaObjectList.get(0) instanceof String)
 				|| !(javaObjectList.get(1) instanceof String)) {
 			addError("A single identifier or a single string was expected as the first "
@@ -40,17 +40,17 @@ public class CyanMetaobjectAddCodeToGenericPrototype extends CyanMetaobjectAtAnn
 
 	/*
 	@Override
-	public Tuple2<String, Object> afti_getInfoFromReceiverMetaobject(
+	public Tuple2<String, Object> afterResTypes_getInfoFromReceiverMetaobject(
 			CyanMetaobjectAtAnnot cyanMetaobject) {
 
 		return new Tuple2<String, Object>( tag,
-				new StringBuffer( new String(this.getMetaobjectAnnotation().getTextAttachedDSL())));
+				new StringBuffer( new String(this.getAnnotation().getTextAttachedDSL())));
 	}
 	*/
 	@Override
 	public 	Object eval(Object input) {
 		return new Tuple3<String, String, Object>( tag, slotList,
-				new StringBuffer( new String(this.getMetaobjectAnnotation().getTextAttachedDSL())));
+				new StringBuffer( new String(this.getAnnotation().getTextAttachedDSL())));
 
 	}
 

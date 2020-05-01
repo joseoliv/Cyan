@@ -6,16 +6,16 @@ import meta.AnnotationArgumentsKind;
 import meta.AttachedDeclarationKind;
 import meta.CyanMetaobject;
 import meta.CyanMetaobjectAtAnnot;
-import meta.IAction_afti;
-import meta.ICompiler_afti;
-import meta.ISlotInterface;
+import meta.IAction_afterResTypes;
+import meta.ICompiler_afterResTypes;
+import meta.ISlotSignature;
 import meta.Tuple2;
 import meta.WrAnnotation;
 import meta.WrEnv;
 import meta.WrFieldDec;
 import meta.WrMethodDec;
 import meta.WrMethodSignature;
-import meta.WrProgramUnit;
+import meta.WrPrototype;
 
 /**
  * A demonstration metaobject. It takes two parameters. The first is the name of a field
@@ -26,7 +26,7 @@ import meta.WrProgramUnit;
    @author jose
  */
 public class CyanMetaobjectAddFieldInfo extends CyanMetaobjectAtAnnot
-implements IAction_afti {
+implements IAction_afterResTypes {
 
 	public CyanMetaobjectAddFieldInfo() {
 		super("addFieldInfo", AnnotationArgumentsKind.OneOrMoreParameters,
@@ -36,7 +36,7 @@ implements IAction_afti {
 
 	@Override
 	public void check() {
-		List<Object> paramList = this.getMetaobjectAnnotation().getJavaParameterList();
+		List<Object> paramList = this.getAnnotation().getJavaParameterList();
 		if ( paramList == null || paramList.size() != 2 ||
 				!(paramList.get(0) instanceof String) || !(paramList.get(1) instanceof String)) {
 			this.addError("Annotation '" + this.getName() + "' should take two String parameters");
@@ -52,20 +52,20 @@ implements IAction_afti {
 
 
 	@Override
-	public Tuple2<StringBuffer, String> afti_codeToAdd(
-			ICompiler_afti compiler, List<Tuple2<WrAnnotation, List<ISlotInterface>>> infoList) {
+	public Tuple2<StringBuffer, String> afterResTypes_codeToAdd(
+			ICompiler_afterResTypes compiler, List<Tuple2<WrAnnotation, List<ISlotSignature>>> infoList) {
 
 		String slotStr = "";
 		StringBuffer s = new StringBuffer();
-		WrProgramUnit pu = (WrProgramUnit ) this.getAttachedDeclaration();
+		WrPrototype pu = (WrPrototype ) this.getAttachedDeclaration();
 		WrEnv wrenv = compiler.getEnv();
 		List<WrFieldDec> fieldList = pu.getFieldList(wrenv);
 		int newFields = 0;
 		List<String> newFieldsStr = new ArrayList<>();
 		int countNewMethod = 0;
 		if ( infoList != null ) {
-			for ( Tuple2<WrAnnotation, List<ISlotInterface>> t : infoList ) {
-				for ( ISlotInterface newSlot : t.f2 ) {
+			for ( Tuple2<WrAnnotation, List<ISlotSignature>> t : infoList ) {
+				for ( ISlotSignature newSlot : t.f2 ) {
 					if ( newSlot instanceof WrFieldDec ) {
 						newFieldsStr.add( ((WrFieldDec ) newSlot).getName() );
 						++newFields;

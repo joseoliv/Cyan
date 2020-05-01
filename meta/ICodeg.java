@@ -3,7 +3,7 @@ package meta;
 /**
  * All metaobject classes that implement this interface are codegs. The class should
  * be sub-prototype of {@link meta#CyanMetaobjectAtAnnot}.  They can implement interfaces
- * {@link meta#IAction_dpa}, {@link meta#IAction_afti}, and {@link meta#IAction_dsa}.
+ * {@link meta#IAction_parsing}, {@link meta#IAction_afterResTypes}, and {@link meta#IAction_semAn}.
  * The compiler checks whether the metaobject annotation has at least one parameter.
    @author José
  */

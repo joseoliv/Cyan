@@ -10,9 +10,9 @@ import cyan.lang.CyInt;
 import cyan.lang._Array_LT_GP__Tuple_LT_GP_CyString_GP_CyString_GT__GT;
 import cyan.lang._Tuple_LT_GP_CyString_GP_CyString_GT;
 import cyan.reflect._CyanMetaobject;
-import cyan.reflect._IActionNewPrototypes__dsa;
-import cyan.reflect._IActionVariableDeclaration__dsa;
-import cyan.reflect._IAction__dsa;
+import cyan.reflect._IActionNewPrototypes__semAn;
+import cyan.reflect._IActionVariableDeclaration__semAn;
+import cyan.reflect._IAction__semAn;
 import cyan.reflect._ICodeg;
 import cyan.reflect._IStayPrototypeInterface;
 import error.ErrorKind;
@@ -20,17 +20,17 @@ import lexer.CompilerPhase;
 import lexer.Lexer;
 import lexer.Symbol;
 import lexer.SymbolCharSequence;
-import lexer.SymbolCyanMetaobjectAnnotation;
+import lexer.SymbolCyanAnnotation;
 import meta.AttachedDeclarationKind;
 import meta.CyanMetaobjectAtAnnot;
-import meta.IActionNewPrototypes_dsa;
-import meta.IActionVariableDeclaration_dsa;
+import meta.IActionNewPrototypes_semAn;
+import meta.IActionVariableDeclaration_semAn;
 import meta.IAction_cge;
-import meta.IAction_dsa;
+import meta.IAction_semAn;
 import meta.ICodeg;
 import meta.IDeclaration;
-import meta.IParseWithCyanCompiler_dpa;
-import meta.ISlotInterface;
+import meta.IParseWithCyanCompiler_parsing;
+import meta.ISlotSignature;
 import meta.IStayPrototypeInterface;
 import meta.MetaHelper;
 import meta.ReplacementPolicyInGenericInstantiation;
@@ -46,7 +46,7 @@ import meta.cyanLang.CyanMetaobjectCompilationContextPop;
 import meta.cyanLang.CyanMetaobjectCompilationContextPush;
 import meta.cyanLang.CyanMetaobjectCompilationMarkDeletedCode;
 import meta.cyanLang.CyanMetaobjectJavaCode;
-import metaRealClasses.Compiler_dsa;
+import metaRealClasses.Compiler_semAn;
 import saci.CompilerManager;
 import saci.CyanEnv;
 import saci.Env;
@@ -71,12 +71,12 @@ import saci.NameServer;
 public class AnnotationAt extends Annotation {
 
 	public AnnotationAt( CompilationUnit compilationUnit,
-			SymbolCyanMetaobjectAnnotation symbolCyanMetaobjectAnnotation,
-			                   CyanMetaobjectAtAnnot cyanMetaobject, boolean inExpr ) {
-		super(compilationUnit, inExpr);
-		this.symbolCyanMetaobjectAnnotation = symbolCyanMetaobjectAnnotation;
+			SymbolCyanAnnotation symbolCyanAnnotation,
+			                   CyanMetaobjectAtAnnot cyanMetaobject, boolean inExpr , MethodDec method) {
+		super(compilationUnit, inExpr, method);
+		this.symbolCyanAnnotation = symbolCyanAnnotation;
 		this.cyanMetaobject = cyanMetaobject;
-		this.cyanMetaobject.setMetaobjectAnnotation(this.getI());
+		this.cyanMetaobject.setAnnotation(this.getI());
 		this.declaration = null;
 		this.leftParenthesis = null;
 		this.rightParenthesis = null;
@@ -104,16 +104,16 @@ public class AnnotationAt extends Annotation {
 		}
 
 		String cyanMetaobjectName;
-		cyanMetaobjectName = symbolCyanMetaobjectAnnotation.getSymbolString();
+		cyanMetaobjectName = symbolCyanAnnotation.getSymbolString();
 
-		if ( codeMetaobjectAnnotationParseWithCompiler != null )
-			pw.print(codeMetaobjectAnnotationParseWithCompiler);
+		if ( codeAnnotationParseWithCompiler != null )
+			pw.print(codeAnnotationParseWithCompiler);
 		else {
 			//pw.print(" ");
 			final String at = "@";
 			pw.printIdent(at + cyanMetaobjectName);
-			if ( symbolCyanMetaobjectAnnotation.getPostfix() != null ) {
-				pw.print("#" + symbolCyanMetaobjectAnnotation.getPostfix().getName());
+			if ( symbolCyanAnnotation.getPostfix() != null ) {
+				pw.print("#" + symbolCyanAnnotation.getPostfix().getName());
 			}
 			if ( leftParenthesis != null ) {
 				pw.print(leftParenthesis.getSymbolString());
@@ -189,7 +189,7 @@ public class AnnotationAt extends Annotation {
 	@Override
 	public void genJava(PWInterface pw, Env env) {
 		if ( cyanMetaobject instanceof IAction_cge ) {
-			// // cyanMetaobject.setMetaobjectAnnotation(this, 0);
+			// // cyanMetaobject.setAnnotation(this, 0);
 			StringBuffer strText = null;
 
 
@@ -242,7 +242,7 @@ public class AnnotationAt extends Annotation {
 
 	@Override
 	public boolean isParsedWithCompiler() {
-		return this.cyanMetaobject instanceof IParseWithCyanCompiler_dpa;
+		return this.cyanMetaobject instanceof IParseWithCyanCompiler_parsing;
 	}
 
 
@@ -281,7 +281,7 @@ public class AnnotationAt extends Annotation {
 			String sourceFileName;
 			int lineNumber = 0;
 			if ( javaParameterList.size() <= 2 || javaParameterList.get(2) == null ) {
-				if ( env.getCurrentProgramUnit() == null )
+				if ( env.getCurrentPrototype() == null )
 					packageName = "Unidentified";
 				else
 					packageName = env.getCurrentCompilationUnit().getPackageName();
@@ -291,10 +291,10 @@ public class AnnotationAt extends Annotation {
 			}
 
 			if ( javaParameterList.size() <= 3 || javaParameterList.get(3) == null ) {
-				if ( env.getCurrentProgramUnit() == null )
+				if ( env.getCurrentPrototype() == null )
 					sourceFileName = "Unidentified";
 				else
-					sourceFileName = env.getCurrentProgramUnit().getName();
+					sourceFileName = env.getCurrentPrototype().getName();
 			}
 			else {
 				sourceFileName = (String ) javaParameterList.get(3);
@@ -306,25 +306,25 @@ public class AnnotationAt extends Annotation {
 			else {
                 lineNumber = (Integer ) javaParameterList.get(4);
 			}
-			List<ISlotInterface> slotList = null;
+			List<ISlotSignature> slotList = null;
 			if ( javaParameterList.size() > 5 && javaParameterList.get(5) != null ) {
                 String strSlotList = meta.MetaHelper.removeQuotes( (String ) javaParameterList.get(5));
                 /*
                  * six parameters mean we are in a program unit
                  */
-                ProgramUnit currentPU = env.getCurrentProgramUnit();
+                Prototype currentPU = env.getCurrentPrototype();
 				slotList = currentPU.extractSlotListFrom(strSlotList, this, env, this.getFirstSymbol());
 			}
 
 
 			env.pushCompilationContext(id, cyanMetaobjectName, packageName, sourceFileName, lineNumber,
-					this.symbolCyanMetaobjectAnnotation.getOffset(), slotList);
+					this.symbolCyanAnnotation.getOffset(), slotList);
 		}
 		else if ( cyanMetaobject instanceof CyanMetaobjectCompilationContextPop ) {
 			env.checkPushStackEmpty();
 
 			final String id = (String ) javaParameterList.get(0);
-			env.popCompilationContext(id, this.symbolCyanMetaobjectAnnotation);
+			env.popCompilationContext(id, this.symbolCyanAnnotation);
 		}
 		else if ( cyanMetaobject instanceof CyanMetaobjectCompilationMarkDeletedCode ) {
 			env.addToLineShift(-((CyanMetaobjectCompilationMarkDeletedCode) cyanMetaobject).getNumLinesDeleted());
@@ -337,9 +337,9 @@ public class AnnotationAt extends Annotation {
 			env.markDeletedCodeCompilation( ((CyanMetaobjectCompilationMarkDeletedCode) cyanMetaobject).getNumLinesDeleted() );
 		} */
 
-		dsaActions(env);
+		semAnActions(env);
 
-		ProgramUnit pu;
+		Prototype pu;
 		if ( cyanMetaobject.getPackageOfType() == null || cyanMetaobject.getPrototypeOfType() == null ) {
 			pu = env.searchPackagePrototype(MetaHelper.cyanLanguagePackageName, "Nil");
 		}
@@ -365,30 +365,32 @@ public class AnnotationAt extends Annotation {
 	/**
 	   @param env
 	 */
-	public void dsaActions(Env env) {
-		Compiler_dsa compiler_dsa = null;
-		if ( env.getCompInstSet().contains(meta.CompilationInstruction.dsa_actions) ) {
+	public void semAnActions(Env env) {
+		Compiler_semAn compiler_semAn = null;
+		if ( env.getCompInstSet().contains(meta.CompilationInstruction.semAn_actions) ) {
 			_CyanMetaobject other = cyanMetaobject.getMetaobjectInCyan();
-			if ( cyanMetaobject instanceof IAction_dsa || (other != null && other instanceof _IAction__dsa) ) {
+			if ( cyanMetaobject instanceof IAction_semAn
+					|| (other != null && other instanceof _IAction__semAn)
+					) {
 
 				/*
-				if ( env.getDuring_dsa_actions() ) {
-					env.error(this.getFirstSymbol(), "A dsa action cannot occur inside another dsa actions. For example, you cannot have a macro expansion inside another macro expansion or even a literal object as r\"[a-z]+\" inside a macro");
+				if ( env.getDuring_semAn_actions() ) {
+					env.error(this.getFirstSymbol(), "A SEM_AN action cannot occur inside another SEM_AN actions. For example, you cannot have a macro expansion inside another macro expansion or even a literal object as r\"[a-z]+\" inside a macro");
 				}
 				*/
 				try {
-					env.begin_dsa_actions();
-					// // cyanMetaobject.setMetaobjectAnnotation(this, 0);
-					compiler_dsa = new Compiler_dsa(env, this);
+					env.begin_semAn_actions();
+					// // cyanMetaobject.setAnnotation(this, 0);
+					compiler_semAn = new Compiler_semAn(env, this);
 					StringBuffer cyanCode = null;
 
 					try {
 						if ( other == null ) {
-							final IAction_dsa cyanMetaobjectCodeGen = (IAction_dsa ) cyanMetaobject;
-							cyanCode = cyanMetaobjectCodeGen.dsa_codeToAdd(compiler_dsa);
+							final IAction_semAn cyanMetaobjectCodeGen = (IAction_semAn ) cyanMetaobject;
+							cyanCode = cyanMetaobjectCodeGen.semAn_codeToAdd(compiler_semAn);
 						}
 						else {
-							cyanCode = new StringBuffer( ((_IAction__dsa ) other)._dsa__codeToAdd_1(compiler_dsa).s ) ;
+							cyanCode = new StringBuffer( ((_IAction__semAn ) other)._semAn__codeToAdd_1(compiler_semAn).s ) ;
 						}
 
 					}
@@ -407,8 +409,8 @@ public class AnnotationAt extends Annotation {
 
 					/*
 
-						env.error(this.getFirstSymbol(), "This metaobject implements interface '" + IAction_dsa.class.getName() + "' "
-								+ "but it is not generating code in phase DSA");
+						env.error(this.getFirstSymbol(), "This metaobject implements interface '" + IAction_semAn.class.getName() + "' "
+								+ "but it is not generating code in phase SEM_AN");
 
 										 *
 					 */
@@ -417,18 +419,18 @@ public class AnnotationAt extends Annotation {
 					if ( cyanCode == null || cyanCode.length() == 0 || cyanCode.charAt(0) == '\0' ) {
 
 
-						if ( this.symbolCyanMetaobjectAnnotation.getPostfix() == null ) {
+						if ( this.symbolCyanAnnotation.getPostfix() == null ) {
 							// this metaobject did not generated code in previous compilation phases.
 							// Then it should generated in this phase.
 							if ( this.cyanMetaobject.isExpression() ) {
 								if ( this.cyanMetaobject instanceof meta.ICodeg ) {
 									env.error(this.getFirstSymbol(),
 											"Codeg metaobject '" + this.cyanMetaobject.getName() +
-											    "' is not generating code in phase dsa as expected. This probably is because " +
+											    "' is not generating code in phase SEM_AN as expected. This probably is because " +
 											"this Codeg was not initialized at editing time. Just put the mouse over it to edit it");
 								}
 								else {
-									env.error(this.getFirstSymbol(),  "Metaobject '" + this.cyanMetaobject.getName() + "' is not generating code in phase dsa as expected");
+									env.error(this.getFirstSymbol(),  "Metaobject '" + this.cyanMetaobject.getName() + "' is not generating code in phase SEM_AN as expected");
 								}
 							}
 						}
@@ -444,7 +446,7 @@ public class AnnotationAt extends Annotation {
 						}
 						if (  ! this.insideMethod  ) {
 							env.error(this.getFirstSymbol(), "Metaobject '" + this.cyanMetaobject.getName() +
-									"' is outside a method and it is trying to generate code in phase dsa (semantic analysis). This is illegal");
+									"' is outside a method and it is trying to generate code in phase SEM_AN (semantic analysis). This is illegal");
 						}
 						/**
 						 * annotations outside methods cannot generate code
@@ -454,16 +456,16 @@ public class AnnotationAt extends Annotation {
 							cyanCode.deleteCharAt(cyanCode.length()-1);
 
 						if ( this.isParsedWithCompiler() &&
-								env.sizeStackMetaobjectAnnotationParseWithCompiler() > 1 ) {
+								env.sizeStackAnnotationParseWithCompiler() > 1 ) {
 							/*
 							 * this metaobject annotation is a literal object that is inside other literal object
 							 */
-							this.setCodeMetaobjectAnnotationParseWithCompiler(cyanCode);
+							this.setCodeAnnotationParseWithCompiler(cyanCode);
 						}
 						else {
-							// env.removeCodeMetaobjectAnnotation(cyanMetaobject);
+							// env.removeCodeAnnotation(cyanMetaobject);
 							this.codeThatReplacesThisStatement = new StringBuffer(
-									this.asString() + " " + env.addCodeAtMetaobjectAnnotation(cyanMetaobject, cyanCode, -1));
+									this.asString() + " " + env.addCodeAtAnnotation(cyanMetaobject, cyanCode, -1));
 
 						}
 
@@ -471,25 +473,27 @@ public class AnnotationAt extends Annotation {
 
 				}
 				finally {
-					env.end_dsa_actions();
+					env.end_semAn_actions();
 				}
 
 			}
-			if ( cyanMetaobject instanceof IActionNewPrototypes_dsa ||
-					(other != null && other instanceof _IActionNewPrototypes__dsa)) {
+			if ( cyanMetaobject instanceof IActionNewPrototypes_semAn
+					||
+					(other != null && other instanceof _IActionNewPrototypes__semAn)
+					) {
 				List<Tuple2<String, StringBuffer>> prototypeNameCodeList = null;
 				try {
-					if ( compiler_dsa == null ) {
-						compiler_dsa = new Compiler_dsa(env, this);
+					if ( compiler_semAn == null ) {
+						compiler_semAn = new Compiler_semAn(env, this);
 					}
 					if ( other == null ) {
-						prototypeNameCodeList = ((IActionNewPrototypes_dsa ) cyanMetaobject)
-								.dsa_NewPrototypeList(compiler_dsa);
+						prototypeNameCodeList = ((IActionNewPrototypes_semAn ) cyanMetaobject)
+								.semAn_NewPrototypeList(compiler_semAn);
 					}
 					else {
-						_IActionNewPrototypes__dsa anp = (_IActionNewPrototypes__dsa ) other;
+						_IActionNewPrototypes__semAn anp = (_IActionNewPrototypes__semAn ) other;
 						_Array_LT_GP__Tuple_LT_GP_CyString_GP_CyString_GT__GT array =
-								anp._dsa__NewPrototypeList_1(compiler_dsa);
+								anp._semAn__NewPrototypeList_1(compiler_semAn);
 						int size = array._size().n;
 						if ( size > 0 ) {
 							prototypeNameCodeList = new ArrayList<>();
@@ -503,7 +507,6 @@ public class AnnotationAt extends Annotation {
 								}
 							}
 						}
-
 					}
 
 
@@ -520,19 +523,24 @@ public class AnnotationAt extends Annotation {
 					env.errorInMetaobjectCatchExceptions(cyanMetaobject);
 				}
 				if ( prototypeNameCodeList != null ) {
+					CyanPackage currentPackage = env.getCurrentCompilationUnit().getCyanPackage();
 					for ( final Tuple2<String, StringBuffer> prototypeNameCode : prototypeNameCodeList ) {
+						String prototypeName = prototypeNameCode.f1;
 						final CompilationUnit cunit = (CompilationUnit ) this.compilationUnit;
 						final Tuple2<CompilationUnit, String> t = env.getProject().getCompilerManager().createNewPrototype(prototypeNameCode.f1, prototypeNameCode.f2,
 								cunit.getCompilerOptions(), cunit.getCyanPackage());
 						if ( t != null && t.f2 != null ) {
 							env.error(this.getFirstSymbol(), t.f2);
 						}
+						currentPackage.addPrototypeNameAnnotationInfo(prototypeName, this);
 					}
 				}
 			}
 
-			if ( cyanMetaobject instanceof IActionVariableDeclaration_dsa ||
-					(other != null && other instanceof _IActionVariableDeclaration__dsa)) {
+			if ( cyanMetaobject instanceof IActionVariableDeclaration_semAn
+					||
+					(other != null && other instanceof _IActionVariableDeclaration__semAn)
+					) {
 				/*
 				 * add code after the local variable declaration
 				 */
@@ -556,11 +564,11 @@ public class AnnotationAt extends Annotation {
 
 				try {
 					if ( other == null ) {
-						final IActionVariableDeclaration_dsa actionVar = (IActionVariableDeclaration_dsa ) cyanMetaobject;
-						code = actionVar.dsa_codeToAddAfter(env.getI());
+						final IActionVariableDeclaration_semAn actionVar = (IActionVariableDeclaration_semAn ) cyanMetaobject;
+						code = actionVar.semAn_codeToAddAfter(env.getI());
 					}
 					else {
-						((_IActionVariableDeclaration__dsa ) other)._dsa__codeToAddAfter_1(env.getI());
+						((_IActionVariableDeclaration__semAn ) other)._semAn__codeToAddAfter_1(env.getI());
 					}
 				}
 				catch ( final error.CompileErrorException e ) {
@@ -574,7 +582,7 @@ public class AnnotationAt extends Annotation {
 				finally {
 					env.errorInMetaobjectCatchExceptions(cyanMetaobject);
 				}
-				this.codeThatReplacesThisStatement = new StringBuffer(env.addCodeAtMetaobjectAnnotation(cyanMetaobject, code, offset));
+				this.codeThatReplacesThisStatement = new StringBuffer(env.addCodeAtAnnotation(cyanMetaobject, code, offset));
 			}
 		}
 	}
@@ -604,7 +612,7 @@ public class AnnotationAt extends Annotation {
 
 	@Override
 	public  Symbol getFirstSymbol() {
-		return this.symbolCyanMetaobjectAnnotation;
+		return this.symbolCyanAnnotation;
 	}
 
 	/*
@@ -627,7 +635,7 @@ public class AnnotationAt extends Annotation {
 	/**
 	 * return the declaration or expression associated to this metaobject annotation or null if there is
 	 * no one. A declaration can be a prototype, field, or method.
-	 * Therefore 'declaration' can be an object of ProgramUnit, FieldDec,
+	 * Therefore 'declaration' can be an object of Prototype, FieldDec,
 	 * MethodDec, OR an expression.
 	 */
 
@@ -683,12 +691,12 @@ public class AnnotationAt extends Annotation {
 	}
 
 
-	public SymbolCyanMetaobjectAnnotation getSymbolMetaobjectAnnotation() {
-		return symbolCyanMetaobjectAnnotation;
+	public SymbolCyanAnnotation getSymbolAnnotation() {
+		return symbolCyanAnnotation;
 	}
 
-	public void setSymbolCyanMetaobjectAnnotation(SymbolCyanMetaobjectAnnotation symbolCyanMetaobjectAnnotation) {
-		this.symbolCyanMetaobjectAnnotation = symbolCyanMetaobjectAnnotation;
+	public void setSymbolCyanAnnotation(SymbolCyanAnnotation symbolCyanAnnotation) {
+		this.symbolCyanAnnotation = symbolCyanAnnotation;
 	}
 
 	public Symbol getLeftParenthesis() {
@@ -738,13 +746,13 @@ public class AnnotationAt extends Annotation {
 	}
 
 	@Override
-	public ProgramUnit getProgramUnit() {
-		return programUnit;
+	public Prototype getPrototype() {
+		return prototype;
 	}
 
 	@Override
 	public CompilerPhase getPostfix() {
-		return symbolCyanMetaobjectAnnotation.getPostfix();
+		return symbolCyanAnnotation.getPostfix();
 	}
 
 
@@ -794,7 +802,7 @@ public class AnnotationAt extends Annotation {
 	 * Usually this is only used for codegs. Returns null if this annotation is outside a compilation unit (this
 	 * should never happens
 	 */
-	public String filenameMetaobjectAnnotationInfo(String firstParameter) {
+	public String filenameAnnotationInfo(String firstParameter) {
 		if ( compilationUnit == null )
 			return null;
 		String ext = "txt";
@@ -854,7 +862,7 @@ public class AnnotationAt extends Annotation {
 
 	@Override
 	public void replaceAnnotationBy( String newAnnotationText ) {
-		final int offsetStart = this.symbolCyanMetaobjectAnnotation.getOffset();
+		final int offsetStart = this.symbolCyanAnnotation.getOffset();
 		int offsetEnd;
 
 		if ( this.rightCharSeqSymbol != null ) {
@@ -868,7 +876,7 @@ public class AnnotationAt extends Annotation {
 			}
 			else {
 				// no parenthesis.   The + 1
-				offsetEnd = offsetStart + this.symbolCyanMetaobjectAnnotation.getSymbolString().length() + 1;
+				offsetEnd = offsetStart + this.symbolCyanAnnotation.getSymbolString().length() + 1;
 			}
 		}
 		this.compilationUnit.setOriginalText(
@@ -966,7 +974,7 @@ public class AnnotationAt extends Annotation {
 			return this.rightParenthesis;
 		}
 		else {
-			return this.symbolCyanMetaobjectAnnotation;
+			return this.symbolCyanAnnotation;
 		}
 	}
 
@@ -985,7 +993,7 @@ public class AnnotationAt extends Annotation {
 	/**
 	 * the declaration or expression associated to this metaobject annotation or null if there is
 	 * no one. A declaration can be a prototype, field, or method.
-	 * Therefore 'declaration' can be an object of ProgramUnit, FieldDec,
+	 * Therefore 'declaration' can be an object of Prototype, FieldDec,
 	 * MethodDec, OR an expression.
 	 */
 
@@ -994,7 +1002,7 @@ public class AnnotationAt extends Annotation {
 	/**
 	 * the symbol 'javacode' in @javacode
 	 */
-	private SymbolCyanMetaobjectAnnotation symbolCyanMetaobjectAnnotation;
+	private SymbolCyanAnnotation symbolCyanAnnotation;
 
 
 	/**
@@ -1082,7 +1090,7 @@ public class AnnotationAt extends Annotation {
 
 	/**
 	 * true if this annotation is inside a method. If it is, the associated metaobject
-	 * is allowed to generated code in phase dsa
+	 * is allowed to generated code in phase SEM_AN
 	 */
 	private boolean insideMethod;
 

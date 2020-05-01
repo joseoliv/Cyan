@@ -18,13 +18,13 @@ import saci.NameServer;
  */
 abstract public class ExprMessageSendUnaryChain extends ExprMessageSend {
 
-	public ExprMessageSendUnaryChain(Symbol nextSymbol) {
-		super(nextSymbol);
+	public ExprMessageSendUnaryChain(Symbol nextSymbol, MethodDec method) {
+		super(nextSymbol, method);
 		backquote = false;
 	}
 
-	public ExprMessageSendUnaryChain() {
-		super();
+	public ExprMessageSendUnaryChain(MethodDec method) {
+		super(method);
 		backquote = false;
 	}
 

@@ -14,7 +14,7 @@ import meta.MetaHelper;
  *  <code>
  *      {@literal @}markDeletedCode(4)
  *  </code><br>
- *  means that a metaobject annotation in phase 6 (dsa) that occupies 4 lines was replaced by code that the metaobject
+ *  means that a metaobject annotation in phase 6 (SEM_AN) that occupies 4 lines was replaced by code that the metaobject
  *  produced. That is, 4 lines were deleted and code was added by the metaobject.
  *
  *  See the Cyan manual for more information and {@link ast#CyanMetaobjectCompilationContextPush}.
@@ -29,7 +29,7 @@ public class CyanMetaobjectCompilationMarkDeletedCode extends meta.CyanMetaobjec
 
 	@Override
 	public void check() {
-		List<Object> javaObjectList = this.getMetaobjectAnnotation().getJavaParameterList();
+		List<Object> javaObjectList = this.getAnnotation().getJavaParameterList();
 		if ( javaObjectList == null || ! ( javaObjectList.get(0) instanceof Integer) ) {
 			addError("Metaobject '" + getName() + "' should have exactly one Int parameter");
 			return ;

@@ -1,7 +1,7 @@
 package meta.util;
 
 import meta.CyanMetaobjectNumber;
-import meta.ICompiler_dsa;
+import meta.ICompiler_semAn;
 
 public class CyanMetaobjectKg  extends CyanMetaobjectNumber {
 
@@ -12,7 +12,7 @@ public class CyanMetaobjectKg  extends CyanMetaobjectNumber {
 
 //
 //	@Override
-//	public void dpa_parse(ICompilerAction_dpa compilerAction, String code) {
+//	public void parsing_parse(ICompilerAction_parsing compilerAction, String code) {
 //
 //		String s = "";
 //		int size = code.length();
@@ -34,7 +34,7 @@ public class CyanMetaobjectKg  extends CyanMetaobjectNumber {
 
 
 	@Override
-	public StringBuffer dsa_codeToAdd(ICompiler_dsa compiler_dsa) {
+	public StringBuffer semAn_codeToAdd(ICompiler_semAn compiler_semAn) {
 
 
 		String code = this.getUsefulString();

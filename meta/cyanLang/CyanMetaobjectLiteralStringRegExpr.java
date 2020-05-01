@@ -1,7 +1,7 @@
 package meta.cyanLang;
 
 import meta.CyanMetaobjectLiteralString;
-import meta.ICompiler_dsa;
+import meta.ICompiler_semAn;
 
 /**
  * literal string that is a regular expression.
@@ -18,7 +18,7 @@ public class CyanMetaobjectLiteralStringRegExpr extends CyanMetaobjectLiteralStr
 		super(new String[] { "r", "R" });
 	}
 
-	public void dpa_parse(String code) {
+	public void parsing_parse(String code) {
 
 		try {
 			java.util.regex.Pattern.compile(code);
@@ -30,9 +30,9 @@ public class CyanMetaobjectLiteralStringRegExpr extends CyanMetaobjectLiteralStr
 	}
 
 	@Override
-	public StringBuffer dsa_codeToAdd(ICompiler_dsa compiler_dsa) {
+	public StringBuffer semAn_codeToAdd(ICompiler_semAn compiler_semAn) {
 
-		dpa_parse(this.getUsefulString());
+		parsing_parse(this.getUsefulString());
 
 		return this.codeToGenerate;
 	}

@@ -6,8 +6,8 @@ import meta.AnnotationArgumentsKind;
 import meta.AttachedDeclarationKind;
 import meta.CyanMetaobjectAtAnnot;
 import meta.IActionFunction;
-import meta.ICheckDeclaration_afsa;
-import meta.ICompiler_dsa;
+import meta.ICheckDeclaration_afterSemAn;
+import meta.ICompiler_semAn;
 import meta.IDeclaration;
 import meta.WrASTVisitor;
 import meta.WrAnnotationAt;
@@ -16,7 +16,7 @@ import meta.WrMethodDec;
 import meta.WrMethodSignatureOperator;
 import meta.WrMethodSignatureUnary;
 import meta.WrMethodSignatureWithKeywords;
-import meta.WrProgramUnit;
+import meta.WrPrototype;
 
 /**
  * The annotation of this metaobject takes a list of function metaobject names as parameters. It
@@ -28,7 +28,7 @@ import meta.WrProgramUnit;
  * Prototype Test will be passed as parameter to function metaobjects checkSomething and checkOtherthing.
    @author jose
  */
-public class CyanMetaobjectEvalVisitor  extends CyanMetaobjectAtAnnot implements ICheckDeclaration_afsa {
+public class CyanMetaobjectEvalVisitor  extends CyanMetaobjectAtAnnot implements ICheckDeclaration_afterSemAn {
 
 	public CyanMetaobjectEvalVisitor() {
 		super("evalVisitor", AnnotationArgumentsKind.OneOrMoreParameters,
@@ -44,7 +44,7 @@ public class CyanMetaobjectEvalVisitor  extends CyanMetaobjectAtAnnot implements
 
 	@Override
 	public void check() {
-		final WrAnnotationAt annot = this.getMetaobjectAnnotation();
+		final WrAnnotationAt annot = this.getAnnotation();
 		final List<Object> paramList = annot.getJavaParameterList();
 		strList = new ArrayList<>();
 		for ( final Object param : paramList ) {
@@ -57,18 +57,18 @@ public class CyanMetaobjectEvalVisitor  extends CyanMetaobjectAtAnnot implements
 		}
 	}
 	@Override
-	public void afsa_checkDeclaration(ICompiler_dsa compiler_dsa) {
+	public void afterSemAn_checkDeclaration(ICompiler_semAn compiler_semAn) {
 		final List<IActionFunction> functionList = new ArrayList<>();
 
 		for ( final String strParam : strList ) {
-			functionList.add(compiler_dsa.getEnv().searchActionFunction(strParam));
+			functionList.add(compiler_semAn.getEnv().searchActionFunction(strParam));
 		}
 		final IDeclaration dec = this.getAttachedDeclaration();
-		WrEnv env = compiler_dsa.getEnv();
-		if ( dec instanceof WrProgramUnit ) {
-			((WrProgramUnit ) dec).accept( new WrASTVisitor() {
+		WrEnv env = compiler_semAn.getEnv();
+		if ( dec instanceof WrPrototype ) {
+			((WrPrototype ) dec).accept( new WrASTVisitor() {
 				@Override
-				public void visit(WrProgramUnit node, WrEnv env) {
+				public void visit(WrPrototype node, WrEnv env) {
 					for ( final IActionFunction function : functionList ) {
 						function.eval(node);
 					}

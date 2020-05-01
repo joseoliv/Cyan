@@ -6,7 +6,7 @@ import meta.AnnotationArgumentsKind;
 import meta.AttachedDeclarationKind;
 import meta.CyanMetaobjectAtAnnot;
 import meta.ExprReceiverKind;
-import meta.ICheckMessageSend_afsa;
+import meta.ICheckMessageSend_afterSemAn;
 import meta.MetaHelper;
 import meta.WrEnv;
 import meta.WrExpr;
@@ -15,7 +15,7 @@ import meta.WrMessageKeywordWithRealParameters;
 import meta.WrMessageWithKeywords;
 import meta.WrMethodSignature;
 import meta.WrParameterDec;
-import meta.WrProgramUnit;
+import meta.WrPrototype;
 import meta.WrSymbol;
 import meta.WrType;
 
@@ -25,7 +25,7 @@ import meta.WrType;
    @author José
  */
 public class CyanMetaobjectCheckCatchParameter extends CyanMetaobjectAtAnnot
-    implements ICheckMessageSend_afsa {
+    implements ICheckMessageSend_afterSemAn {
 
 	public CyanMetaobjectCheckCatchParameter() {
 		super("checkCatchParameter", AnnotationArgumentsKind.ZeroParameters,
@@ -33,7 +33,7 @@ public class CyanMetaobjectCheckCatchParameter extends CyanMetaobjectAtAnnot
 	}
 
 	@Override
-	public void afsa_checkKeywordMessageSend(WrExpr receiverExpr, WrProgramUnit receiverType,
+	public void afterSemAn_checkKeywordMessageSend(WrExpr receiverExpr, WrPrototype receiverType,
 			ExprReceiverKind receiverKind, WrMessageWithKeywords message, WrMethodSignature ms, WrEnv env) {
 
 		int i = 1;
@@ -79,8 +79,8 @@ public class CyanMetaobjectCheckCatchParameter extends CyanMetaobjectAtAnnot
 				if ( !cyException.isSupertypeOf(paramType, env) ) {
 
 					boolean signalError = true;
-					if ( paramType instanceof WrProgramUnit ) {
-						final WrProgramUnit proto = (WrProgramUnit ) paramType;
+					if ( paramType instanceof WrPrototype ) {
+						final WrPrototype proto = (WrPrototype ) paramType;
 						if ( proto.getGenericParameterListList(env) != null && proto.getGenericParameterListList(env).size() == 1 ) {
 							/*
 							 * it may be an Union
@@ -106,7 +106,7 @@ public class CyanMetaobjectCheckCatchParameter extends CyanMetaobjectAtAnnot
 										return ;
 									}
 									final WrType unionElemType = gp.getType();
-									if ( !(unionElemType instanceof WrProgramUnit)  ) {
+									if ( !(unionElemType instanceof WrPrototype)  ) {
 										addError(errSymbol, "The type of the parameter to the 'catch:' keyword number " + i +
 												" defines an 'eval:' method that accepts a parameter that is not subtype of '" +
 												MetaHelper.cyanLanguagePackageName + "." + MetaHelper.cyExceptionPrototype + "'");

@@ -20,12 +20,12 @@ public class ExprLiteralInt extends ExprLiteralNumber {
 	/**
 	 * @param symbol
 	 */
-	public ExprLiteralInt(Symbol symbol) {
-		super(symbol);
+	public ExprLiteralInt(Symbol symbol, MethodDec currentMethod) {
+		super(symbol, currentMethod);
 	}
 
-	public ExprLiteralInt(Symbol symbol, Symbol prefix) {
-		super(symbol);
+	public ExprLiteralInt(Symbol symbol, Symbol prefix, MethodDec currentMethod) {
+		super(symbol, currentMethod);
 		this.prefix = prefix;
 	}
 

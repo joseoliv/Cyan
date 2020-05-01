@@ -19,7 +19,8 @@ import saci.NameServer;
  */
 public class ExprUnary extends Expr {
 
-	public ExprUnary(SymbolOperator symbolOperator, Expr expr) {
+	public ExprUnary(SymbolOperator symbolOperator, Expr expr, MethodDec method) {
+		super(method);
 		this.symbolOperator = symbolOperator;
 		this.expr = expr;
 	}

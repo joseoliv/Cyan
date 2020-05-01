@@ -4,13 +4,13 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import meta.CyanMetaobjectMacro;
-import meta.IActionNewPrototypes_afti;
-import meta.IActionNewPrototypes_dpa;
-import meta.ICommunicateInPrototype_afti_dsa_afsa;
-import meta.ICompilerAction_dpa;
-import meta.ICompilerMacro_dpa;
-import meta.ICompiler_afti;
-import meta.ICompiler_dsa;
+import meta.IActionNewPrototypes_afterResTypes;
+import meta.IActionNewPrototypes_parsing;
+import meta.ICommunicateInPrototype_afterResTypes_semAn_afterSemAn;
+import meta.ICompilerAction_parsing;
+import meta.ICompilerMacro_parsing;
+import meta.ICompiler_afterResTypes;
+import meta.ICompiler_semAn;
 import meta.Token;
 import meta.Tuple2;
 import meta.Tuple4;
@@ -29,9 +29,9 @@ import meta.WrSymbol;
    @author jose
  */
 public class CyanMetaobjectMacroTestMacro extends CyanMetaobjectMacro
-       implements IActionNewPrototypes_afti, IActionNewPrototypes_dpa, /* IActionNewPrototypes_dsa */
-       // ICheckProgramUnit_afti3, ICheckProgramUnit_afsa,
-       ICommunicateInPrototype_afti_dsa_afsa {
+       implements IActionNewPrototypes_afterResTypes, IActionNewPrototypes_parsing, /* IActionNewPrototypes_semAn */
+       // ICheckPrototype_afterResTypes3, ICheckPrototype_afterSemAn,
+       ICommunicateInPrototype_afterResTypes_semAn_afterSemAn {
 
 	public CyanMetaobjectMacroTestMacro() {
 		super(new String[] { "enquanto" }, new String[] { "enquanto", "faca", "inicio", "fim" });
@@ -40,63 +40,63 @@ public class CyanMetaobjectMacroTestMacro extends CyanMetaobjectMacro
 
 
 	@Override
-	public void dpa_parseMacro(ICompilerMacro_dpa compiler_dpa) {
+	public void parsing_parseMacro(ICompilerMacro_parsing compiler_parsing) {
 
-		offsetStartLine = compiler_dpa.getSymbol().getColumnNumber();
+		offsetStartLine = compiler_parsing.getSymbol().getColumnNumber();
 
-		compiler_dpa.next();
-		expr = compiler_dpa.expr();
+		compiler_parsing.next();
+		expr = compiler_parsing.expr();
 
-		if ( compiler_dpa.getSymbol().token != Token.MACRO_KEYWORD || ! compiler_dpa.getSymbol().getSymbolString().equals("faca") ) {
-			compiler_dpa.error(compiler_dpa.getSymbol(), "'faca' expected");
+		if ( compiler_parsing.getSymbol().token != Token.MACRO_KEYWORD || ! compiler_parsing.getSymbol().getSymbolString().equals("faca") ) {
+			compiler_parsing.error(compiler_parsing.getSymbol(), "'faca' expected");
 			return ;
 		}
 		else
-			compiler_dpa.next();
-		if ( compiler_dpa.getSymbol().token != Token.MACRO_KEYWORD || ! compiler_dpa.getSymbol().getSymbolString().equals("inicio") ) {
-			compiler_dpa.error(compiler_dpa.getSymbol(), "'inicio' expected");
+			compiler_parsing.next();
+		if ( compiler_parsing.getSymbol().token != Token.MACRO_KEYWORD || ! compiler_parsing.getSymbol().getSymbolString().equals("inicio") ) {
+			compiler_parsing.error(compiler_parsing.getSymbol(), "'inicio' expected");
 			return ;
 		}
 		else
-			compiler_dpa.next();
+			compiler_parsing.next();
 		statList = new ArrayList<>();
 
-		while (  compiler_dpa.getSymbol().token != Token.MACRO_KEYWORD || ! compiler_dpa.getSymbol().getSymbolString().equals("fim")  ) {
-			WrStatement stat = compiler_dpa.statement();
+		while (  compiler_parsing.getSymbol().token != Token.MACRO_KEYWORD || ! compiler_parsing.getSymbol().getSymbolString().equals("fim")  ) {
+			WrStatement stat = compiler_parsing.statement();
 			statList.add(stat);
 			if ( stat.demandSemicolon() ) {
-				if ( compiler_dpa.getSymbol().token == Token.SEMICOLON ) {
-					compiler_dpa.next();
+				if ( compiler_parsing.getSymbol().token == Token.SEMICOLON ) {
+					compiler_parsing.next();
 				}
 				else {
-					WrSymbol sym = compiler_dpa.getSymbol();
+					WrSymbol sym = compiler_parsing.getSymbol();
 					if ( sym.token == Token.EOF || sym.token == Token.EOLO ) {
 						sym = stat.getFirstSymbol();
 					}
 
-					compiler_dpa.error(sym, "';' expected");
+					compiler_parsing.error(sym, "';' expected");
 					return ;
 				}
 			}
 
 
 		}
-		compiler_dpa.next();
+		compiler_parsing.next();
 
 
-		if ( compiler_dpa.getThereWasErrors() )
+		if ( compiler_parsing.getThereWasErrors() )
 			return ;
 
-		// // ((AnnotationMacroCall ) this.getMetaobjectAnnotation()).setInfo_dpa( new Tuple2<Expr, Integer>(expr, offsetStartLine) );
+		// // ((AnnotationMacroCall ) this.getAnnotation()).setInfo_parsing( new Tuple2<Expr, Integer>(expr, offsetStartLine) );
 		return ;
 	}
 
 	@Override
-	public StringBuffer dsa_codeToAdd(ICompiler_dsa compiler_dsa) {
+	public StringBuffer semAn_codeToAdd(ICompiler_semAn compiler_semAn) {
 
-		// // Tuple2<Expr, Integer> info = (Tuple2<Expr, Integer> ) ((AnnotationMacroCall ) this.getMetaobjectAnnotation()).getInfo_dpa();
+		// // Tuple2<Expr, Integer> info = (Tuple2<Expr, Integer> ) ((AnnotationMacroCall ) this.getAnnotation()).getInfo_parsing();
 		// // Expr expr = info.f1;
-		WrEnv env = compiler_dsa.getEnv();
+		WrEnv env = compiler_semAn.getEnv();
 		if ( env.isThereWasError() )
 			return null;
 
@@ -116,28 +116,28 @@ public class CyanMetaobjectMacroTestMacro extends CyanMetaobjectMacro
 
 
 	@Override
-	public List<Tuple2<String, StringBuffer>> dpa_NewPrototypeList(ICompilerAction_dpa compiler) {
-		//System.out.println("dpa_NewPrototypeList(ICompilerAction_dpa compiler)");
+	public List<Tuple2<String, StringBuffer>> parsing_NewPrototypeList(ICompilerAction_parsing compiler) {
+		//System.out.println("parsing_NewPrototypeList(ICompilerAction_parsing compiler)");
 		return null;
 	}
 
 
 	@Override
-	public List<Tuple2<String, StringBuffer>> afti_NewPrototypeList(ICompiler_afti compiler_afti) {
-		//System.out.println("afti_NewPrototypeList(ICompiler_afti compiler_afti) ");
+	public List<Tuple2<String, StringBuffer>> afterResTypes_NewPrototypeList(ICompiler_afterResTypes compiler_afterResTypes) {
+		//System.out.println("afterResTypes_NewPrototypeList(ICompiler_afterResTypes compiler_afterResTypes) ");
 		return null;
 	}
 
 
 	@Override
-	public Object afti_dsa_afsa_shareInfoPrototype(WrEnv env) {
-		//System.out.println("afti_dsa_afsa_shareInfoPrototype()");
+	public Object afterResTypes_semAn_afterSemAn_shareInfoPrototype(WrEnv env) {
+		//System.out.println("afterResTypes_semAn_afterSemAn_shareInfoPrototype()");
 		return null;
 	}
 
 	@Override
-	public void afti_dsa_afsa_receiveInfoPrototype(Set<Tuple4<String, Integer, Integer, Object>> annotationInfoSet, WrEnv env) {
-		//System.out.println("afti_dsa_afsa_receiveInfoPrototype");
+	public void afterResTypes_semAn_afterSemAn_receiveInfoPrototype(Set<Tuple4<String, Integer, Integer, Object>> annotationInfoSet, WrEnv env) {
+		//System.out.println("afterResTypes_semAn_afterSemAn_receiveInfoPrototype");
 	}
 
 	private WrExpr expr;

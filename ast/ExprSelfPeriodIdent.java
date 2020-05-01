@@ -7,13 +7,13 @@ import java.util.List;
 import cyan.lang.CyString;
 import cyan.lang._Tuple_LT_GP_CyString_GP_CyString_GP_CyString_GT;
 import cyan.reflect._CyanMetaobjectAtAnnot;
-import cyan.reflect._IActionFieldAccess__dsa;
-import cyan.reflect._IActionFieldMissing__dsa;
+import cyan.reflect._IActionFieldAccess__semAn;
+import cyan.reflect._IActionFieldMissing__semAn;
 import lexer.Symbol;
 import meta.CompilationStep;
 import meta.CyanMetaobjectAtAnnot;
-import meta.IActionFieldAccess_dsa;
-import meta.IActionFieldMissing_dsa;
+import meta.IActionFieldAccess_semAn;
+import meta.IActionFieldMissing_semAn;
 import meta.MetaHelper;
 import meta.Tuple3;
 import meta.WrExprSelfPeriodIdent;
@@ -32,7 +32,8 @@ public class ExprSelfPeriodIdent extends Expr implements LeftHandSideAssignment 
 	/**
 	 *
 	 */
-	public ExprSelfPeriodIdent(Symbol selfSymbol, Symbol identSymbol) {
+	public ExprSelfPeriodIdent(Symbol selfSymbol, Symbol identSymbol, MethodDec method) {
+		super(method);
 		this.selfSymbol = selfSymbol;
 		this.identSymbol = identSymbol;
 	}
@@ -142,7 +143,7 @@ public class ExprSelfPeriodIdent extends Expr implements LeftHandSideAssignment 
 		if ( fieldDec == null ) {
 			type = Type.Dyn;
 			if ( ! leftHandSideAssignment ) {
-				if ( replaceGetFieldMissing_dsa(env) ) {
+				if ( replaceGetFieldMissing_semAn(env) ) {
 					// 'self.iv' was replaced, no need for issuing an error
 					return ;
 				}
@@ -154,9 +155,10 @@ public class ExprSelfPeriodIdent extends Expr implements LeftHandSideAssignment 
 		type = fieldDec.getType();
 
 		if ( ! leftHandSideAssignment ) {
-			ExprSelfPeriodIdent.actionFieldAccess_dsa( env, this, fieldDec );
+			ExprSelfPeriodIdent.actionFieldAccess_semAn( env, this, fieldDec );
 		}
 
+		//TODO replace currentMethod by this.currentMethod and remove local variable declaration
 		MethodDec currentMethod = env.getCurrentMethod();
 		if ( currentMethod != null ) {
 			currentMethod.addToAccessedFieldSet( fieldDec );
@@ -199,17 +201,17 @@ public class ExprSelfPeriodIdent extends Expr implements LeftHandSideAssignment 
 	 * return true if a metaobject replaced the assignment, false otherwise
 	 */
 
-	private boolean replaceGetFieldMissing_dsa(Env env) {
+	private boolean replaceGetFieldMissing_semAn(Env env) {
 
 		// metaobjectAnnotationParseWithCompilerStack
 
 		//List<AnnotationAt> annotList =
-			//	env.getCurrentProgramUnit().getAttachedMetaobjectAnnotationList();
+			//	env.getCurrentPrototype().getAttachedAnnotationList();
 		List<Annotation> anyAnnotList =
-				env.getCurrentProgramUnit().getPrototypePackageProgramAnnotationList();
+				env.getCurrentPrototype().getPrototypePackageProgramAnnotationList();
 
 		if ( env.getProject().getCompilerManager().getCompilationStep() != CompilationStep.step_6 ||
-				anyAnnotList == null || env.sizeStackMetaobjectAnnotationParseWithCompiler() > 0
+				anyAnnotList == null || env.sizeStackAnnotationParseWithCompiler() > 0
 				) {
 			return false;
 		}
@@ -220,19 +222,21 @@ public class ExprSelfPeriodIdent extends Expr implements LeftHandSideAssignment 
 			CyanMetaobjectAtAnnot cyanMetaobject = (CyanMetaobjectAtAnnot ) annot.getCyanMetaobject();
 			_CyanMetaobjectAtAnnot other = (_CyanMetaobjectAtAnnot ) cyanMetaobject.getMetaobjectInCyan();
 
-			if ( cyanMetaobject instanceof IActionFieldMissing_dsa ||
-					(other != null && other instanceof _IActionFieldMissing__dsa)) {
+			if ( cyanMetaobject instanceof IActionFieldMissing_semAn
+					||
+					(other != null && other instanceof _IActionFieldMissing__semAn)
+					) {
 
 				StringBuffer sb = null;
 				Tuple3<String, String, StringBuffer> t = null;
 				try {
 					if ( other == null ) {
-						IActionFieldMissing_dsa access = (IActionFieldMissing_dsa ) cyanMetaobject;
-						t = access.dsa_replaceGetMissingField(this.getI(), env.getI());
+						IActionFieldMissing_semAn access = (IActionFieldMissing_semAn ) cyanMetaobject;
+						t = access.semAn_replaceGetMissingField(this.getI(), env.getI());
 					}
 					else {
-						_Tuple_LT_GP_CyString_GP_CyString_GP_CyString_GT cyTuple = ((_IActionFieldMissing__dsa) other )
-								._dsa__replaceGetMissingField_2(this.getI(), env.getI());
+						_Tuple_LT_GP_CyString_GP_CyString_GP_CyString_GT cyTuple = ((_IActionFieldMissing__semAn) other )
+								._semAn__replaceGetMissingField_2(this.getI(), env.getI());
 
 						CyString f1 = cyTuple._f1();
 						CyString f2 = cyTuple._f2();
@@ -243,7 +247,6 @@ public class ExprSelfPeriodIdent extends Expr implements LeftHandSideAssignment 
 									f2.s,
 									new StringBuffer(f3.s));
 						}
-
 					}
 				}
 				catch ( error.CompileErrorException e ) {
@@ -266,17 +269,17 @@ public class ExprSelfPeriodIdent extends Expr implements LeftHandSideAssignment 
 						/*
 						 * this field access has already been replaced by another expression
 						 */
-						if ( this.getCyanMetaobjectAnnotationThatReplacedMSbyExpr() != null ) {
+						if ( this.getCyanAnnotationThatReplacedMSbyExpr() != null ) {
 							env.warning(symForError, "Metaobject annotation '" + cyanMetaobject.getName() +
 									"' at line " + annot.getFirstSymbol().getLineNumber()  +
 									" of prototype " + annot.getPackageOfAnnotation() + "." +
 									annot.getPackageOfAnnotation() +
 									" is trying to replace the field access '" + this.asString() +
 									"' by an expression. But this has already been asked by metaobject annotation '" +
-									this.getCyanMetaobjectAnnotationThatReplacedMSbyExpr().getCyanMetaobject().getName() + "'" +
-									" at line " + this.getCyanMetaobjectAnnotationThatReplacedMSbyExpr().getFirstSymbol().getLineNumber() +
-									" of prototype " + this.getCyanMetaobjectAnnotationThatReplacedMSbyExpr().getPackageOfAnnotation() + "." +
-									this.getCyanMetaobjectAnnotationThatReplacedMSbyExpr().getPackageOfAnnotation());
+									this.getCyanAnnotationThatReplacedMSbyExpr().getCyanMetaobject().getName() + "'" +
+									" at line " + this.getCyanAnnotationThatReplacedMSbyExpr().getFirstSymbol().getLineNumber() +
+									" of prototype " + this.getCyanAnnotationThatReplacedMSbyExpr().getPackageOfAnnotation() + "." +
+									this.getCyanAnnotationThatReplacedMSbyExpr().getPackageOfAnnotation());
 						}
 						else {
 							env.warning(symForError, "Metaobject annotation '" + cyanMetaobject.getName() +
@@ -304,7 +307,7 @@ public class ExprSelfPeriodIdent extends Expr implements LeftHandSideAssignment 
 							this.selfSymbol.getOffset() + this.selfSymbol.getSymbolString().length() + 1 + this.identSymbol.getSymbolString().length(),
 							(AnnotationAt ) annot, sb, type );
 
-					this.setCyanMetaobjectAnnotationThatReplacedMSbyExpr(annot);
+					this.setCyanAnnotationThatReplacedMSbyExpr(annot);
 					return true;
 				}
 			}
@@ -318,13 +321,13 @@ public class ExprSelfPeriodIdent extends Expr implements LeftHandSideAssignment 
 	}
 
 
-	static public void actionFieldAccess_dsa(Env env, Expr fieldExpr, FieldDec fieldDec ) {
+	static public void actionFieldAccess_semAn(Env env, Expr fieldExpr, FieldDec fieldDec ) {
 
 		// metaobjectAnnotationParseWithCompilerStack
 
-		List<AnnotationAt> annotList = fieldDec.getAttachedMetaobjectAnnotationList();
+		List<AnnotationAt> annotList = fieldDec.getAttachedAnnotationList();
 		if ( env.getProject().getCompilerManager().getCompilationStep() != CompilationStep.step_6 ||
-				annotList == null || env.sizeStackMetaobjectAnnotationParseWithCompiler() > 0
+				annotList == null || env.sizeStackAnnotationParseWithCompiler() > 0
 				) { return ; }
 
 		for ( AnnotationAt annot : annotList ) {
@@ -332,18 +335,20 @@ public class ExprSelfPeriodIdent extends Expr implements LeftHandSideAssignment 
 			CyanMetaobjectAtAnnot cyanMetaobject = annot.getCyanMetaobject();
 			_CyanMetaobjectAtAnnot other = (_CyanMetaobjectAtAnnot ) cyanMetaobject.getMetaobjectInCyan();
 
-			if ( cyanMetaobject instanceof IActionFieldAccess_dsa ||
-					(other != null && other instanceof _IActionFieldAccess__dsa) ) {
+			if ( cyanMetaobject instanceof IActionFieldAccess_semAn
+					||
+					(other != null && other instanceof _IActionFieldAccess__semAn)
+					) {
 
 				StringBuffer sb = null;
 				try {
 					if ( other == null ) {
-						IActionFieldAccess_dsa access = (IActionFieldAccess_dsa ) cyanMetaobject;
-						sb = access.dsa_replaceGetField(fieldExpr.getI(), env.getI());
+						IActionFieldAccess_semAn access = (IActionFieldAccess_semAn ) cyanMetaobject;
+						sb = access.semAn_replaceGetField(fieldExpr.getI(), env.getI());
 					}
 					else {
 						sb = new StringBuffer(
-								((_IActionFieldAccess__dsa ) other)._dsa__replaceGetField_2(fieldExpr.getI(), env.getI()).s);
+								((_IActionFieldAccess__semAn ) other)._semAn__replaceGetField_2(fieldExpr.getI(), env.getI()).s);
 					}
 				}
 				catch ( error.CompileErrorException e ) {
@@ -365,17 +370,17 @@ public class ExprSelfPeriodIdent extends Expr implements LeftHandSideAssignment 
 						/*
 						 * this field access has already been replaced by another expression
 						 */
-						if ( fieldExpr.getCyanMetaobjectAnnotationThatReplacedMSbyExpr() != null ) {
+						if ( fieldExpr.getCyanAnnotationThatReplacedMSbyExpr() != null ) {
 							env.warning(symForError, "Metaobject annotation '" + cyanMetaobject.getName() +
 									"' at line " + annot.getFirstSymbol().getLineNumber()  +
 									" of prototype " + annot.getPackageOfAnnotation() + "." +
 									annot.getPackageOfAnnotation() +
 									" is trying to replace the field access '" + fieldExpr.asString() +
 									"' by an expression. But this has already been asked by metaobject annotation '" +
-									fieldExpr.getCyanMetaobjectAnnotationThatReplacedMSbyExpr().getCyanMetaobject().getName() + "'" +
-									" at line " + fieldExpr.getCyanMetaobjectAnnotationThatReplacedMSbyExpr().getFirstSymbol().getLineNumber() +
-									" of prototype " + fieldExpr.getCyanMetaobjectAnnotationThatReplacedMSbyExpr().getPackageOfAnnotation() + "." +
-									fieldExpr.getCyanMetaobjectAnnotationThatReplacedMSbyExpr().getPackageOfAnnotation());
+									fieldExpr.getCyanAnnotationThatReplacedMSbyExpr().getCyanMetaobject().getName() + "'" +
+									" at line " + fieldExpr.getCyanAnnotationThatReplacedMSbyExpr().getFirstSymbol().getLineNumber() +
+									" of prototype " + fieldExpr.getCyanAnnotationThatReplacedMSbyExpr().getPackageOfAnnotation() + "." +
+									fieldExpr.getCyanAnnotationThatReplacedMSbyExpr().getPackageOfAnnotation());
 						}
 						else {
 							env.warning(symForError, "Metaobject annotation '" + cyanMetaobject.getName() +
@@ -408,7 +413,7 @@ public class ExprSelfPeriodIdent extends Expr implements LeftHandSideAssignment 
 							offsetNext,
 							annot, sb, typeOfCode);
 
-					fieldExpr.setCyanMetaobjectAnnotationThatReplacedMSbyExpr(annot);
+					fieldExpr.setCyanAnnotationThatReplacedMSbyExpr(annot);
 
 				}
 			}

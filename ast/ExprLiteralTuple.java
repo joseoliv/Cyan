@@ -29,7 +29,8 @@ public class ExprLiteralTuple extends ExprAnyLiteral {
 	 *
 	 */
 	public ExprLiteralTuple( Symbol startSymbol, Symbol endSymbol,
-			                 List<Expr> exprList, boolean isNamedTuple ) {
+			                 List<Expr> exprList, boolean isNamedTuple, MethodDec method) {
+		super(method);
 		this.startSymbol = startSymbol;
 		this.endSymbol = endSymbol;
 		this.exprList = exprList;
@@ -406,7 +407,7 @@ public class ExprLiteralTuple extends ExprAnyLiteral {
 				if ( i%2 == 1 ) {
 					expr.calcInternalTypes(env);
 					Type t = expr.getType(env);
-					if ( ! (t.getInsideType() instanceof ProgramUnit) )
+					if ( ! (t.getInsideType() instanceof Prototype) )
 						env.error(expr.getFirstSymbol(), "The type of this expression should be a Cyan prototype",
 								expr.asString(), ErrorKind.prototype_as_type_expected_inside_method);
 				}
@@ -421,7 +422,7 @@ public class ExprLiteralTuple extends ExprAnyLiteral {
 					sym.getLineNumber(), sym.getColumnNumber(), sym.getOffset(), sym.getCompilationUnit() );
 
 
-			ExprIdentStar typeIdent = new ExprIdentStar(symbolIdent);
+			ExprIdentStar typeIdent = new ExprIdentStar(null, symbolIdent);
 			List<List<Expr>> realTypeListList = new ArrayList<List<Expr>>();
 			List<Expr> realTypeList = new ArrayList<Expr>();
 
@@ -436,9 +437,9 @@ public class ExprLiteralTuple extends ExprAnyLiteral {
 				else {
 					expr.calcInternalTypes(env);
 					Type typeExpr = expr.getType(env);
-					if ( ! (typeExpr.getInsideType() instanceof ProgramUnit) && typeExpr != Type.Dyn )
+					if ( ! (typeExpr.getInsideType() instanceof Prototype) && typeExpr != Type.Dyn )
 						env.error(true, expr.getFirstSymbol(), "The type expression '" + expr.asString() + "' should be a Cyan prototype", null, ErrorKind.prototype_as_type_expected_inside_method);
-					//ProgramUnit pu = (ProgramUnit ) typeExpr.getInsideType();
+					//Prototype pu = (Prototype ) typeExpr.getInsideType();
 					realTypeList.add( typeExpr.asExpr(this.getFirstSymbol()) ) ; // pu.asExpr(this.getFirstSymbol()));
 				}
 				++i;
@@ -446,7 +447,7 @@ public class ExprLiteralTuple extends ExprAnyLiteral {
 			realTypeListList.add(realTypeList);
 
 			ExprGenericPrototypeInstantiation gpi = new ExprGenericPrototypeInstantiation( typeIdent,
-					realTypeListList, env.getCurrentProgramUnit(), null);
+					realTypeListList, env.getCurrentPrototype(), null, null);
 			type = CompilerManager.createGenericPrototype(gpi, env);
 
 		}
@@ -456,7 +457,7 @@ public class ExprLiteralTuple extends ExprAnyLiteral {
 
 			SymbolIdent symbolIdent = new SymbolIdent(Token.IDENT, "Tuple", sym.getStartLine(),
 					sym.getLineNumber(), sym.getColumnNumber(), sym.getOffset(), sym.getCompilationUnit() );
-			ExprIdentStar typeIdent = new ExprIdentStar(symbolIdent);
+			ExprIdentStar typeIdent = new ExprIdentStar(null, symbolIdent);
 			List<List<Expr>> realTypeListList = new ArrayList<List<Expr>>();
 			List<Expr> realTypeList = new ArrayList<Expr>();
 
@@ -464,7 +465,7 @@ public class ExprLiteralTuple extends ExprAnyLiteral {
 			for ( Expr expr : exprList ) {
 				expr.calcInternalTypes(env);
 				Type typeExpr = expr.getType(env);
-				if ( ! (typeExpr.getInsideType() instanceof ProgramUnit) && typeExpr != Type.Dyn ) {
+				if ( ! (typeExpr.getInsideType() instanceof Prototype) && typeExpr != Type.Dyn ) {
 //					System.out.println("should be error in tuple");
 					env.error(true, expr.getFirstSymbol(), "An expression of a Cyan prototype was expected", null, ErrorKind.prototype_as_type_expected_inside_method);
 				}
@@ -474,18 +475,18 @@ public class ExprLiteralTuple extends ExprAnyLiteral {
 					// insert the program unit name
 					identSymbolArray.add( new SymbolIdent(Token.IDENT, "Dyn", first.getStartLine(),
 							first.getLineNumber(), first.getColumnNumber(), first.getOffset(), first.getCompilationUnit()) );
-					ExprIdentStar newIdentStar = new ExprIdentStar(identSymbolArray, null);
+					ExprIdentStar newIdentStar = new ExprIdentStar(identSymbolArray, null, null);
 					realTypeList.add(newIdentStar);
 				}
 				else {
-					ProgramUnit pu = (ProgramUnit ) typeExpr.getInsideType();
+					Prototype pu = (Prototype ) typeExpr.getInsideType();
 					realTypeList.add(pu.asExpr(this.getFirstSymbol()));
 				}
 			}
 			realTypeListList.add(realTypeList);
 
 			ExprGenericPrototypeInstantiation gpi = new ExprGenericPrototypeInstantiation( typeIdent,
-					realTypeListList, env.getCurrentProgramUnit(), null);
+					realTypeListList, env.getCurrentPrototype(), null, null);
 			type = CompilerManager.createGenericPrototype(gpi, env);
 
 		}

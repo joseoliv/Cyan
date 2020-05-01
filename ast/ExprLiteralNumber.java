@@ -8,8 +8,8 @@ import saci.CyanEnv;
 abstract public class ExprLiteralNumber extends ExprLiteral {
 
 
-	public ExprLiteralNumber(Symbol symbol) {
-		super(symbol);
+	public ExprLiteralNumber(Symbol symbol, MethodDec currentMethod) {
+		super(symbol, currentMethod);
 	}
 
 	@Override

@@ -8,10 +8,10 @@ import error.CompileErrorException;
 import meta.AnnotationArgumentsKind;
 import meta.CyanMetaobject;
 import meta.CyanMetaobjectAtAnnot;
-import meta.IAction_dsa;
-import meta.ICompiler_dpa;
-import meta.ICompiler_dsa;
-import meta.IParseWithCyanCompiler_dpa;
+import meta.IAction_semAn;
+import meta.ICompiler_parsing;
+import meta.ICompiler_semAn;
+import meta.IParseWithCyanCompiler_parsing;
 import meta.InterpretationErrorException;
 import meta.MetaHelper;
 import meta.WrAnnotationAt;
@@ -37,7 +37,7 @@ import meta.WrStatement;
    @author jose
  */
 public class CyanMetaobjectEval extends CyanMetaobjectAtAnnot
-		implements IParseWithCyanCompiler_dpa, IAction_dsa {
+		implements IParseWithCyanCompiler_parsing, IAction_semAn {
 
 	public CyanMetaobjectEval() {
 		super("eval", AnnotationArgumentsKind.TwoParameters);
@@ -46,7 +46,7 @@ public class CyanMetaobjectEval extends CyanMetaobjectAtAnnot
 
 	@Override
 	public void check() {
-		WrAnnotationAt annot = this.getMetaobjectAnnotation();
+		WrAnnotationAt annot = this.getAnnotation();
 		if ( ! (annot.getJavaParameterList().get(0) instanceof String) ||
 				! (annot.getJavaParameterList().get(1) instanceof String) ) {
 			this.addError("The parameters to this annotation should be strings");
@@ -59,13 +59,13 @@ public class CyanMetaobjectEval extends CyanMetaobjectAtAnnot
 	}
 
 	@Override
-	public StringBuffer dsa_codeToAdd(ICompiler_dsa compiler) {
+	public StringBuffer semAn_codeToAdd(ICompiler_semAn compiler) {
 
 		Object obj = MetaHelper.interpreterFor_MOPInterfaceMethod(
 				statList,
 				compiler,
 				this,
-				"dsa_codeToAdd",
+				"semAn_codeToAdd",
 				new String [] { "compiler" },
 				new Object [] { compiler } ,
 				Object.class);
@@ -104,7 +104,7 @@ public class CyanMetaobjectEval extends CyanMetaobjectAtAnnot
 
 
 	@Override
-	public void dpa_parse(ICompiler_dpa cp) {
+	public void parsing_parse(ICompiler_parsing cp) {
 		try {
 			cp.next();
 			statList = MetaHelper.parseCyanStatementList(cp);

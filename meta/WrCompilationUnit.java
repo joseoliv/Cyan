@@ -7,7 +7,7 @@ import java.util.Set;
 import ast.CompilationUnit;
 import ast.CyanPackage;
 import ast.ExprIdentStar;
-import ast.ProgramUnit;
+import ast.Prototype;
 
 /**
  * Represents a 'compilation unit', which is a file with import declarations (keyword 'import')
@@ -35,8 +35,8 @@ public class WrCompilationUnit extends WrCompilationUnitSuper {
 
 		visitor.preVisit(this, env);
 
-		for ( WrProgramUnit pu : this.getProgramUnitList() ) {
-			if ( env.getCurrentProgramUnit().hidden == pu.hidden ) {
+		for ( WrPrototype pu : this.getPrototypeList() ) {
+			if ( env.getCurrentPrototype().hidden == pu.hidden ) {
 				pu.accept(visitor, env);
 			}
 		}
@@ -82,8 +82,8 @@ public class WrCompilationUnit extends WrCompilationUnitSuper {
 	 * return the only public prototype of this compilation unit
 	   @return
 	 */
-	public WrProgramUnit getPublicPrototype() {
-		ProgramUnit pu = ((CompilationUnit ) hidden).getPublicPrototype();
+	public WrPrototype getPublicPrototype() {
+		Prototype pu = ((CompilationUnit ) hidden).getPublicPrototype();
 		return pu == null ? null : pu.getI();
 	}
 
@@ -160,7 +160,7 @@ public class WrCompilationUnit extends WrCompilationUnitSuper {
 
 
 
-	List<WrProgramUnit> iProgramUnitList = null;
+	List<WrPrototype> iPrototypeList = null;
 	boolean thisMethod_wasNeverCalled2 = true;
 
 
@@ -168,25 +168,25 @@ public class WrCompilationUnit extends WrCompilationUnitSuper {
 	 * return the list of program units of this compilation unit
 	   @return
 	 */
-	public List<WrProgramUnit> getProgramUnitList() {
+	public List<WrPrototype> getPrototypeList() {
 		if ( thisMethod_wasNeverCalled2 ) {
 			thisMethod_wasNeverCalled2 = false;
 
 
-			List<ProgramUnit> fromList = ((CompilationUnit ) hidden).getProgramUnitList();
+			List<Prototype> fromList = ((CompilationUnit ) hidden).getPrototypeList();
 			if ( fromList == null ) {
 					// unnecessary, just to document
-				iProgramUnitList = null;
+				iPrototypeList = null;
 			}
 			else {
-				iProgramUnitList = new ArrayList<>();
-				for ( ProgramUnit from : fromList ) {
-					iProgramUnitList.add( from.getI() );
+				iPrototypeList = new ArrayList<>();
+				for ( Prototype from : fromList ) {
+					iPrototypeList.add( from.getI() );
 				}
 			}
 
 		}
-		return iProgramUnitList;
+		return iPrototypeList;
 	}
 
 

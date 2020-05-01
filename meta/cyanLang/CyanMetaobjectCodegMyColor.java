@@ -5,15 +5,15 @@ import java.util.List;
 import meta.AnnotationArgumentsKind;
 import meta.CyanMetaobjectAtAnnotCodeg;
 import meta.DirectoryKindPPP;
-import meta.IAction_dsa;
+import meta.IAction_semAn;
 import meta.ICodeg;
 import meta.ICompiler_ded;
-import meta.ICompiler_dsa;
+import meta.ICompiler_semAn;
 import meta.Tuple4;
 import meta.WrAnnotationAt;
 
 public class CyanMetaobjectCodegMyColor extends CyanMetaobjectAtAnnotCodeg
-             implements ICodeg, IAction_dsa {
+             implements ICodeg, IAction_semAn {
 
 	public CyanMetaobjectCodegMyColor() {
 		super("myColor", AnnotationArgumentsKind.OneParameter);
@@ -22,10 +22,10 @@ public class CyanMetaobjectCodegMyColor extends CyanMetaobjectAtAnnotCodeg
 
 
 	@Override
-	public StringBuffer dsa_codeToAdd(ICompiler_dsa compiler_dsa) {
+	public StringBuffer semAn_codeToAdd(ICompiler_semAn compiler_semAn) {
 
-		compiler_dsa.writeTextFile( new char[] { 'a', 'b', 'c' },  "videoComments.txt", "Program", "main", DirectoryKindPPP.DATA);
-		return new StringBuffer(this.getMetaobjectAnnotation().getCodegInfo().toString());
+		compiler_semAn.writeTextFile( new char[] { 'a', 'b', 'c' },  "videoComments.txt", "Program", "main", DirectoryKindPPP.DATA);
+		return new StringBuffer(this.getAnnotation().getCodegInfo().toString());
 	}
 
 	@Override
@@ -39,10 +39,10 @@ public class CyanMetaobjectCodegMyColor extends CyanMetaobjectAtAnnotCodeg
 	public byte []getUserInput(ICompiler_ded compiler_ded, byte []previousUserInput) {
 		/*
 		 * inside a Codeg one can access the current prototype by calling
-		 *    this.getMetaobjectAnnotation().getProgramUnit()
+		 *    this.getAnnotation().getPrototype()
 		 *
 		 * the list of local variables visible at the point of declaration is given by
-		 *      this.getMetaobjectAnnotation().getLocalVariableNameList()
+		 *      this.getAnnotation().getLocalVariableNameList()
 		 */
 
 		return null;
@@ -50,7 +50,7 @@ public class CyanMetaobjectCodegMyColor extends CyanMetaobjectAtAnnotCodeg
 
 	@Override
 	public List<Tuple4<Integer, Integer, Integer, Integer>>  getColorList() {
-		final String strColor = this.getMetaobjectAnnotation().getCodegInfo().toString();
+		final String strColor = this.getAnnotation().getCodegInfo().toString();
 		/*
 		 * convert strColor to int color, put it in colorNumber
 		 *
@@ -62,9 +62,9 @@ public class CyanMetaobjectCodegMyColor extends CyanMetaobjectAtAnnotCodeg
 		catch ( final NumberFormatException e ) {
 			return null;
 		}
-		final int column = metaobjectAnnotation.getFirstSymbol().getColumnNumber();
+		final int column = annotation.getFirstSymbol().getColumnNumber();
 		final int columnLeftPar = column + 1 + this.getName().length() + 1;
-		final WrAnnotationAt annotation = this.getMetaobjectAnnotation();
+		final WrAnnotationAt annotation = this.getAnnotation();
 		final String red = (String ) annotation.getJavaParameterList().get(0);
 
 		final List<Tuple4<Integer, Integer, Integer, Integer>> array = new ArrayList<>();

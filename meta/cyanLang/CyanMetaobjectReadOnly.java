@@ -3,13 +3,13 @@ package meta.cyanLang;
 import meta.AnnotationArgumentsKind;
 import meta.AttachedDeclarationKind;
 import meta.CyanMetaobjectAtAnnot;
-import meta.ICompiler_dsa;
+import meta.ICompiler_semAn;
 import meta.WrAnnotationAt;
 import meta.WrEnv;
 import meta.WrFieldDec;
 import meta.WrMethodDec;
 
-public class CyanMetaobjectReadOnly extends CyanMetaobjectAtAnnot implements meta.ICheckDeclaration_afsa {
+public class CyanMetaobjectReadOnly extends CyanMetaobjectAtAnnot implements meta.ICheckDeclaration_afterSemAn {
 
 	public CyanMetaobjectReadOnly() {
 		super("readOnly", AnnotationArgumentsKind.ZeroParameters,
@@ -17,8 +17,8 @@ public class CyanMetaobjectReadOnly extends CyanMetaobjectAtAnnot implements met
 	}
 
 	@Override
-	public void afsa_checkDeclaration(ICompiler_dsa compiler) {
-		final WrAnnotationAt annot = this.getMetaobjectAnnotation();
+	public void afterSemAn_checkDeclaration(ICompiler_semAn compiler) {
+		final WrAnnotationAt annot = this.getAnnotation();
 		final WrMethodDec method = (WrMethodDec ) annot.getDeclaration();
 		final WrEnv env = compiler.getEnv();
 		if ( method.someNonSharedFieldAssignedTo(compiler.getEnv()) ||

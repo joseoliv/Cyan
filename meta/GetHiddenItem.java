@@ -17,7 +17,7 @@ import ast.MethodSignatureOperator;
 import ast.MethodSignatureUnary;
 import ast.ParameterDec;
 import ast.Program;
-import ast.ProgramUnit;
+import ast.Prototype;
 import ast.Statement;
 import ast.StatementLocalVariableDec;
 import ast.Type;
@@ -51,11 +51,11 @@ public class GetHiddenItem {
     }
     */
 
-    static public ProgramUnit getHiddenProgramUnit(WrProgramUnit item) {
+    static public Prototype getHiddenPrototype(WrPrototype item) {
 		if ( item == null ) {
 			return null;
 		}
-        return (ProgramUnit ) item.hidden;
+        return (Prototype ) item.hidden;
     }
 
     static public Program getHiddenProgram(WrProgram item) {
@@ -206,8 +206,8 @@ public class GetHiddenItem {
 
 
     static public Type getHiddenType(WrType item) {
-    	if ( item instanceof WrProgramUnit ) {
-    		return GetHiddenItem.getHiddenProgramUnit( (WrProgramUnit ) item);
+    	if ( item instanceof WrPrototype ) {
+    		return GetHiddenItem.getHiddenPrototype( (WrPrototype ) item);
     	}
     	else if ( item instanceof WrTypeDynamic ) {
     		return GetHiddenItem.getHiddenTypeDynamic( (WrTypeDynamic) item );
@@ -242,7 +242,7 @@ public class GetHiddenItem {
 	}
 
 
-	public static Annotation getHiddenCyanMetaobjectAnnotation(
+	public static Annotation getHiddenCyanAnnotation(
 			WrAnnotation item) {
 		if ( item == null ) {
 			return null;

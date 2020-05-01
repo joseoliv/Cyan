@@ -1,7 +1,7 @@
 package meta.cyanLang;
 
 import meta.CyanMetaobjectLiteralString;
-import meta.ICompiler_dsa;
+import meta.ICompiler_semAn;
 import meta.lexer.MetaLexer;
 
 /**
@@ -17,14 +17,14 @@ public class CyanMetaobjectLiteralStringWithoutEscape extends CyanMetaobjectLite
 		}
 
 //		@Override
-//		public void dpa_parse(ICompilerAction_dpa compilerAction, String code) {
+//		public void parsing_parse(ICompilerAction_parsing compilerAction, String code) {
 //
 //			// // setInfo( new StringBuffer("\"" + Lexer.escapeJavaString(code) + "\"") );
 //			this.codeToGenerate = new StringBuffer("\"" + MetaLexer.escapeJavaString(code) + "\"");
 //		}
 
 		@Override
-		public StringBuffer dsa_codeToAdd(ICompiler_dsa compiler_dsa) {
+		public StringBuffer semAn_codeToAdd(ICompiler_semAn compiler_semAn) {
 			// // return (StringBuffer ) getInfo();
 
 			String code = getUsefulString();

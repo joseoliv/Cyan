@@ -4,9 +4,9 @@ import java.util.List;
 import meta.AnnotationArgumentsKind;
 import meta.AttachedDeclarationKind;
 import meta.CyanMetaobjectAtAnnot;
-import meta.IAction_afti;
-import meta.ICompiler_afti;
-import meta.ISlotInterface;
+import meta.IAction_afterResTypes;
+import meta.ICompiler_afterResTypes;
+import meta.ISlotSignature;
 import meta.Tuple2;
 import meta.WrAnnotation;
 import meta.WrAnnotationAt;
@@ -19,7 +19,7 @@ import meta.WrMethodSignature;
    @author jose
  */
 
-public class CyanMetaobjectProperty extends CyanMetaobjectAtAnnot implements IAction_afti {
+public class CyanMetaobjectProperty extends CyanMetaobjectAtAnnot implements IAction_afterResTypes {
 
 	public CyanMetaobjectProperty() {
 		super("property", AnnotationArgumentsKind.ZeroParameters,
@@ -28,13 +28,12 @@ public class CyanMetaobjectProperty extends CyanMetaobjectAtAnnot implements IAc
 	}
 
 	@Override public
-	Tuple2<StringBuffer, String> afti_codeToAdd(
-			ICompiler_afti compiler, List<Tuple2<WrAnnotation, List<ISlotInterface>>> infoList) {
-
+	Tuple2<StringBuffer, String> afterResTypes_codeToAdd(
+			ICompiler_afterResTypes compiler, List<Tuple2<WrAnnotation, List<ISlotSignature>>> infoList) {
 
 		StringBuffer strSlotList = new StringBuffer();
 		final StringBuffer s = new StringBuffer();
-		final WrAnnotationAt annotation = this.getMetaobjectAnnotation();
+		final WrAnnotationAt annotation = this.getAnnotation();
 		final WrFieldDec iv = (WrFieldDec ) annotation.getDeclaration();
 		final String name = iv.getName();
 
@@ -51,10 +50,10 @@ public class CyanMetaobjectProperty extends CyanMetaobjectAtAnnot implements IAc
 			methodNameSet = "set" + nameUpper;
 		}
 		List<WrMethodSignature> mList;
-		mList = compiler.getProgramUnit()
+		mList = compiler.getPrototype()
 				.searchMethodPrivateProtectedPublicPackageSuperProtectedPublicPackage(methodNameGet, compiler.getEnv());
 		if ( mList != null && mList.size() > 0 ) {
-			this.addError("Metaobject '" + this.getName() + "' called at line " + annotation.getSymbolMetaobjectAnnotation().getLineNumber()
+			this.addError("Metaobject '" + this.getName() + "' called at line " + annotation.getSymbolAnnotation().getLineNumber()
 					+ " needs to create a method called '" + methodNameGet + "'. However this method already exists");
 		}
 		if ( iv.isShared() ) {
@@ -82,11 +81,11 @@ public class CyanMetaobjectProperty extends CyanMetaobjectAtAnnot implements IAc
 		s.append("    func " + methodNameGet + " -> " + ivTypeName + " = " + name + ";\n");
 		if ( ! iv.isReadonly() ) {
 
-			mList = compiler.getProgramUnit()
+			mList = compiler.getPrototype()
 					.searchMethodPrivateProtectedPublicPackageSuperProtectedPublicPackage(methodNameSet + ":1",
 							compiler.getEnv());
 			if ( mList != null && mList.size() > 0 ) {
-				this.addError("Metaobject annotation '" + this.getName() + "' at line " + annotation.getSymbolMetaobjectAnnotation().getLineNumber()
+				this.addError("Metaobject annotation '" + this.getName() + "' at line " + annotation.getSymbolAnnotation().getLineNumber()
 						+ " needs to create a method called '" + methodNameSet + ":'. However this method already exists");
 			}
 

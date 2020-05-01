@@ -14,19 +14,19 @@ import cyan.lang._Tuple_LT_GP_CyString_GP_CyString_GP_CyString_GT;
 import cyan.lang._Tuple_LT_GP_CyString_GP_CyString_GT;
 import cyan.reflect._CyanMetaobject;
 import cyan.reflect._CyanMetaobjectAtAnnot;
-import cyan.reflect._IActionAttachedType__dsa;
-import cyan.reflect._IActionMessageSend__dsa;
-import cyan.reflect._ICheckMessageSend__afsa;
+import cyan.reflect._IActionAttachedType__semAn;
+import cyan.reflect._IActionMessageSend__semAn;
+import cyan.reflect._ICheckMessageSend__afterSemAn;
 import error.ErrorKind;
 import lexer.Symbol;
 import meta.CyanMetaobject;
 import meta.CyanMetaobjectAtAnnot;
 import meta.ExprReceiverKind;
 import meta.IActionAssignment_cge;
-import meta.IActionAttachedType_dsa;
-import meta.IActionMessageSend_dsa;
-import meta.ICheckMessageSend_afsa;
-import meta.ICompiler_dsa;
+import meta.IActionAttachedType_semAn;
+import meta.IActionMessageSend_semAn;
+import meta.ICheckMessageSend_afterSemAn;
+import meta.ICompiler_semAn;
 import meta.IDeclaration;
 import meta.LeftHandSideKind;
 import meta.MetaHelper;
@@ -35,9 +35,9 @@ import meta.Tuple3;
 import meta.WrEnv;
 import meta.WrExpr;
 import meta.WrMethodDec;
-import meta.WrProgramUnit;
+import meta.WrPrototype;
 import meta.WrType;
-import metaRealClasses.Compiler_dsa;
+import metaRealClasses.Compiler_semAn;
 import saci.Env;
 import saci.NameServer;
 
@@ -58,24 +58,24 @@ public class MetaInfoServer {
 	   @param newType
 	   @return
 	 */
-	public static boolean replaceRightExpr(IActionAttachedType_dsa annotMetaobject,
+	public static boolean replaceRightExpr(IActionAttachedType_semAn annotMetaobject,
 			 WrExpr iexpr, StringBuffer sb, WrEnv env, WrType newType) {
 
 		CyanMetaobjectAtAnnot metaobject = (CyanMetaobjectAtAnnot ) annotMetaobject;
-		final AnnotationAt annotation = metaobject.getMetaobjectAnnotation().getHidden();
+		final AnnotationAt annotation = metaobject.getAnnotation().getHidden();
 		final Expr expr = meta.GetHiddenItem.getHiddenExpr(iexpr);
 		if ( expr.getCodeThatReplacesThisExpr() != null ) {
 			/*
 			 * this message send has already been replaced by another expression
 			 */
-			if ( expr.getCyanMetaobjectAnnotationThatReplacedMSbyExpr() != null ) {
+			if ( expr.getCyanAnnotationThatReplacedMSbyExpr() != null ) {
 				metaobject.addError(expr.getFirstSymbol().getI(),  "Metaobject annotation '" + metaobject.getName() +
 						"' is trying to replace expression '" + expr.asString() +
 						"' by another expression. But this has already been asked by metaobject annotation '" +
-						expr.getCyanMetaobjectAnnotationThatReplacedMSbyExpr().getCyanMetaobject().getName() + "'" +
-						" at line " + expr.getCyanMetaobjectAnnotationThatReplacedMSbyExpr().getFirstSymbol().getLineNumber() +
-						" of prototype " + expr.getCyanMetaobjectAnnotationThatReplacedMSbyExpr().getPackageOfAnnotation() + "." +
-						expr.getCyanMetaobjectAnnotationThatReplacedMSbyExpr().getPackageOfAnnotation());
+						expr.getCyanAnnotationThatReplacedMSbyExpr().getCyanMetaobject().getName() + "'" +
+						" at line " + expr.getCyanAnnotationThatReplacedMSbyExpr().getFirstSymbol().getLineNumber() +
+						" of prototype " + expr.getCyanAnnotationThatReplacedMSbyExpr().getPackageOfAnnotation() + "." +
+						expr.getCyanAnnotationThatReplacedMSbyExpr().getPackageOfAnnotation());
 			}
 			else {
 				metaobject.addError(expr.getFirstSymbol().getI(), "Metaobject annotation '" + metaobject.getName() +
@@ -88,8 +88,8 @@ public class MetaInfoServer {
 		meta.GetHiddenItem.getHiddenEnv(env)
 		   .replaceStatementByCode(expr, annotation, sb, meta.GetHiddenItem.getHiddenType(newType) );
 
-		// boolean b = ! metaobject.getCurrentProgramUnit().getCompilationUnit(env).getFullFileNamePath().equals(expr.getFirstSymbol().getCompilationUnit().getFullFileNamePath());
-		expr.setCyanMetaobjectAnnotationThatReplacedMSbyExpr(annotation);
+		// boolean b = ! metaobject.getCurrentPrototype().getCompilationUnit(env).getFullFileNamePath().equals(expr.getFirstSymbol().getCompilationUnit().getFullFileNamePath());
+		expr.setCyanAnnotationThatReplacedMSbyExpr(annotation);
 		return true;
 	}
 
@@ -129,38 +129,40 @@ public class MetaInfoServer {
 				List<AnnotationAt>  ctmetaobjectAnnotationList;
 				if ( ms.getMethod() == null ) {
 					// it is a method of an interface
-					ctmetaobjectAnnotationList = ms.getAttachedMetaobjectAnnotationList();
+					ctmetaobjectAnnotationList = ms.getAttachedAnnotationList();
 				}
 				else
-					ctmetaobjectAnnotationList = ms.getMethod().getAttachedMetaobjectAnnotationList();
+					ctmetaobjectAnnotationList = ms.getMethod().getAttachedAnnotationList();
 				if ( ctmetaobjectAnnotationList != null ) {
 
 
 					final int size = ctmetaobjectAnnotationList.size();
-					//List<AnnotationAt> list = ms.getMethod().getMetaobjectAnnotationList();
+					//List<AnnotationAt> list = ms.getMethod().getAnnotationList();
 					for (int i = size -1; i >= 0 ; --i) {
 						final AnnotationAt annotation = ctmetaobjectAnnotationList.get(i);
 						final CyanMetaobjectAtAnnot cyanMO = annotation.getCyanMetaobject();
 						_CyanMetaobjectAtAnnot other = (_CyanMetaobjectAtAnnot ) cyanMO.getMetaobjectInCyan();
-						if ( cyanMO instanceof ICheckMessageSend_afsa ||
-								(other != null && other instanceof _ICheckMessageSend__afsa)) {
+						if ( cyanMO instanceof ICheckMessageSend_afterSemAn
+								||
+								(other != null && other instanceof _ICheckMessageSend__afterSemAn)
+								) {
 
-							if ( !(exprType instanceof ProgramUnit) ) {
+							if ( !(exprType instanceof Prototype) ) {
 								env.error(symForError, "Internal error in MetaInfoServer: type is not a Program Unit");
 								return ;
 							}
-							WrProgramUnit puExpr = ((ProgramUnit ) exprType).getI();
+							WrPrototype puExpr = ((Prototype ) exprType).getI();
 							try {
 								if ( other == null ) {
-									((ICheckMessageSend_afsa ) cyanMO).afsa_checkKeywordMessageSend(
+									((ICheckMessageSend_afterSemAn ) cyanMO).afterSemAn_checkKeywordMessageSend(
 											expr.getI(), puExpr, receiverKind,
 											message.getI(), ms.getI(), env.getI());
 								}
 								else {
-									//##
-									((_ICheckMessageSend__afsa ) other)._afsa__checkKeywordMessageSend_6(
+									((_ICheckMessageSend__afterSemAn ) other)._afterSemAn__checkKeywordMessageSend_6(
 											expr.getI(), puExpr, new CyString(receiverKind.toString()),
 											message.getI(), ms.getI(), env.getI());
+
 								}
 							}
 							catch ( final error.CompileErrorException e ) {
@@ -180,7 +182,7 @@ public class MetaInfoServer {
 							if ( inSubprototype ) {
 								inSubprototype = false;
 								MethodSignature mostSpecificMS = methodSignatureList.get(0);
-								ProgramUnit mostSpecificReceiver;
+								Prototype mostSpecificReceiver;
 								if ( mostSpecificMS.getMethod() != null ) {
 									mostSpecificReceiver = mostSpecificMS.getMethod().getDeclaringObject();
 								}
@@ -192,13 +194,13 @@ public class MetaInfoServer {
 
 								try {
 									if ( other == null ) {
-										((ICheckMessageSend_afsa ) cyanMO).afsa_checkKeywordMessageSendMostSpecific(
+										((ICheckMessageSend_afterSemAn ) cyanMO).afterSemAn_checkKeywordMessageSendMostSpecific(
 												expr.getI(), puExpr,
 												receiverKind, message.getI(), ms.getI(),
 												mostSpecificReceiver.getI(), env.getI());
 									}
 									else {
-										((_ICheckMessageSend__afsa ) other)._afsa__checkKeywordMessageSendMostSpecific_7(
+										((_ICheckMessageSend__afterSemAn ) other)._afterSemAn__checkKeywordMessageSendMostSpecific_7(
 												expr.getI(), puExpr,
 												new CyString(receiverKind.toString()), message.getI(),
 												ms.getI(),
@@ -256,11 +258,11 @@ public class MetaInfoServer {
 				List<AnnotationAt> list;
 				if ( ms.getMethod() != null ) {
 					// a method of a prototype
-					list = ms.getMethod().getAttachedMetaobjectAnnotationList();
+					list = ms.getMethod().getAttachedAnnotationList();
 				}
 				else {
 					// a method of an interface
-					list = ms.getAttachedMetaobjectAnnotationList();
+					list = ms.getAttachedAnnotationList();
 				}
 
 				if ( list != null ) {
@@ -270,22 +272,24 @@ public class MetaInfoServer {
 						final AnnotationAt annotation = list.get(i);
 						final CyanMetaobjectAtAnnot cyanMO = annotation.getCyanMetaobject();
 						_CyanMetaobjectAtAnnot other = (_CyanMetaobjectAtAnnot ) cyanMO.getMetaobjectInCyan();
-						if ( cyanMO instanceof ICheckMessageSend_afsa ||
-								(other != null && other instanceof _ICheckMessageSend__afsa)) {
+						if ( cyanMO instanceof ICheckMessageSend_afterSemAn
+								||
+								(other != null && other instanceof _ICheckMessageSend__afterSemAn)
+								) {
 
 
 
 
-							if ( !(exprType instanceof ProgramUnit) ) {
+							if ( !(exprType instanceof Prototype) ) {
 								env.error(unarySymbol, "Internal error in MetaInfoServer: type is not a Program Unit");
 								return ;
 							}
-							WrProgramUnit puExpr = ((ProgramUnit ) exprType).getI();
+							WrPrototype puExpr = ((Prototype ) exprType).getI();
 
 
 							if ( inSubprototype ) {
 								MethodSignature subMethodSignature = methodSignatureList.get(0);
-								ProgramUnit mostSpecificReceiver;
+								Prototype mostSpecificReceiver;
 								if ( subMethodSignature.getMethod() == null ) {
 									mostSpecificReceiver = subMethodSignature.getDeclaringInterface();
 								}
@@ -295,13 +299,13 @@ public class MetaInfoServer {
 
 								try {
 									if ( other == null ) {
-										((ICheckMessageSend_afsa ) cyanMO).afsa_checkUnaryMessageSendMostSpecific(
+										((ICheckMessageSend_afterSemAn ) cyanMO).afterSemAn_checkUnaryMessageSendMostSpecific(
 												expr == null ? null : expr.getI(),
 												puExpr,  receiverKind, unarySymbol.getI(), mostSpecificReceiver.getI(),
 												env.getI() );
 									}
 									else {
-										((_ICheckMessageSend__afsa ) other)._afsa__checkUnaryMessageSendMostSpecific_6(
+										((_ICheckMessageSend__afterSemAn ) other)._afterSemAn__checkUnaryMessageSendMostSpecific_6(
 												expr == null ? null : expr.getI(),
 												puExpr,  new CyString(receiverKind.toString()),
 												unarySymbol.getI(), mostSpecificReceiver.getI(),
@@ -325,14 +329,14 @@ public class MetaInfoServer {
 							try {
 
 								if ( other == null ) {
-									((ICheckMessageSend_afsa ) cyanMO)
-									   .afsa_checkUnaryMessageSend(
+									((ICheckMessageSend_afterSemAn ) cyanMO)
+									   .afterSemAn_checkUnaryMessageSend(
 											   expr == null ? null : expr.getI(), puExpr,
 											   receiverKind, unarySymbol.getI(), env.getI());
 								}
 								else {
-									((_ICheckMessageSend__afsa ) other)
-									   ._afsa__checkUnaryMessageSend_5(
+									((_ICheckMessageSend__afterSemAn ) other)
+									   ._afterSemAn__checkUnaryMessageSend_5(
 											   expr == null ? null : expr.getI(), puExpr,
 											   new CyString(receiverKind.toString()), unarySymbol.getI(), env.getI());
 								}
@@ -370,25 +374,27 @@ public class MetaInfoServer {
 	public static void checkAssignmentPluggableTypeSystem(Env env,
 			Type leftType, Object leftASTNode, LeftHandSideKind leftKind,
 			Type rightType, Expr rightExpr) {
-		ICompiler_dsa compiler_dsa = null;
+		ICompiler_semAn compiler_semAn = null;
 		if ( leftType instanceof TypeWithAnnotations ) {
 			final TypeWithAnnotations leftTypeWithAnnot = (TypeWithAnnotations ) leftType;
 			for ( final AnnotationAt annot : leftTypeWithAnnot.getAnnotationToTypeList() ) {
 				final CyanMetaobjectAtAnnot cyanMetaobject = annot.getCyanMetaobject();
 				_CyanMetaobject other = cyanMetaobject.getMetaobjectInCyan();
-				if ( cyanMetaobject instanceof IActionAttachedType_dsa ||
-						(other != null && other instanceof _IActionAttachedType__dsa ) ) {
+				if ( cyanMetaobject instanceof IActionAttachedType_semAn
+						||
+						(other != null && other instanceof _IActionAttachedType__semAn )
+						) {
 
 					final String currentPackageName = env.getCurrentCompilationUnit().getPackageName();
-					final String currentPrototypeName = env.getCurrentProgramUnit().getName();
+					final String currentPrototypeName = env.getCurrentPrototype().getName();
 
-					List<Tuple2<String, String>> tupleArray;
+					List<Tuple2<String, String>> tupleArray = null;
 					if ( other == null ) {
-						tupleArray = ((IActionAttachedType_dsa) cyanMetaobject).doNotCheckIn();
+						tupleArray = ((IActionAttachedType_semAn) cyanMetaobject).doNotCheckIn();
 					}
 					else {
 						_Array_LT_GP__Tuple_LT_GP_CyString_GP_CyString_GT__GT array =
-						         ((_IActionAttachedType__dsa) other)._doNotCheckIn();
+						         ((_IActionAttachedType__semAn) other)._doNotCheckIn();
 						int sizeArray = array._size().n;
 						if ( sizeArray > 0 ) {
 							tupleArray = new ArrayList<>();
@@ -406,10 +412,10 @@ public class MetaInfoServer {
 
 					boolean allowDoNotCheckInList = false;
 					if ( other == null ) {
-						allowDoNotCheckInList = ((IActionAttachedType_dsa) cyanMetaobject).allowDoNotCheckInList() ;
+						allowDoNotCheckInList = ((IActionAttachedType_semAn) cyanMetaobject).allowDoNotCheckInList() ;
 					}
 					else {
-						allowDoNotCheckInList = ((_IActionAttachedType__dsa ) other)._allowDoNotCheckInList().b;
+						allowDoNotCheckInList = ((_IActionAttachedType__semAn ) other)._allowDoNotCheckInList().b;
 					}
 					if ( allowDoNotCheckInList ) {
 						Set<String> strSet = env.getProject().getProgramKeyValueSet(cyanMetaobject.getName() + "DoNotCheckIn");
@@ -447,33 +453,32 @@ public class MetaInfoServer {
 						 * if the package/prototype of pp is equal to the current package/prototype,
 						 * do not check. If true, check
 						 */
-						if ( compiler_dsa == null ) { compiler_dsa = new Compiler_dsa(env); }
+						if ( compiler_semAn == null ) { compiler_semAn = new Compiler_semAn(env); }
 						try {
 							/*
-							((IActionAttachedType_dsa ) cyanMetaobject).dsa_checkTypeChangeLeft(
-									compiler_dsa, leftTypeWithAnnot, leftASTNode, leftKind, rightType, rightExpr);
+							((IActionAttachedType_semAn ) cyanMetaobject).semAn_checkTypeChangeLeft(
+									compiler_semAn, leftTypeWithAnnot, leftASTNode, leftKind, rightType, rightExpr);
 							*/
 							if ( !(leftASTNode instanceof ASTNode ) ) {
 								env.error(rightExpr.getFirstSymbol(), "Internal compiler error in MetaInfoServer: leftASTNode or rightExpr "
 										+ "should implement interface GetI");
 							}
-							StringBuffer sb;
+							StringBuffer sb = null;
 							if ( other == null ) {
-								sb = ((IActionAttachedType_dsa ) cyanMetaobject).dsa_checkLeftTypeChangeRightExpr(
-										compiler_dsa, leftTypeWithAnnot.getI(),
+								sb = ((IActionAttachedType_semAn ) cyanMetaobject).semAn_checkLeftTypeChangeRightExpr(
+										compiler_semAn, leftTypeWithAnnot.getI(),
 										((ASTNode ) leftASTNode).getI(), leftKind, rightType.getI(), rightExpr.getI());
 							}
 							else {
-								sb = new StringBuffer( ((_IActionAttachedType__dsa ) other)._dsa__checkLeftTypeChangeRightExpr_6(
-										compiler_dsa, leftTypeWithAnnot.getI(),
+								sb = new StringBuffer( ((_IActionAttachedType__semAn ) other)._semAn__checkLeftTypeChangeRightExpr_6(
+										compiler_semAn, leftTypeWithAnnot.getI(),
 										((ASTNode ) leftASTNode).getI(), new CyString(leftKind.toString()), rightType.getI(), rightExpr.getI()).s);
 								if ( sb.length() == 0 ) {
 									sb = null;
 								}
-
 							}
 							if ( sb != null ) {
-								MetaInfoServer.replaceRightExpr((IActionAttachedType_dsa ) cyanMetaobject,
+								MetaInfoServer.replaceRightExpr((IActionAttachedType_semAn ) cyanMetaobject,
 										rightExpr.getI(), sb, env.getI(), rightType.getI());
 							}
 
@@ -504,19 +509,21 @@ public class MetaInfoServer {
 				final CyanMetaobjectAtAnnot cyanMetaobject = annot.getCyanMetaobject();
 				_CyanMetaobject other = cyanMetaobject.getMetaobjectInCyan();
 
-				if ( cyanMetaobject instanceof IActionAttachedType_dsa ||
-						(other != null && other instanceof _IActionAttachedType__dsa )) {
+				if ( cyanMetaobject instanceof IActionAttachedType_semAn
+						||
+						(other != null && other instanceof _IActionAttachedType__semAn )
+						) {
 
 					final String currentPrototypeName = env.getCurrentCompilationUnit().getPackageName();
-					final String currentPackageName = env.getCurrentProgramUnit().getName();
+					final String currentPackageName = env.getCurrentPrototype().getName();
 
-					List<Tuple2<String, String>> tupleArray;
+					List<Tuple2<String, String>> tupleArray = null;
 					if ( other == null ) {
-						tupleArray = ((IActionAttachedType_dsa) cyanMetaobject).doNotCheckIn();
+						tupleArray = ((IActionAttachedType_semAn) cyanMetaobject).doNotCheckIn();
 					}
 					else {
 						_Array_LT_GP__Tuple_LT_GP_CyString_GP_CyString_GT__GT array =
-						         ((_IActionAttachedType__dsa) other)._doNotCheckIn();
+						         ((_IActionAttachedType__semAn) other)._doNotCheckIn();
 						int sizeArray = array._size().n;
 						if ( sizeArray > 0 ) {
 							tupleArray = new ArrayList<>();
@@ -528,7 +535,6 @@ public class MetaInfoServer {
 						else {
 							tupleArray = null;
 						}
-
 					}
 					boolean foundProto = false;
 					if ( tupleArray != null ) {
@@ -541,19 +547,19 @@ public class MetaInfoServer {
 					}
 					if ( !foundProto ) {
 
-						if ( compiler_dsa == null ) { compiler_dsa = new Compiler_dsa(env); }
+						if ( compiler_semAn == null ) { compiler_semAn = new Compiler_semAn(env); }
 
 						try {
-							StringBuffer sb;
+							StringBuffer sb = null;
 
 							if ( other == null ) {
-								sb = ((IActionAttachedType_dsa ) cyanMetaobject).dsa_checkRightTypeChangeRightExpr(
-										compiler_dsa, leftType.getI(), ((ASTNode ) leftASTNode).getI(),
+								sb = ((IActionAttachedType_semAn ) cyanMetaobject).semAn_checkRightTypeChangeRightExpr(
+										compiler_semAn, leftType.getI(), ((ASTNode ) leftASTNode).getI(),
 										leftKind, rightType.getI(), rightExpr.getI());
 							}
 							else {
-								sb = new StringBuffer(((_IActionAttachedType__dsa ) other)._dsa__checkRightTypeChangeRightExpr_6(
-										compiler_dsa, leftType.getI(), ((ASTNode ) leftASTNode).getI(),
+								sb = new StringBuffer(((_IActionAttachedType__semAn ) other)._semAn__checkRightTypeChangeRightExpr_6(
+										compiler_semAn, leftType.getI(), ((ASTNode ) leftASTNode).getI(),
 										new CyString(leftKind.toString()), rightType.getI(), rightExpr.getI()).s );
 								if ( sb.length() == 0 ) {
 									sb = null;
@@ -562,7 +568,7 @@ public class MetaInfoServer {
 
 
 							if ( sb != null ) {
-								MetaInfoServer.replaceRightExpr((IActionAttachedType_dsa ) cyanMetaobject,
+								MetaInfoServer.replaceRightExpr((IActionAttachedType_semAn ) cyanMetaobject,
 										rightExpr.getI(), sb, env.getI(), rightType.getI());
 							}
 
@@ -601,7 +607,7 @@ public class MetaInfoServer {
 		if ( leftType instanceof ObjectDec ) {
         	ObjectDec proto = (ObjectDec ) leftType;
         	while ( proto != null ) {
-            	final List<AnnotationAt> ctmetaobjectAnnotationList = proto.getAttachedMetaobjectAnnotationList();
+            	final List<AnnotationAt> ctmetaobjectAnnotationList = proto.getAttachedAnnotationList();
             	if ( ctmetaobjectAnnotationList != null ) {
                 	boolean found = false;
                 	for ( final AnnotationAt annotation : ctmetaobjectAnnotationList ) {
@@ -635,11 +641,11 @@ public class MetaInfoServer {
 		List<AnnotationAt> list;
 		if ( ms.getMethod() != null ) {
 			// a method of a prototype
-			list = ms.getMethod().getAttachedMetaobjectAnnotationList();
+			list = ms.getMethod().getAttachedAnnotationList();
 		}
 		else {
 			// a method of an interface
-			list = ms.getAttachedMetaobjectAnnotationList();
+			list = ms.getAttachedAnnotationList();
 		}
 
 		if ( list != null ) {
@@ -647,8 +653,10 @@ public class MetaInfoServer {
 			for (final AnnotationAt annotation : list ) {
 				final CyanMetaobjectAtAnnot cyanMetaobject = annotation.getCyanMetaobject();
 				_CyanMetaobjectAtAnnot other = (_CyanMetaobjectAtAnnot ) cyanMetaobject.getMetaobjectInCyan();
-				if ( cyanMetaobject instanceof IActionMessageSend_dsa ||
-						(other != null && other instanceof _IActionMessageSend__dsa) ) {
+				if ( cyanMetaobject instanceof IActionMessageSend_semAn
+						||
+						(other != null && other instanceof _IActionMessageSend__semAn)
+						) {
 
 
 					// MessageWithKeywords  message = (MessageWithKeywords ) this.getMessage();
@@ -658,17 +666,17 @@ public class MetaInfoServer {
 					StringBuffer sb = null;
 					try {
 						if ( other == null ) {
-							final IActionMessageSend_dsa doesNot = (IActionMessageSend_dsa ) cyanMetaobject;
+							final IActionMessageSend_semAn doesNot = (IActionMessageSend_semAn ) cyanMetaobject;
 							if ( messageSendExpr instanceof ExprMessageSendWithKeywordsToExpr ) {
-								codeType = doesNot.dsa_analyzeReplaceKeywordMessage(
+								codeType = doesNot.semAn_analyzeReplaceKeywordMessage(
 												((ExprMessageSendWithKeywordsToExpr ) messageSendExpr).getI(), env.getI());
 							}
 							else if ( messageSendExpr instanceof ExprMessageSendUnaryChainToExpr ) {
-								codeType = doesNot.dsa_analyzeReplaceUnaryMessage(
+								codeType = doesNot.semAn_analyzeReplaceUnaryMessage(
 												((ExprMessageSendUnaryChainToExpr ) messageSendExpr).getI(), env.getI());
 							}
 							else if ( messageSendExpr instanceof ExprIdentStar ) {
-								codeType = doesNot.dsa_analyzeReplaceUnaryMessageWithoutSelf(
+								codeType = doesNot.semAn_analyzeReplaceUnaryMessageWithoutSelf(
 										((ExprIdentStar ) messageSendExpr).getI(), env.getI());
 							}
 							else {
@@ -681,7 +689,7 @@ public class MetaInfoServer {
 						else {
 							if ( messageSendExpr instanceof ExprMessageSendWithKeywordsToExpr ) {
 								_Tuple_LT_GP_CyString_GP_CyString_GP_CyString_GT tdd =
-								    ((_IActionMessageSend__dsa ) other)._dsa__analyzeReplaceKeywordMessage_2(
+								    ((_IActionMessageSend__semAn ) other)._semAn__analyzeReplaceKeywordMessage_2(
 												((ExprMessageSendWithKeywordsToExpr ) messageSendExpr).getI(), env.getI());
 								CyString f1 = tdd._f1();
 								CyString f2 = tdd._f2();
@@ -696,7 +704,7 @@ public class MetaInfoServer {
 							}
 							else if ( messageSendExpr instanceof ExprMessageSendUnaryChainToExpr ) {
 								_Tuple_LT_GP_CyString_GP_CyString_GP_CyString_GT tdd =
-									    ((_IActionMessageSend__dsa ) other)._dsa__analyzeReplaceUnaryMessage_2(
+									    ((_IActionMessageSend__semAn ) other)._semAn__analyzeReplaceUnaryMessage_2(
 													((ExprMessageSendUnaryChainToExpr ) messageSendExpr).getI(), env.getI());
 								CyString f1 = tdd._f1();
 								CyString f2 = tdd._f2();
@@ -708,11 +716,10 @@ public class MetaInfoServer {
 											f3.s
 											);
 								}
-
 							}
 							else if ( messageSendExpr instanceof ExprIdentStar ) {
 								_Tuple_LT_GP_CyString_GP_CyString_GP_CyString_GT tdd =
-									    ((_IActionMessageSend__dsa ) other)._dsa__analyzeReplaceUnaryMessageWithoutSelf_2(
+									    ((_IActionMessageSend__semAn ) other)._semAn__analyzeReplaceUnaryMessageWithoutSelf_2(
 													((ExprIdentStar ) messageSendExpr).getI(), env.getI());
 								CyString f1 = tdd._f1();
 								CyString f2 = tdd._f2();
@@ -724,7 +731,6 @@ public class MetaInfoServer {
 											f3.s
 											);
 								}
-
 							}
 							else {
 								env.error(symForError, "Internal error in MetaInfoServer.replaceMessageSendIfAsked: "
@@ -755,17 +761,17 @@ public class MetaInfoServer {
 							/*
 							 * this message send has already been replaced by another expression
 							 */
-							if ( messageSendExpr.getCyanMetaobjectAnnotationThatReplacedMSbyExpr() != null ) {
+							if ( messageSendExpr.getCyanAnnotationThatReplacedMSbyExpr() != null ) {
 								env.warning(symForError, "Metaobject annotation '" + cyanMetaobject.getName() +
 										"' at line " + annotation.getFirstSymbol().getLineNumber()  +
 										" of prototype " + annotation.getPackageOfAnnotation() + "." +
 										annotation.getPackageOfAnnotation() +
 										" is trying to replace message send '" + messageSendExpr.asString() +
 										"' by an expression. But this has already been asked by metaobject annotation '" +
-										messageSendExpr.getCyanMetaobjectAnnotationThatReplacedMSbyExpr().getCyanMetaobject().getName() + "'" +
-										" at line " + messageSendExpr.getCyanMetaobjectAnnotationThatReplacedMSbyExpr().getFirstSymbol().getLineNumber() +
-										" of prototype " + messageSendExpr.getCyanMetaobjectAnnotationThatReplacedMSbyExpr().getPackageOfAnnotation() + "." +
-										messageSendExpr.getCyanMetaobjectAnnotationThatReplacedMSbyExpr().getPackageOfAnnotation());
+										messageSendExpr.getCyanAnnotationThatReplacedMSbyExpr().getCyanMetaobject().getName() + "'" +
+										" at line " + messageSendExpr.getCyanAnnotationThatReplacedMSbyExpr().getFirstSymbol().getLineNumber() +
+										" of prototype " + messageSendExpr.getCyanAnnotationThatReplacedMSbyExpr().getPackageOfAnnotation() + "." +
+										messageSendExpr.getCyanAnnotationThatReplacedMSbyExpr().getPackageOfAnnotation());
 							}
 							else {
 								env.warning(symForError, "Metaobject annotation '" + cyanMetaobject.getName() +
@@ -801,7 +807,7 @@ public class MetaInfoServer {
 
 						env.replaceStatementByCode(messageSendExpr, annotation, sb, typeOfCode);
 
-						messageSendExpr.setCyanMetaobjectAnnotationThatReplacedMSbyExpr(annotation);
+						messageSendExpr.setCyanAnnotationThatReplacedMSbyExpr(annotation);
 
 						return typeOfCode;
 					}
@@ -818,7 +824,7 @@ public class MetaInfoServer {
 	}
 
 //	/**
-//	 * A metaobject attached to a method may implement IActionMessageSend_dsa and
+//	 * A metaobject attached to a method may implement IActionMessageSend_semAn and
 //	 * a method of the list allMethodSignatureList may be called in a message send
 //	 * <code>messageSendExpr</code>.
 //	   @param ms
@@ -840,11 +846,11 @@ public class MetaInfoServer {
 //			List<AnnotationAt> otherList = null;
 //			if ( ms.getMethod() != null ) {
 //				// a method of a prototype
-//				otherList = ms.getMethod().getAttachedMetaobjectAnnotationList();
+//				otherList = ms.getMethod().getAttachedAnnotationList();
 //			}
 //			else {
 //				// a method of an interface
-//				otherList = ms.getAttachedMetaobjectAnnotationList();
+//				otherList = ms.getAttachedAnnotationList();
 //			}
 //			if ( otherList != null ) {
 //				list.addAll(otherList);
@@ -853,8 +859,8 @@ public class MetaInfoServer {
 //		for (final AnnotationAt annotation : list ) {
 //			final CyanMetaobjectAtAnnot cyanMetaobject = annotation.getCyanMetaobject();
 //			_CyanMetaobjectAtAnnot other = (_CyanMetaobjectAtAnnot ) cyanMetaobject.getMetaobjectInCyan();
-//			if ( cyanMetaobject instanceof IActionMessageSend_dsa ||
-//					(other != null && other instanceof _IActionMessageSend__dsa) ) {
+//			if ( cyanMetaobject instanceof IActionMessageSend_semAn ||
+//					(other != null && other instanceof _IActionMessageSend__semAn) ) {
 //
 //
 //				// MessageWithKeywords  message = (MessageWithKeywords ) this.getMessage();
@@ -864,13 +870,13 @@ public class MetaInfoServer {
 //				StringBuffer sb = null;
 //				try {
 //					if ( other == null ) {
-//						final IActionMessageSend_dsa doesNot = (IActionMessageSend_dsa ) cyanMetaobject;
+//						final IActionMessageSend_semAn doesNot = (IActionMessageSend_semAn ) cyanMetaobject;
 //						if ( messageSendExpr instanceof ExprMessageSendWithKeywordsToExpr ) {
-//							codeType = doesNot.dsa_analyzeReplaceKeywordMessage(
+//							codeType = doesNot.semAn_analyzeReplaceKeywordMessage(
 //											((ExprMessageSendWithKeywordsToExpr ) messageSendExpr).getI(), env.getI());
 //						}
 //						else if ( messageSendExpr instanceof ExprMessageSendUnaryChainToExpr ) {
-//							codeType = doesNot.dsa_analyzeReplaceUnaryMessage(
+//							codeType = doesNot.semAn_analyzeReplaceUnaryMessage(
 //											((ExprMessageSendUnaryChainToExpr ) messageSendExpr).getI(), env.getI());
 //						}
 //
@@ -879,7 +885,7 @@ public class MetaInfoServer {
 //						if ( messageSendExpr instanceof ExprMessageSendWithKeywordsToExpr ) {
 //
 //							_Tuple_LT_GP_CyString_GP_CyString_GP_CyString_GT tdd =
-//							    ((_IActionMessageSend__dsa ) other)._dsa__analyzeReplaceKeywordMessage_2(
+//							    ((_IActionMessageSend__semAn ) other)._semAn__analyzeReplaceKeywordMessage_2(
 //											((ExprMessageSendWithKeywordsToExpr ) messageSendExpr).getI(), env.getI());
 //							Object f1 = tdd._f1();
 //							Object f2 = tdd._f2();
@@ -898,7 +904,7 @@ public class MetaInfoServer {
 //						}
 //						else if ( messageSendExpr instanceof ExprMessageSendUnaryChainToExpr ) {
 //							_Tuple_LT_GP_CyString_GP_CyString_GP_CyString_GT tdd =
-//								    ((_IActionMessageSend__dsa ) other)._dsa__analyzeReplaceUnaryMessage_2(
+//								    ((_IActionMessageSend__semAn ) other)._semAn__analyzeReplaceUnaryMessage_2(
 //												((ExprMessageSendUnaryChainToExpr ) messageSendExpr).getI(), env.getI());
 //							CyString f1 = tdd._f1();
 //							CyString f2 = tdd._f2();
@@ -935,17 +941,17 @@ public class MetaInfoServer {
 //						/*
 //						 * this message send has already been replaced by another expression
 //						 */
-//						if ( messageSendExpr.getCyanMetaobjectAnnotationThatReplacedMSbyExpr() != null ) {
+//						if ( messageSendExpr.getCyanAnnotationThatReplacedMSbyExpr() != null ) {
 //							env.warning(symForError, "Metaobject annotation '" + cyanMetaobject.getName() +
 //									"' at line " + annotation.getFirstSymbol().getLineNumber()  +
 //									" of prototype " + annotation.getPackageOfAnnotation() + "." +
 //									annotation.getPackageOfAnnotation() +
 //									" is trying to replace message send '" + messageSendExpr.asString() +
 //									"' by an expression. But this has already been asked by metaobject annotation '" +
-//									messageSendExpr.getCyanMetaobjectAnnotationThatReplacedMSbyExpr().getCyanMetaobject().getName() + "'" +
-//									" at line " + messageSendExpr.getCyanMetaobjectAnnotationThatReplacedMSbyExpr().getFirstSymbol().getLineNumber() +
-//									" of prototype " + messageSendExpr.getCyanMetaobjectAnnotationThatReplacedMSbyExpr().getPackageOfAnnotation() + "." +
-//									messageSendExpr.getCyanMetaobjectAnnotationThatReplacedMSbyExpr().getPackageOfAnnotation());
+//									messageSendExpr.getCyanAnnotationThatReplacedMSbyExpr().getCyanMetaobject().getName() + "'" +
+//									" at line " + messageSendExpr.getCyanAnnotationThatReplacedMSbyExpr().getFirstSymbol().getLineNumber() +
+//									" of prototype " + messageSendExpr.getCyanAnnotationThatReplacedMSbyExpr().getPackageOfAnnotation() + "." +
+//									messageSendExpr.getCyanAnnotationThatReplacedMSbyExpr().getPackageOfAnnotation());
 //						}
 //						else {
 //							env.warning(symForError, "Metaobject annotation '" + cyanMetaobject.getName() +
@@ -982,7 +988,7 @@ public class MetaInfoServer {
 //
 //					env.replaceStatementByCode(messageSendExpr, annotation, sb, typeOfCode);
 //
-//					messageSendExpr.setCyanMetaobjectAnnotationThatReplacedMSbyExpr(annotation);
+//					messageSendExpr.setCyanAnnotationThatReplacedMSbyExpr(annotation);
 //
 //					return typeOfCode;
 //				}
@@ -997,7 +1003,7 @@ public class MetaInfoServer {
 
 
 	/**
-	 * A metaobject attached to a method may implement IActionMessageSend_dsa and
+	 * A metaobject attached to a method may implement IActionMessageSend_semAn and
 	 * a method of the list allMethodSignatureList may be called in a message send
 	 * <code>messageSendExpr</code>.
 	   @param ms
@@ -1019,26 +1025,28 @@ public class MetaInfoServer {
 			List<AnnotationAt> otherList = null;
 			if ( ms.getMethod() != null ) {
 				// a method of a prototype
-				otherList = ms.getMethod().getAttachedMetaobjectAnnotationList();
+				otherList = ms.getMethod().getAttachedAnnotationList();
 			}
 			else {
 				// a method of an interface
-				otherList = ms.getAttachedMetaobjectAnnotationList();
+				otherList = ms.getAttachedAnnotationList();
 			}
 			if ( otherList != null ) {
 				list.addAll(otherList);
 			}
 		}
 		Type toBeReturned = originalType;
-		WrProgramUnit lastProgramUnitWhereAnnotWithCodeReplacementWasFound = null;
+		WrPrototype lastPrototypeWhereAnnotWithCodeReplacementWasFound = null;
 		AnnotationAt lastAnnotWhereAnnotWithCodeReplacementWasFound = null;
 		for (final AnnotationAt annotation : list ) {
 			final CyanMetaobjectAtAnnot cyanMetaobject = annotation.getCyanMetaobject();
 			_CyanMetaobjectAtAnnot other = (_CyanMetaobjectAtAnnot ) cyanMetaobject.getMetaobjectInCyan();
-			if ( cyanMetaobject instanceof IActionMessageSend_dsa ||
-					(other != null && other instanceof _IActionMessageSend__dsa) ) {
+			if ( cyanMetaobject instanceof IActionMessageSend_semAn
+					||
+					(other != null && other instanceof _IActionMessageSend__semAn)
+					) {
 
-				WrProgramUnit puWhereAnnotWasFound = null;
+				WrPrototype puWhereAnnotWasFound = null;
 
 				IDeclaration dec = annotation.getDeclaration();
 				if ( dec instanceof WrMethodDec ) {
@@ -1046,7 +1054,7 @@ public class MetaInfoServer {
 				}
 				else {
 					env.error(symForError, "Internal error: annotations whose class implement "
-							+ "IActionMessageSend_dsa should only be attached to methods");
+							+ "IActionMessageSend_semAn should only be attached to methods");
 					return null;
 				}
 
@@ -1057,17 +1065,17 @@ public class MetaInfoServer {
 				StringBuffer sb = null;
 				try {
 					if ( other == null ) {
-						final IActionMessageSend_dsa doesNot = (IActionMessageSend_dsa ) cyanMetaobject;
+						final IActionMessageSend_semAn doesNot = (IActionMessageSend_semAn ) cyanMetaobject;
 						if ( messageSendExpr instanceof ExprMessageSendWithKeywordsToExpr ) {
-							codeType = doesNot.dsa_analyzeReplaceKeywordMessage(
+							codeType = doesNot.semAn_analyzeReplaceKeywordMessage(
 											((ExprMessageSendWithKeywordsToExpr ) messageSendExpr).getI(), env.getI());
 						}
 						else if ( messageSendExpr instanceof ExprMessageSendUnaryChainToExpr ) {
-							codeType = doesNot.dsa_analyzeReplaceUnaryMessage(
+							codeType = doesNot.semAn_analyzeReplaceUnaryMessage(
 											((ExprMessageSendUnaryChainToExpr ) messageSendExpr).getI(), env.getI());
 						}
 						else if ( messageSendExpr instanceof ExprIdentStar ) {
-							codeType = doesNot.dsa_analyzeReplaceUnaryMessageWithoutSelf(
+							codeType = doesNot.semAn_analyzeReplaceUnaryMessageWithoutSelf(
 									((ExprIdentStar ) messageSendExpr).getI(), env.getI());
 						}
 						else {
@@ -1082,7 +1090,7 @@ public class MetaInfoServer {
 						if ( messageSendExpr instanceof ExprMessageSendWithKeywordsToExpr ) {
 
 							_Tuple_LT_GP_CyString_GP_CyString_GP_CyString_GT tdd =
-							    ((_IActionMessageSend__dsa ) other)._dsa__analyzeReplaceKeywordMessage_2(
+							    ((_IActionMessageSend__semAn ) other)._semAn__analyzeReplaceKeywordMessage_2(
 											((ExprMessageSendWithKeywordsToExpr ) messageSendExpr).getI(), env.getI());
 							Object f1 = tdd._f1();
 							Object f2 = tdd._f2();
@@ -1102,7 +1110,7 @@ public class MetaInfoServer {
 						}
 						else if ( messageSendExpr instanceof ExprMessageSendUnaryChainToExpr ) {
 							_Tuple_LT_GP_CyString_GP_CyString_GP_CyString_GT tdd =
-								    ((_IActionMessageSend__dsa ) other)._dsa__analyzeReplaceUnaryMessage_2(
+								    ((_IActionMessageSend__semAn ) other)._semAn__analyzeReplaceUnaryMessage_2(
 												((ExprMessageSendUnaryChainToExpr ) messageSendExpr).getI(), env.getI());
 							CyString f1 = tdd._f1();
 							CyString f2 = tdd._f2();
@@ -1118,7 +1126,7 @@ public class MetaInfoServer {
 						}
 						else if ( messageSendExpr instanceof ExprIdentStar ) {
 							_Tuple_LT_GP_CyString_GP_CyString_GP_CyString_GT tdd =
-								    ((_IActionMessageSend__dsa ) other)._dsa__analyzeReplaceUnaryMessageWithoutSelf_2(
+								    ((_IActionMessageSend__semAn ) other)._semAn__analyzeReplaceUnaryMessageWithoutSelf_2(
 												((ExprIdentStar ) messageSendExpr).getI(), env.getI());
 							CyString f1 = tdd._f1();
 							CyString f2 = tdd._f2();
@@ -1159,11 +1167,11 @@ public class MetaInfoServer {
 					/*
 					 * error when two annotations of the same prototype try to replace the
 					 *       message passing. That means
-					 *          lastProgramUnitWhereAnnotWithCodeReplacementWasFound ==
+					 *          lastPrototypeWhereAnnotWithCodeReplacementWasFound ==
 					 *             puWhereAnnotWasFound
 					 *
 					 */
-					if ( lastProgramUnitWhereAnnotWithCodeReplacementWasFound ==
+					if ( lastPrototypeWhereAnnotWithCodeReplacementWasFound ==
 							 puWhereAnnotWasFound ) {
 						env.error(symForError, "Two annotations attached to the same method are "
 								+ "trying to replace a message passing. They are:\n" +
@@ -1171,7 +1179,7 @@ public class MetaInfoServer {
 								lastAnnotWhereAnnotWithCodeReplacementWasFound.getCyanMetaobject().getName() +
 								"' of line " + lastAnnotWhereAnnotWithCodeReplacementWasFound.getFirstSymbol().getLineNumber() +
 								" of prototype '" +
-								lastProgramUnitWhereAnnotWithCodeReplacementWasFound.getFullName() +
+								lastPrototypeWhereAnnotWithCodeReplacementWasFound.getFullName() +
 								"'\n" +
 								"    b) annotation '" +
 								annotation.getCyanMetaobject().getName() +
@@ -1181,7 +1189,7 @@ public class MetaInfoServer {
 								);
 						return null;
 					}
-					if ( lastProgramUnitWhereAnnotWithCodeReplacementWasFound == null ) {
+					if ( lastPrototypeWhereAnnotWithCodeReplacementWasFound == null ) {
 						/*
 						 * this is the first annotation that is trying to replace
 						 * the message passing. Let it replace it. The second one
@@ -1189,7 +1197,7 @@ public class MetaInfoServer {
 						 * in the same prototype as the first one, an error is issued
 						 * just above. If it is in a superprototype, it is just ignored.
 						 */
-						lastProgramUnitWhereAnnotWithCodeReplacementWasFound = puWhereAnnotWasFound;
+						lastPrototypeWhereAnnotWithCodeReplacementWasFound = puWhereAnnotWasFound;
 						lastAnnotWhereAnnotWithCodeReplacementWasFound = annotation;
 						sb = codeType.f1;
 
@@ -1197,17 +1205,17 @@ public class MetaInfoServer {
 							/*
 							 * this message send has already been replaced by another expression
 							 */
-							if ( messageSendExpr.getCyanMetaobjectAnnotationThatReplacedMSbyExpr() != null ) {
+							if ( messageSendExpr.getCyanAnnotationThatReplacedMSbyExpr() != null ) {
 								env.warning(symForError, "Metaobject annotation '" + cyanMetaobject.getName() +
 										"' at line " + annotation.getFirstSymbol().getLineNumber()  +
 										" of prototype " + annotation.getPackageOfAnnotation() + "." +
 										annotation.getPackageOfAnnotation() +
 										" is trying to replace message send '" + messageSendExpr.asString() +
 										"' by an expression. But this has already been asked by metaobject annotation '" +
-										messageSendExpr.getCyanMetaobjectAnnotationThatReplacedMSbyExpr().getCyanMetaobject().getName() + "'" +
-										" at line " + messageSendExpr.getCyanMetaobjectAnnotationThatReplacedMSbyExpr().getFirstSymbol().getLineNumber() +
-										" of prototype " + messageSendExpr.getCyanMetaobjectAnnotationThatReplacedMSbyExpr().getPackageOfAnnotation() + "." +
-										messageSendExpr.getCyanMetaobjectAnnotationThatReplacedMSbyExpr().getPackageOfAnnotation());
+										messageSendExpr.getCyanAnnotationThatReplacedMSbyExpr().getCyanMetaobject().getName() + "'" +
+										" at line " + messageSendExpr.getCyanAnnotationThatReplacedMSbyExpr().getFirstSymbol().getLineNumber() +
+										" of prototype " + messageSendExpr.getCyanAnnotationThatReplacedMSbyExpr().getPackageOfAnnotation() + "." +
+										messageSendExpr.getCyanAnnotationThatReplacedMSbyExpr().getPackageOfAnnotation());
 							}
 							else {
 								env.warning(symForError, "Metaobject annotation '" + cyanMetaobject.getName() +
@@ -1244,7 +1252,7 @@ public class MetaInfoServer {
 
 						env.replaceStatementByCode(messageSendExpr, annotation, sb, typeOfCode);
 
-						messageSendExpr.setCyanMetaobjectAnnotationThatReplacedMSbyExpr(annotation);
+						messageSendExpr.setCyanAnnotationThatReplacedMSbyExpr(annotation);
 
 						toBeReturned = typeOfCode;
 						// return typeOfCode;

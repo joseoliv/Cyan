@@ -3,8 +3,8 @@ package meta.cyanLang;
 import meta.AnnotationArgumentsKind;
 import meta.CyanMetaobjectLiteralObject;
 import meta.CyanMetaobjectAtAnnot;
-import meta.IAction_dsa;
-import meta.ICompiler_dsa;
+import meta.IAction_semAn;
+import meta.ICompiler_semAn;
 import meta.MetaHelper;
 import meta.WrAnnotationAt;
 
@@ -21,7 +21,7 @@ import meta.WrAnnotationAt;
  *
    @author jose
  */
-public class CyanMetaobjectExtract extends CyanMetaobjectAtAnnot implements IAction_dsa {
+public class CyanMetaobjectExtract extends CyanMetaobjectAtAnnot implements IAction_semAn {
 
 	public CyanMetaobjectExtract() {
 		super("extract", AnnotationArgumentsKind.OneParameter);
@@ -29,8 +29,8 @@ public class CyanMetaobjectExtract extends CyanMetaobjectAtAnnot implements IAct
 
 
 	@Override
-	public StringBuffer dsa_codeToAdd(ICompiler_dsa compiler_dsa)  {
-		final WrAnnotationAt annotation = this.getMetaobjectAnnotation();
+	public StringBuffer semAn_codeToAdd(ICompiler_semAn compiler_semAn)  {
+		final WrAnnotationAt annotation = this.getAnnotation();
 		final Object first = annotation.getJavaParameterList().get(0);
 		boolean error = false;
 		if ( ! (first instanceof String) ) {

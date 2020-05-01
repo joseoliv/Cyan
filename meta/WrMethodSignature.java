@@ -7,7 +7,7 @@ import ast.InterfaceDec;
 import ast.MethodSignature;
 
 public abstract class WrMethodSignature extends WrASTNode
-       implements IDeclarationWritable, ISlotInterface {
+       implements IDeclarationWritable, ISlotSignature {
 
 
 
@@ -43,7 +43,7 @@ public abstract class WrMethodSignature extends WrASTNode
 		return ((MethodSignature ) this.getHidden()).getFunctionName();
 	}
 
-	public WrProgramUnit getDeclaringInterface() {
+	public WrPrototype getDeclaringInterface() {
 		InterfaceDec id = ((MethodSignature ) this.getHidden()).getDeclaringInterface();
 		return id == null ? null : id.getI();
 	}
@@ -51,9 +51,9 @@ public abstract class WrMethodSignature extends WrASTNode
 	abstract public void accept(WrASTVisitor visitor, WrEnv env);
 
 
-	public List<WrAnnotationAt> getAttachedMetaobjectAnnotationList() {
+	public List<WrAnnotationAt> getAttachedAnnotationList() {
 		List<AnnotationAt> annotList =
-				((MethodSignature ) this.getHidden()).getAttachedMetaobjectAnnotationList();
+				((MethodSignature ) this.getHidden()).getAttachedAnnotationList();
 		List<WrAnnotationAt> wrAnnotList = new ArrayList<>();
 		if ( annotList != null ) {
 				for ( final AnnotationAt m : annotList ) {

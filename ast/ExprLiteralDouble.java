@@ -5,9 +5,9 @@ package ast;
 
 import lexer.Symbol;
 import lexer.SymbolDoubleLiteral;
-import meta.WrExprLiteralDouble;
 import meta.MetaHelper;
 import meta.Token;
+import meta.WrExprLiteralDouble;
 import saci.Env;
 
 /**
@@ -21,12 +21,12 @@ public class ExprLiteralDouble extends ExprLiteralNumber {
 	/**
 	 * @param symbol
 	 */
-	public ExprLiteralDouble(Symbol symbol) {
-		super(symbol);
+	public ExprLiteralDouble(Symbol symbol, MethodDec currentMethod) {
+		super(symbol, currentMethod);
 	}
 
-	public ExprLiteralDouble(Symbol symbol, Symbol prefix) {
-		super(symbol);
+	public ExprLiteralDouble(Symbol symbol, Symbol prefix, MethodDec currentMethod) {
+		super(symbol, currentMethod);
 		this.prefix = prefix;
 	}
 

@@ -3,10 +3,11 @@ package meta.cyanLang;
 import java.util.List;
 import ast.AnnotationAt;
 import meta.AnnotationArgumentsKind;
+import meta.AttachedDeclarationKind;
 import meta.CyanMetaobject;
 import meta.CyanMetaobjectAtAnnot;
-import meta.IActionAttachedType_dsa;
-import meta.ICompiler_dsa;
+import meta.IActionAttachedType_semAn;
+import meta.ICompiler_semAn;
 import meta.LeftHandSideKind;
 import meta.MetaHelper;
 import meta.WrAnnotationAt;
@@ -20,15 +21,15 @@ import meta.WrType;
 import meta.WrTypeWithAnnotations;
 
 public class CyanMetaobjectAttachedTypeRange
-		extends CyanMetaobjectAtAnnot implements IActionAttachedType_dsa {
+		extends CyanMetaobjectAtAnnot implements IActionAttachedType_semAn {
 
 	public CyanMetaobjectAttachedTypeRange() {
-		super("range", AnnotationArgumentsKind.OneOrMoreParameters);
+		super("range", AnnotationArgumentsKind.OneOrMoreParameters, new AttachedDeclarationKind[] { AttachedDeclarationKind.TYPE });
 	}
 
 
 	@Override public void check() {
-		final List<Object> paramList = this.getMetaobjectAnnotation().getJavaParameterList();
+		final List<Object> paramList = this.getAnnotation().getJavaParameterList();
 		if ( paramList.size() != 2 ) {
 			this.addError("This metaobject should take two elements");
 		}
@@ -53,7 +54,7 @@ public class CyanMetaobjectAttachedTypeRange
 
 	@Override
 	public void checkAnnotation() {
-		final WrAnnotationAt annot = this.getMetaobjectAnnotation();
+		final WrAnnotationAt annot = this.getAnnotation();
 		if ( ! typeNameLimits.equals(annot.getTypeAttached().getName()) ) {
 			this.addError("The type of the limits is '" + this.typeNameLimits +
 					"' and the type itself is " + annot.getTypeAttached().getName());
@@ -61,7 +62,7 @@ public class CyanMetaobjectAttachedTypeRange
 	}
 
 	@Override
-	public StringBuffer dsa_checkLeftTypeChangeRightExpr(ICompiler_dsa compiler_dsa, WrType leftType, Object leftASTNode,
+	public StringBuffer semAn_checkLeftTypeChangeRightExpr(ICompiler_semAn compiler_semAn, WrType leftType, Object leftASTNode,
 			LeftHandSideKind leftKind,
 			WrType rightType, WrExpr rightExpr) {
 
@@ -167,7 +168,7 @@ public class CyanMetaobjectAttachedTypeRange
 				}
 
 				final String msg = "In line " + rightExpr.getFirstSymbol().getLineNumber() + " of file '"
-						 + CyanMetaobject.escapeString(compiler_dsa.getEnv().getCurrentCompilationUnit().getFullFileNamePath()) +
+						 + CyanMetaobject.escapeString(compiler_semAn.getEnv().getCurrentCompilationUnit().getFullFileNamePath()) +
 						 "' expression '" + rightExpr.asString() + "' should be between " + firstStr + " and " + lastStr +
 						 " Its value is $" + tmpVar;
 				sb.append("({ (: " + typeNameLimits + " " + tmpVar + " :) \r\n" +

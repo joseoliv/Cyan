@@ -2,10 +2,10 @@ package ast;
 
 import java.util.List;
 import cyan.reflect._CyanMetaobject;
-import cyan.reflect._IActionAttachedType__dsa;
+import cyan.reflect._IActionAttachedType__semAn;
 import meta.AttachedDeclarationKind;
 import meta.CyanMetaobject;
-import meta.IActionAttachedType_dsa;
+import meta.IActionAttachedType_semAn;
 import meta.WrType;
 import meta.WrTypeWithAnnotations;
 import saci.Env;
@@ -36,10 +36,10 @@ public class TypeWithAnnotations extends Type {
 				CyanMetaobject metaobject =  annot.getCyanMetaobject();
 				_CyanMetaobject  other = metaobject.getMetaobjectInCyan();
 				if ( other == null ) {
-					((IActionAttachedType_dsa ) metaobject).checkAnnotation();
+					((IActionAttachedType_semAn ) metaobject).checkAnnotation();
 				}
 				else {
-					((_IActionAttachedType__dsa ) other)._checkAnnotation();
+					((_IActionAttachedType__semAn ) other)._checkAnnotation();
 				}
 			}
 			catch ( error.CompileErrorException e ) {

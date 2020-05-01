@@ -25,10 +25,9 @@ public class StatementReturn extends Statement {
 
 
 	public StatementReturn(Symbol returnSymbol, Expr expr, MethodDec currentMethod) {
-		super(false);
+		super(currentMethod, false);
 		this.expr = expr;
 		this.returnSymbol = returnSymbol;
-		this.currentMethod = currentMethod;
 	}
 
 	@Override
@@ -111,11 +110,11 @@ public class StatementReturn extends Statement {
 					catch ( final error.CompileErrorException e ) {
 					}
 					catch ( final NoClassDefFoundError e ) {
-						final Annotation annotation = meta.GetHiddenItem.getHiddenCyanMetaobjectAnnotation(((CyanMetaobjectAtAnnot) changeCyanMetaobject).getMetaobjectAnnotation());
+						final Annotation annotation = meta.GetHiddenItem.getHiddenCyanAnnotation(((CyanMetaobjectAtAnnot) changeCyanMetaobject).getAnnotation());
 						env.error(annotation.getFirstSymbol(), e.getMessage() + " " + NameServer.messageClassNotFoundException);
 					}
 					catch ( final RuntimeException e ) {
-						final Annotation annotation = meta.GetHiddenItem.getHiddenCyanMetaobjectAnnotation(((CyanMetaobjectAtAnnot) changeCyanMetaobject).getMetaobjectAnnotation());
+						final Annotation annotation = meta.GetHiddenItem.getHiddenCyanAnnotation(((CyanMetaobjectAtAnnot) changeCyanMetaobject).getAnnotation());
 						env.thrownException(annotation, annotation.getFirstSymbol(), e);
 					}
 					finally {
@@ -159,14 +158,14 @@ public class StatementReturn extends Statement {
 
 			/*
 			if ( exprType instanceof TypeJavaRef ) {
-				if ( methodReturnType.getInsideType() instanceof ProgramUnit ) {
+				if ( methodReturnType.getInsideType() instanceof Prototype ) {
 					// cast Java to Cyan
 					String javaClass = exprType.getName();
 					tmpVar = "new " + NameServer.cyanNameFromJavaBasicType(javaClass) + "(" + tmpVar + ")";
 				}
 			}
 			else if ( methodReturnType instanceof TypeJavaRef ) {
-				if ( exprType.getInsideType() instanceof ProgramUnit ) {
+				if ( exprType.getInsideType() instanceof Prototype ) {
 					// cast Cyan to Java
 					tmpVar = tmpVar + "." + NameServer.getFieldBasicType( exprType.getName() );
 				}
@@ -232,6 +231,5 @@ public class StatementReturn extends Statement {
 
 	private final Symbol returnSymbol;
 	private final Expr expr;
-	private final MethodDec currentMethod;
 
 }

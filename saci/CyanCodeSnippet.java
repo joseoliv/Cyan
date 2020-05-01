@@ -14,7 +14,7 @@ import cyan.lang.CyString;
 import cyan.lang._ExceptionStr;
 import cyanruntime.ExceptionContainer__;
 import error.CompileErrorException;
-import meta.ICompiler_dpa;
+import meta.ICompiler_parsing;
 import meta.InterpretationErrorException;
 import meta.MetaHelper;
 import meta.Token;
@@ -124,7 +124,7 @@ public class CyanCodeSnippet {
     			return null;
     		}
     		text[cyanCode.length()] = '\0';
-    		final ICompiler_dpa cp = CompilerManager.getCompilerToInternalDSL(text, "anonymous source code",
+    		final ICompiler_parsing cp = CompilerManager.getCompilerToInternalDSL(text, "anonymous source code",
     				"anonymousPackage\\anonymous source code",
     				cyanPackage.getI());
     		cp.setParsingForInterpreter(true);
@@ -175,21 +175,21 @@ public class CyanCodeSnippet {
 		return null;
 	}
 
-	public static List<WrStatement> parseCyanCodeShell(ICompiler_dpa compiler_dpa) {
+	public static List<WrStatement> parseCyanCodeShell(ICompiler_parsing compiler_parsing) {
 		final List<WrStatement> statList = new ArrayList<>();
-		while ( compiler_dpa.getSymbol().token != Token.EOLO ) {
-			if ( compiler_dpa.getSymbol().token == Token.IMPORT ) {
-				importPackages(compiler_dpa, statList);
+		while ( compiler_parsing.getSymbol().token != Token.EOLO ) {
+			if ( compiler_parsing.getSymbol().token == Token.IMPORT ) {
+				importPackages(compiler_parsing, statList);
 			}
-			WrStatement lastStat = compiler_dpa.statement();
+			WrStatement lastStat = compiler_parsing.statement();
 			statList.add(lastStat);
-			compiler_dpa.removeLastExprStat();
+			compiler_parsing.removeLastExprStat();
 			if ( lastStat.demandSemicolon() ) {
-				if ( compiler_dpa.getSymbol().token == Token.SEMICOLON ) {
-					compiler_dpa.next();
+				if ( compiler_parsing.getSymbol().token == Token.SEMICOLON ) {
+					compiler_parsing.next();
 				}
 				else {
-					WrSymbol sym = compiler_dpa.getSymbol();
+					WrSymbol sym = compiler_parsing.getSymbol();
 					if ( sym.token == Token.EOF || sym.token == Token.EOLO ) {
 						sym = lastStat.getFirstSymbol();
 					}
@@ -257,7 +257,7 @@ public class CyanCodeSnippet {
 	}
 
 
-	static public void importPackages(ICompiler_dpa cp, List<WrStatement> statList) {
+	static public void importPackages(ICompiler_parsing cp, List<WrStatement> statList) {
 
 		while ( cp.getSymbol().token == Token.IMPORT ) {
 			cp.next();
@@ -275,7 +275,8 @@ public class CyanCodeSnippet {
 						cp.error(importPackage.getFirstSymbol(), "It is not legal to have a package that starts with 'cyan.lang'");
 					}
 				}
-				statList.add( (new StatementImport( (ExprIdentStar ) meta.GetHiddenItem.getHiddenExpr(importPackage))).getI() );
+				statList.add( (new StatementImport( (ExprIdentStar ) meta.GetHiddenItem.getHiddenExpr(importPackage),
+						null)).getI() );
 			}
 			if ( cp.getSymbol().token == Token.SEMICOLON )
 				cp.next();

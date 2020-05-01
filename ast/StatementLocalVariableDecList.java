@@ -21,8 +21,8 @@ import saci.Env;
 public class StatementLocalVariableDecList extends Statement // implements IDeclaration
 {
 
-	public StatementLocalVariableDecList(Symbol firstSymbol) {
-		super();
+	public StatementLocalVariableDecList(Symbol firstSymbol, MethodDec method) {
+		super(method);
 		this.firstSymbol = firstSymbol;
 		localVariableDecList = new ArrayList<StatementLocalVariableDec>();
 	}
@@ -71,8 +71,8 @@ public class StatementLocalVariableDecList extends Statement // implements IDecl
 
 	@Override
 	public void genCyanReal(PWInterface pw, boolean printInMoreThanOneLine, CyanEnv cyanEnv, boolean genFunctions) {
-		if ( beforeMetaobjectAnnotation != null ) {
-			beforeMetaobjectAnnotation.genCyan(pw, printInMoreThanOneLine, cyanEnv, genFunctions);
+		if ( beforeAnnotation != null ) {
+			beforeAnnotation.genCyan(pw, printInMoreThanOneLine, cyanEnv, genFunctions);
 		}
 		if ( localVariableDecList.get(0).isReadonly() )
 			pw.print("let ");
@@ -96,8 +96,8 @@ public class StatementLocalVariableDecList extends Statement // implements IDecl
 
 	@Override
 	public Symbol getFirstSymbol() {
-		if ( beforeMetaobjectAnnotation != null ) {
-			return beforeMetaobjectAnnotation.getFirstSymbol();
+		if ( beforeAnnotation != null ) {
+			return beforeAnnotation.getFirstSymbol();
 		}
 		else
 			return firstSymbol;
@@ -107,8 +107,8 @@ public class StatementLocalVariableDecList extends Statement // implements IDecl
 	@Override
 	public void calcInternalTypes(Env env) {
 
-		if ( beforeMetaobjectAnnotation != null ) {
-			beforeMetaobjectAnnotation.calcInternalTypes(env);
+		if ( beforeAnnotation != null ) {
+			beforeAnnotation.calcInternalTypes(env);
 
 		}
 		for( StatementLocalVariableDec statementLocalVariableDec : localVariableDecList )
@@ -117,8 +117,8 @@ public class StatementLocalVariableDecList extends Statement // implements IDecl
 
 	}
 
-	public AnnotationAt getBeforeMetaobjectAnnotation() {
-		return beforeMetaobjectAnnotation;
+	public AnnotationAt getBeforeAnnotation() {
+		return beforeAnnotation;
 	}
 
 
@@ -127,14 +127,14 @@ public class StatementLocalVariableDecList extends Statement // implements IDecl
 	private List<StatementLocalVariableDec> localVariableDecList;
 
 
-	public void setBeforeMetaobjectAnnotation(AnnotationAt beforeMetaobjectAnnotation) {
-		this.beforeMetaobjectAnnotation = beforeMetaobjectAnnotation;
+	public void setBeforeAnnotation(AnnotationAt beforeAnnotation) {
+		this.beforeAnnotation = beforeAnnotation;
 	}
 
 	/**
 	 * metaobject annotation that precedes this local variable declaration
 	 */
-	private AnnotationAt beforeMetaobjectAnnotation;
+	private AnnotationAt beforeAnnotation;
 
 
 

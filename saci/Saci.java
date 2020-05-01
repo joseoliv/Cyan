@@ -28,7 +28,7 @@ import ast.CompilationUnitSuper;
 import ast.CyanPackage;
 import ast.EvalEnv;
 import ast.Program;
-import ast.ProgramUnit;
+import ast.Prototype;
 import ast.Statement;
 import ast.Type;
 import ast.TypeDynamic;
@@ -61,13 +61,13 @@ import meta.Function0;
 import meta.ICodeg;
 import meta.ICommunicateInPrototype_ded;
 import meta.MetaHelper;
-import meta.SourceCodeChangeByMetaobjectAnnotation;
+import meta.SourceCodeChangeByAnnotation;
 import meta.Tuple2;
 import meta.Tuple3;
 import meta.Tuple4;
 import meta.WrAnnotation;
 import meta.WrAnnotationAt;
-import meta.WrProgramUnit;
+import meta.WrPrototype;
 import meta.WrType;
 import meta.WrTypeDynamic;
 import metaRealClasses.Compiler_ded;
@@ -162,7 +162,7 @@ public class Saci  {
 			  // probably an internal error
 			return null;
 		}
-		final WrAnnotation annot = cyanMetaobject.getMetaobjectAnnotation();
+		final WrAnnotation annot = cyanMetaobject.getAnnotation();
 		if ( annot instanceof WrAnnotationAt ) {
 			return eventCodegMenu( (WrAnnotationAt ) annot );
 		}
@@ -232,7 +232,7 @@ public class Saci  {
 
 		/*
 		CompilationUnit compUnit = this.getLastCompilationUnitParsed();
-		ProgramUnit pu = null;
+		Prototype pu = null;
 		ObjectDec prototype = null;
 		if ( compUnit != null ) {
 			pu = compUnit.getPublicPrototype();
@@ -312,7 +312,7 @@ public class Saci  {
 		else {
 			newFirstParameter = ((_ICodeg ) other)._getNewFirstParameter().s;
 		}
-		final String filename = codegAnnotation.filenameMetaobjectAnnotationInfo(newFirstParameter);
+		final String filename = codegAnnotation.filenameAnnotationInfo(newFirstParameter);
 
 
 		if ( filename == null ) {
@@ -619,9 +619,9 @@ public class Saci  {
 		 */
 		compilerManager.setCompilationStep(CompilationStep.step_1);
 		compInstSet = new HashSet<>();
-		compInstSet.add(CompilationInstruction.dpa_actions);
+		compInstSet.add(CompilationInstruction.parsing_actions);
 		compInstSet.add(CompilationInstruction.pp_addCode);
-		compInstSet.add(CompilationInstruction.dpa_originalSourceCode);
+		compInstSet.add(CompilationInstruction.parsing_originalSourceCode);
 
 
 		/*
@@ -1143,9 +1143,9 @@ public class Saci  {
 		 */
 		compilerManager.setCompilationStep(CompilationStep.step_1);
 		final HashSet<meta.CompilationInstruction> compInstSet = new HashSet<>();
-		compInstSet.add(CompilationInstruction.dpa_actions);
+		compInstSet.add(CompilationInstruction.parsing_actions);
 		compInstSet.add(CompilationInstruction.pp_addCode);
-		compInstSet.add(CompilationInstruction.dpa_originalSourceCode);
+		compInstSet.add(CompilationInstruction.parsing_originalSourceCode);
 
 		Env env = new Env(project);
 
@@ -1174,7 +1174,7 @@ public class Saci  {
 
 			program.calcInterfaceTypes(env);
 
-			TM.endTime("after ti");
+			TM.endTime("after resTypes");
 			if (  env.isThereWasError() ) {
     			printErrorList(printWriter, env);
     		}
@@ -1186,20 +1186,20 @@ public class Saci  {
         		compilerManager.setCompilationStep(CompilationStep.step_3);
 
     			compInstSet.clear();
-        		compInstSet.add(CompilationInstruction.afti_actions);
+        		compInstSet.add(CompilationInstruction.afterResTypes_actions);
     			env.setCompInstSet(compInstSet);
-    			if ( ! program.afti_actions(env) ) {
+    			if ( ! program.afterResTypes_actions(env) ) {
         			printErrorList(printWriter, env);
         		}
         		else {
         			/*
         			 * step 4
         			 */
-        			TM.endTime("after afti actions");
+        			TM.endTime("after AF_RES_TYPES actions");
             		compilerManager.setCompilationStep(CompilationStep.step_4);
 
         			compInstSet.clear();
-            		compInstSet.add(CompilationInstruction.dpa_actions);
+            		compInstSet.add(CompilationInstruction.parsing_actions);
             		compInstSet.add(CompilationInstruction.new_addCode);
             		/*
             		 * reset the state of all compilation units so to clear any traces
@@ -1231,7 +1231,7 @@ public class Saci  {
 
 
             			program.calcInterfaceTypes(env);
-            			TM.endTime("after second ti");
+            			TM.endTime("after second resTypes");
             			if ( env.isThereWasError() ) {
                 			printErrorList(printWriter, env);
                 		}
@@ -1243,20 +1243,20 @@ public class Saci  {
 
                     		compilerManager.setCompilationStep(CompilationStep.step_6);
                 			compInstSet.clear();
-                    		compInstSet.add(CompilationInstruction.dsa_actions);
+                    		compInstSet.add(CompilationInstruction.semAn_actions);
                     		env.setCompInstSet(compInstSet);
                 			program.calcInternalTypes(env);
-                			TM.endTime("after dsa");
+                			TM.endTime("after SEM_AN");
 
                 			if ( env.isThereWasError() ) {
                     			printErrorList(printWriter, env);
                     		}
                     		else {
 
-                    			//  execute the dsa actions
+                    			//  execute the SEM_AN actions
 
-                    			env.dsa_actions();
-                    			TM.endTime("after dsa_actions");
+                    			env.semAn_actions();
+                    			TM.endTime("after semAn_actions");
 
                     			/*
                     			 * step 7
@@ -1292,7 +1292,7 @@ public class Saci  {
                 	        		}
                         			program.calcInterfaceTypes(env);
 
-                        			TM.endTime("after second ti");
+                        			TM.endTime("after second resTypes");
 
                         			if ( env.isThereWasError() ) {
                             			printErrorList(printWriter, env);
@@ -1305,19 +1305,19 @@ public class Saci  {
 
                                 		compInstSet.clear();
                             			compInstSet.add(CompilationInstruction.matchExpectedCompilationErrors);
-                            			compInstSet.add(CompilationInstruction.dsa_check);
+                            			compInstSet.add(CompilationInstruction.semAn_check);
                                 		env.setCompInstSet(compInstSet);
 
                                 		program.calcInternalTypes(env);
-                            			TM.endTime("after third ti");
+                            			TM.endTime("after third resTypes");
 
 
                             			if ( env.isThereWasError() ) {
                                 			printErrorList(printWriter, env);
                                 		}
                                 		else {
-                                			program.afsa_check(env);
-                                			TM.endTime("after afsa_check");
+                                			program.afterSemAn_check(env);
+                                			TM.endTime("after afterSemAn_check");
 
                                 			/**
                                 			 * check if any metaobject that implements interface 'IInformCompilationError'
@@ -1587,26 +1587,26 @@ public class Saci  {
 			if ( aPackage.getPackageName().compareTo("cyan.lang") == 0 ) {
 				found = true;
 				for ( final CompilationUnit compilationUnit : aPackage.getCompilationUnitList() ) {
-					for ( final ProgramUnit programUnit : compilationUnit.getProgramUnitList() ) {
-						switch ( programUnit.getName() ) {
-						case "Byte"    : Type.Byte = programUnit; WrType.Byte = WrProgramUnit.factory(programUnit); break;
-						case "Short"   : Type.Short = programUnit; WrType.Short = WrProgramUnit.factory(programUnit); break;
-						case "Int"     : Type.Int = programUnit; WrType.Int = WrProgramUnit.factory(programUnit); break;
-						case "Long"    : Type.Long = programUnit; WrType.Long = WrProgramUnit.factory(programUnit); break;
-						case "Float"   : Type.Float = programUnit; WrType.Float = WrProgramUnit.factory(programUnit); break;
-						case "Double"  : Type.Double = programUnit; WrType.Double = WrProgramUnit.factory(programUnit); break;
-						case "Char"    : Type.Char = programUnit; WrType.Char = WrProgramUnit.factory(programUnit); break;
-						case "Boolean" : Type.Boolean = programUnit; WrType.Boolean = WrProgramUnit.factory(programUnit); break;
-						// case "CySymbol" : Type.CySymbol = programUnit; break;
-						case "String"  : Type.String = programUnit; WrType.String = WrProgramUnit.factory(programUnit); break;
-						case "Any"     : Type.Any = programUnit; WrType.Any = WrProgramUnit.factory(programUnit); break;
+					for ( final Prototype prototype : compilationUnit.getPrototypeList() ) {
+						switch ( prototype.getName() ) {
+						case "Byte"    : Type.Byte = prototype; WrType.Byte = WrPrototype.factory(prototype); break;
+						case "Short"   : Type.Short = prototype; WrType.Short = WrPrototype.factory(prototype); break;
+						case "Int"     : Type.Int = prototype; WrType.Int = WrPrototype.factory(prototype); break;
+						case "Long"    : Type.Long = prototype; WrType.Long = WrPrototype.factory(prototype); break;
+						case "Float"   : Type.Float = prototype; WrType.Float = WrPrototype.factory(prototype); break;
+						case "Double"  : Type.Double = prototype; WrType.Double = WrPrototype.factory(prototype); break;
+						case "Char"    : Type.Char = prototype; WrType.Char = WrPrototype.factory(prototype); break;
+						case "Boolean" : Type.Boolean = prototype; WrType.Boolean = WrPrototype.factory(prototype); break;
+						// case "CySymbol" : Type.CySymbol = prototype; break;
+						case "String"  : Type.String = prototype; WrType.String = WrPrototype.factory(prototype); break;
+						case "Any"     : Type.Any = prototype; WrType.Any = WrPrototype.factory(prototype); break;
 						case "Nil"     :
-							Type.Nil = programUnit;
-							WrType.Nil = WrProgramUnit.factory(programUnit); break;
+							Type.Nil = prototype;
+							WrType.Nil = WrPrototype.factory(prototype); break;
 
 						}
-						//if ( programUnit instanceof ObjectDec )
-						//	((ObjectDec ) programUnit).addSpecificMethods(env);
+						//if ( prototype instanceof ObjectDec )
+						//	((ObjectDec ) prototype).addSpecificMethods(env);
 					}
 				}
 			}
@@ -1989,12 +1989,12 @@ public class Saci  {
 	 * for each compilation unit there is a list of changes to be made which may be:
 	 * <ul>
       <li> change the metaobject annotation from something like "<code>{@literal @}annotation(1)</code>" to
-      <code>"{@literal @}annotation#afti(1)"</code>. That is,
+      <code>"{@literal @}annotation#afterResTypes(1)"</code>. That is,
       add a suffix or change a suffix;
       <li> add text to the compilation unit. It may be fields, methods, or
       code after a metaobject annotation;
        <li> delete text. Macro calls and literal objects such as <code>101bin</code> and <code>{@literal @}graph{% 1:2 %}</code>
-         are always removed from the source code in phase dsa.
+         are always removed from the source code in phase SEM_AN.
        </ul>
      <p>
      These changes may affect each other because each one should be made at a pre-defined position
@@ -2002,12 +2002,12 @@ public class Saci  {
      For example, suppose metaobject annotation "<code>{@literal @}annotation(1)</code>" is attached to a prototype
      <code>Test</code> of file "Test.cyan". This
      metaobject annotation adds a fields "iv0001" and "c0001" to this prototype
-     at phase afti. Before doing any changes in "Test.cyan", method {@link #makeChange} calculates the positions
+     at phase AF_RES_TYPES. Before doing any changes in "Test.cyan", method {@link #makeChange} calculates the positions
      in the file where the changes will be made. Assume "<code>{@literal @}annotation(1)</code>" is at position 45,
      the field "iv0001" should be inserted at position 150 and the field "c0001" should be added at position
      150 too. <br>
      Suppose now that {@link #makeChange} first changes "<code>{@literal @}annotation(1)</code>" to
-     <code>"{@literal @}annotation#afti(1)"</code>. Four characters were inserted and the positions where the fields
+     <code>"{@literal @}annotation#afterResTypes(1)"</code>. Four characters were inserted and the positions where the fields
      should be inserted should be changed to 154. If the code added to the field "iv0001" is
      <code>"Int iv0001\n"</code>, now the other field should be added at position 161. The size of
      <code>"Int iv0001\n"</code> is 11 characters.
@@ -2016,20 +2016,20 @@ public class Saci  {
       changes.
 	 */
 	public static void makeChanges(
-			HashMap<CompilationUnitSuper, List<SourceCodeChangeByMetaobjectAnnotation>> setOfChanges,
+			HashMap<CompilationUnitSuper, List<SourceCodeChangeByAnnotation>> setOfChanges,
 			Env env, CompilationPhase compilationPhase) {
 
-		for ( final Map.Entry<CompilationUnitSuper, List<SourceCodeChangeByMetaobjectAnnotation>> entry: setOfChanges.entrySet() ) {
+		for ( final Map.Entry<CompilationUnitSuper, List<SourceCodeChangeByAnnotation>> entry: setOfChanges.entrySet() ) {
 
-			final List<SourceCodeChangeByMetaobjectAnnotation> changeList = entry.getValue();
+			final List<SourceCodeChangeByAnnotation> changeList = entry.getValue();
 			Collections.sort(changeList);
 			final CompilationUnitSuper eachCompUnit = entry.getKey();
 
-			if ( compilationPhase == CompilationPhase.afti ) {
-				eachCompUnit.setSourceCodeChanged_inPhaseAfti(true);
+			if ( compilationPhase == CompilationPhase.afterResTypes ) {
+				eachCompUnit.setSourceCodeChanged_inPhaseafterResTypes(true);
 			}
 			else {
-				eachCompUnit.setSourceCodeChanged_inPhaseDsa(true);
+				eachCompUnit.setSourceCodeChanged_inPhasesemAn(true);
 			}
 			//eachCompUnit.setSourceCodeChanged(true);
 
@@ -2037,17 +2037,17 @@ public class Saci  {
 
 			// printText("original", text, text.length);
 			int shiftSizeText = 0;
-			for ( final SourceCodeChangeByMetaobjectAnnotation change : changeList ) {
+			for ( final SourceCodeChangeByAnnotation change : changeList ) {
 				shiftSizeText += change.getSizeToAdd();
 				shiftSizeText -= change.getSizeToDelete();
 
 				/*
-				Annotation annot = change.getCyanMetaobjectAnnotation();
+				Annotation annot = change.getCyanAnnotation();
 				if ( annot != null ) {
 					CompilationUnitSuper cuUnitSuper = annot.getCompilationUnit();
 					if ( cuUnitSuper instanceof CompilationUnit && eachCompUnit instanceof CompilationUnit ) {
 						if ( ! cuUnitSuper.getFullFileNamePath().equals(eachCompUnit.getFullFileNamePath()) ) {
-							env.error(change.getCyanMetaobjectAnnotation().getFirstSymbol(),
+							env.error(change.getCyanAnnotation().getFirstSymbol(),
 									"This annotation is in file '" + cuUnitSuper.getFullFileNamePath() + "' but it is trying "
 											+ "to change file '" + eachCompUnit.getFullFileNamePath() + "'. This is illegal. "
 													+ "The metaobject of an annotation can only change the prototype it is in");
@@ -2103,8 +2103,8 @@ public class Saci  {
 							if ( numberOfDeletionsOperations > 1 ) {
 								String all = "[";
 								while ( useInError < changeList.size() && changeList.get(useInError).offset == nextStop ) {
-									if ( changeList.get(useInError).getCyanMetaobjectAnnotation() != null ) {
-										final Annotation annotation = changeList.get(useInError).getCyanMetaobjectAnnotation();
+									if ( changeList.get(useInError).getCyanAnnotation() != null ) {
+										final Annotation annotation = changeList.get(useInError).getCyanAnnotation();
 										all = "(name: " + annotation.getCyanMetaobject().getName() + " package of annotation: " +
 												annotation.getPackageOfAnnotation() + " prototype of annotation: " + annotation.getPrototypeOfAnnotation() +
 												" line number of annotation: " + annotation.getFirstSymbol().getLineNumber() + ") ";
@@ -2213,7 +2213,7 @@ public class Saci  {
 				if (  sharedInfo != null ) {
 
 					final Tuple4<String, Integer, Integer, Object> t = new Tuple4<>( cyanMetaobject.getName(),
-							annotation.getMetaobjectAnnotationNumber(), annotation.getMetaobjectAnnotationNumberByKind(),
+							annotation.getAnnotationNumber(), annotation.getAnnotationNumberByKind(),
 							sharedInfo);
 					moInfoSet.add(t);
 				}
@@ -2276,6 +2276,11 @@ public class Saci  {
 			else {
 				return typename;
 			}
+		}
+		else if ( typename.equals("boolean") || typename.equals("Boolean") ||
+				typename.equals("java.lang.Boolean")
+				) {
+			return "Boolean";
 		}
 		else {
 			return aClass.getCanonicalName();
@@ -2425,7 +2430,7 @@ public class Saci  {
 		}
 		else if ( aClass == CyanMetaobject.class ) {
 			s.append( "    private \r\n" +
-					"    func init { self.hidden = Null getNull }\r\n" +
+					"    func init { @javacode{* _hidden = null; *} }\r\n" +
 					"\r\n" +
 					"" +
 					 "    func init: meta." + className + " hidden {\r\n" +
@@ -2508,7 +2513,7 @@ public class Saci  {
 			String methodNameToString = m.toString();
 			for ( Object obj : superMethodList.toArray()) {
 				Tuple2<String, java.lang.reflect.Method> t = (Tuple2<String, java.lang.reflect.Method> ) obj;
-				// public meta.WrAnnotation meta.CyanMetaobjectAtAnnot.getMetaobjectAnnotation()
+				// public meta.WrAnnotation meta.CyanMetaobjectAtAnnot.getAnnotation()
 				String superMethodToString = t.f1;
 				if ( !superMethodToString.contains(methodName) ) { continue; }
 				int indexLastDot = superMethodToString.lastIndexOf('.');
@@ -2615,14 +2620,15 @@ public class Saci  {
 				s.append(", ");
 			}
 		}
-		boolean hasReturnType = m.getReturnType() != Void.class && m.getReturnType() != void.class;
+		boolean hasReturnType = m.getReturnType() != Void.class &&
+				m.getReturnType() != void.class;
 		if ( hasReturnType ) {
 			s.append(" -> " + getBasicTypeJavaName(m.getReturnType().getCanonicalName()) );
 		}
 
 		s.append(" {\r\n        ");
-		if ( methodName.equals("dsa_codeToAdd") ) {
-			s.append("let StringBuffer s = self getHidden dsa_codeToAdd: arg0;\r\n" +
+		if ( methodName.equals("semAn_codeToAdd") ) {
+			s.append("let StringBuffer s = self getHidden semAn_codeToAdd: arg0;\r\n" +
 					"        @javacode{*\r\n" +
 					"        return new CyString(_s.toString());\r\n" +
 					"        *}\r\n" +

@@ -6,15 +6,15 @@ import lexer.Lexer;
 import meta.AnnotationArgumentsKind;
 import meta.AttachedDeclarationKind;
 import meta.CyanMetaobjectAtAnnot;
-import meta.IAction_afti;
-import meta.ICompiler_afti;
-import meta.ISlotInterface;
+import meta.IAction_afterResTypes;
+import meta.ICompiler_afterResTypes;
+import meta.ISlotSignature;
 import meta.MetaHelper;
 import meta.Token;
 import meta.Tuple2;
 import meta.WrAnnotation;
 import meta.WrEnv;
-import meta.WrProgramUnit;
+import meta.WrPrototype;
 import meta.WrSymbol;
 import meta.WrType;
 import meta.WrTypeJavaClass;
@@ -25,8 +25,8 @@ import meta.WrTypeJavaClass;
  */
 public class CyanMetaobjectCreateTuple extends CyanMetaobjectAtAnnot
       implements
-          //IAction_dpa,
-          IAction_afti {
+          //IAction_parsing,
+          IAction_afterResTypes {
 
 	public CyanMetaobjectCreateTuple() {
 		super("createTuple", AnnotationArgumentsKind.ZeroParameters,
@@ -35,17 +35,17 @@ public class CyanMetaobjectCreateTuple extends CyanMetaobjectAtAnnot
 	}
 
 
-//	public StringBuffer dpa_codeToAdd(ICompilerAction_dpa compiler) {
+//	public StringBuffer parsing_codeToAdd(ICompilerAction_parsing compiler) {
 //		List<List<String>> strListList = compiler.getGenericPrototypeArgListList();
 //		String fullPrototypeName = compiler.getCurrentPrototypeName();
 //		int indexOfLessThan = fullPrototypeName.indexOf('<');
 //		if ( ! compiler.getCurrentPrototypeId().equals("Tuple") || strListList == null || indexOfLessThan < 0 ) {
-//			compiler.error(this.getMetaobjectAnnotation().getFirstSymbol(),
+//			compiler.error(this.getAnnotation().getFirstSymbol(),
 //					"This metaobject should only be used in generic prototype Tuple");
 //			return null;
 //		}
 //		if ( strListList.size() != 1 ) {
-//			compiler.error(this.getMetaobjectAnnotation().getFirstSymbol(),
+//			compiler.error(this.getAnnotation().getFirstSymbol(),
 //					"This generic prototype should be instantiated with just one pair of '<' and '>' as in 'Tuple<Int, String>'");
 //			return null;
 //		}
@@ -67,7 +67,7 @@ public class CyanMetaobjectCreateTuple extends CyanMetaobjectAtAnnot
 //		if ( isNTuple ) {
 //			// NTuple
 //			if ( strList.size() %2 != 0 ) {
-//				compiler.error(this.getMetaobjectAnnotation().getFirstSymbol(), "The number of generic parameters to this generic prototype should be even");
+//				compiler.error(this.getAnnotation().getFirstSymbol(), "The number of generic parameters to this generic prototype should be even");
 //				return null;
 //			}
 //			typeList = new ArrayList<>();
@@ -77,7 +77,7 @@ public class CyanMetaobjectCreateTuple extends CyanMetaobjectAtAnnot
 //			for ( String str : strList ) {
 //				if ( k%2 == 0 ) {
 //					if ( ! Character.isLowerCase(str.charAt(0)) || str.indexOf('.') >= 0 ) {
-//						compiler.error(this.getMetaobjectAnnotation().getFirstSymbol(),
+//						compiler.error(this.getAnnotation().getFirstSymbol(),
 //								"The " + k + "-th parameter to this generic prototype should start with a lower case letter");
 //						return null;
 //					}
@@ -86,7 +86,7 @@ public class CyanMetaobjectCreateTuple extends CyanMetaobjectAtAnnot
 //				}
 //				else {
 //					if ( ! Character.isUpperCase(str.charAt(0)) && str.indexOf('.') < 0 )  {
-//						compiler.error(this.getMetaobjectAnnotation().getFirstSymbol(),
+//						compiler.error(this.getAnnotation().getFirstSymbol(),
 //								"The " + k + "-th parameter to this generic prototype should start with an upper case letter");
 //						return null;
 //					}
@@ -239,9 +239,9 @@ public class CyanMetaobjectCreateTuple extends CyanMetaobjectAtAnnot
 //
 
 	@Override
-	public Tuple2<StringBuffer, String> afti_codeToAdd(
-			ICompiler_afti compiler, List<Tuple2<WrAnnotation,
-			List<ISlotInterface>>> infoList) {
+	public Tuple2<StringBuffer, String> afterResTypes_codeToAdd(
+			ICompiler_afterResTypes compiler, List<Tuple2<WrAnnotation,
+			List<ISlotSignature>>> infoList) {
 
 		List<List<String>> strListList = compiler.getGenericPrototypeArgListList();
 		String fullPrototypeName = compiler.getCurrentPrototypeName();
@@ -249,12 +249,12 @@ public class CyanMetaobjectCreateTuple extends CyanMetaobjectAtAnnot
 
 		if ( ! compiler.getCurrentPrototypeName().startsWith("Tuple<") ||
 				strListList == null || indexOfLessThan < 0 ) {
-			compiler.error(this.getMetaobjectAnnotation().getFirstSymbol(),
+			compiler.error(this.getAnnotation().getFirstSymbol(),
 					"This metaobject should only be used in generic prototype Tuple");
 			return null;
 		}
 		if ( strListList.size() != 1 ) {
-			compiler.error(this.getMetaobjectAnnotation().getFirstSymbol(),
+			compiler.error(this.getAnnotation().getFirstSymbol(),
 					"This generic prototype should be instantiated with just one pair of '<' and '>' as in 'Tuple<Int, String>'");
 			return null;
 		}
@@ -276,7 +276,7 @@ public class CyanMetaobjectCreateTuple extends CyanMetaobjectAtAnnot
 		if ( isNTuple ) {
 			// NTuple
 			if ( strList.size() %2 != 0 ) {
-				compiler.error(this.getMetaobjectAnnotation().getFirstSymbol(), "The number of generic parameters to this generic prototype should be even");
+				compiler.error(this.getAnnotation().getFirstSymbol(), "The number of generic parameters to this generic prototype should be even");
 				return null;
 			}
 			typeList = new ArrayList<>();
@@ -286,7 +286,7 @@ public class CyanMetaobjectCreateTuple extends CyanMetaobjectAtAnnot
 			for ( String str : strList ) {
 				if ( k%2 == 0 ) {
 					if ( ! Character.isLowerCase(str.charAt(0)) || str.indexOf('.') >= 0 ) {
-						compiler.error(this.getMetaobjectAnnotation().getFirstSymbol(),
+						compiler.error(this.getAnnotation().getFirstSymbol(),
 								"The " + k + "-th parameter to this generic prototype should start with a lower case letter");
 						return null;
 					}
@@ -295,7 +295,7 @@ public class CyanMetaobjectCreateTuple extends CyanMetaobjectAtAnnot
 				}
 				else {
 					if ( ! Character.isUpperCase(str.charAt(0)) && str.indexOf('.') < 0 )  {
-						compiler.error(this.getMetaobjectAnnotation().getFirstSymbol(),
+						compiler.error(this.getAnnotation().getFirstSymbol(),
 								"The " + k + "-th parameter to this generic prototype should start with an upper case letter");
 						return null;
 					}
@@ -316,9 +316,9 @@ public class CyanMetaobjectCreateTuple extends CyanMetaobjectAtAnnot
 		}
 		boolean hasJavaTypeParam = false;
 		WrEnv env = compiler.getEnv();
-		WrSymbol first = this.metaobjectAnnotation.getFirstSymbol();
+		WrSymbol first = this.annotation.getFirstSymbol();
 		for ( String aType : typeList ) {
-			WrProgramUnit pu = compiler.getCompilationUnit().getPublicPrototype();
+			WrPrototype pu = compiler.getCompilationUnit().getPublicPrototype();
 
 			WrType paramType = env.searchPackagePrototype(aType, first);
 			if ( paramType instanceof WrTypeJavaClass || paramType instanceof meta.WrTypeJavaRefArray ) {

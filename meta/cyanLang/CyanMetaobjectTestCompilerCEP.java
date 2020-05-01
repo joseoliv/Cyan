@@ -26,7 +26,7 @@ public class CyanMetaobjectTestCompilerCEP extends CyanMetaobjectAtAnnot impleme
 
 	@Override
 	public void check() {
-		final WrAnnotationAt annotation = (WrAnnotationAt ) this.metaobjectAnnotation;
+		final WrAnnotationAt annotation = (WrAnnotationAt ) this.annotation;
 		final List<Object> paramList = annotation.getJavaParameterList();
 
 		/**
@@ -41,7 +41,7 @@ public class CyanMetaobjectTestCompilerCEP extends CyanMetaobjectAtAnnot impleme
 			addError("The first parameter to this metaobject should be an Int and the second parameter should be an identifier or a literal string");
 			return ;
 		}
-		lineNumber = (Integer ) paramList.get(0) + this.metaobjectAnnotation.getFirstSymbol().getLineNumber();
+		lineNumber = (Integer ) paramList.get(0) + this.annotation.getFirstSymbol().getLineNumber();
 		/**
 		 * the message that the compiler should issue (or similar to this)
 		 */
@@ -49,7 +49,7 @@ public class CyanMetaobjectTestCompilerCEP extends CyanMetaobjectAtAnnot impleme
 
 
 		this.info =
-		// // this.metaobjectAnnotation.setInfo_dpa(
+		// // this.metaobjectAnnotation.setInfo_parsing(
 				new Tuple2<Integer, String>(lineNumber, errorMessage);
 		// //		);
 	}

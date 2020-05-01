@@ -22,8 +22,9 @@ import saci.NameServer;
  */
 abstract public class ExprMessageSendWithKeywords extends ExprMessageSend {
 
-	public ExprMessageSendWithKeywords(MessageWithKeywords message, Symbol nextSymbol) {
-		super(nextSymbol);
+	public ExprMessageSendWithKeywords(MessageWithKeywords message, Symbol nextSymbol,
+			MethodDec currentMethod ) {
+		super(nextSymbol, currentMethod);
 		this.message = message;
 		this.doNotReturn = false;
 	}

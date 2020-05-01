@@ -636,7 +636,7 @@ public class NameServer {
 		identSymbolArray.add( new SymbolIdent(Token.IDENT, name,
 					source.getStartLine(), source.getLineNumber(), source.getColumnNumber(), source.getOffset(), source.getCompilationUnit()) );
 
-		return new ExprIdentStar(identSymbolArray, null);
+		return new ExprIdentStar(identSymbolArray, null, null);
 	}
 
 

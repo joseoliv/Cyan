@@ -3,7 +3,7 @@ package meta.cyanLang;
 import meta.AnnotationArgumentsKind;
 import meta.AttachedDeclarationKind;
 import meta.CyanMetaobjectAtAnnot;
-import meta.IActionFieldMissing_dsa;
+import meta.IActionFieldMissing_semAn;
 import meta.Tuple3;
 import meta.WrAnnotationAt;
 import meta.WrEnv;
@@ -16,7 +16,7 @@ import saci.NameServer;
    @author jose
  */
 public class CyanMetaobjectCreateMissingField extends CyanMetaobjectAtAnnot
-implements IActionFieldMissing_dsa {
+implements IActionFieldMissing_semAn {
 
 	public CyanMetaobjectCreateMissingField() {
 		super("createMissingField2", AnnotationArgumentsKind.OneOrMoreParameters,
@@ -25,15 +25,15 @@ implements IActionFieldMissing_dsa {
 
 	@Override
 	public
-	Tuple3<String, String, StringBuffer> dsa_replaceGetMissingField(
+	Tuple3<String, String, StringBuffer> semAn_replaceGetMissingField(
 			WrExprSelfPeriodIdent fieldToGet, WrEnv env) {
 
 		String fieldSelfName = fieldToGet.asString().substring(5);
-		int size = this.getMetaobjectAnnotation().getJavaParameterList().size();
+		int size = this.getAnnotation().getJavaParameterList().size();
 		if ( size%2 != 0 ) {
 			this.addError("This annotation should be used with a even number of parameters");
 		}
-		WrAnnotationAt  annot = this.getMetaobjectAnnotation();
+		WrAnnotationAt  annot = this.getAnnotation();
 		for (int i = 0; i < size; i+= 2) {
 			String strparam = removeQuotes(annot.getJavaParameterList().get(i).toString());
 			if ( strparam.equals(fieldSelfName) ) {

@@ -5,10 +5,10 @@ import java.util.Set;
 import meta.AnnotationArgumentsKind;
 import meta.AttachedDeclarationKind;
 import meta.CyanMetaobjectAtAnnot;
-import meta.IAction_afti;
-import meta.ICommunicateInPrototype_afti_dsa_afsa;
-import meta.ICompiler_afti;
-import meta.ISlotInterface;
+import meta.IAction_afterResTypes;
+import meta.ICommunicateInPrototype_afterResTypes_semAn_afterSemAn;
+import meta.ICompiler_afterResTypes;
+import meta.ISlotSignature;
 import meta.MetaHelper;
 import meta.Tuple2;
 import meta.Tuple4;
@@ -24,7 +24,7 @@ import meta.WrEnv;
    @author jose
  */
 public class CyanMetaobjectAddMethodTo extends CyanMetaobjectAtAnnot
-      implements IAction_afti, ICommunicateInPrototype_afti_dsa_afsa
+      implements IAction_afterResTypes, ICommunicateInPrototype_afterResTypes_semAn_afterSemAn
 {
 
 	public CyanMetaobjectAddMethodTo() {
@@ -35,11 +35,11 @@ public class CyanMetaobjectAddMethodTo extends CyanMetaobjectAtAnnot
 
 
 	@Override
-	public Tuple2<StringBuffer, String> afti_codeToAdd(
-			ICompiler_afti compiler, List<Tuple2<WrAnnotation, List<ISlotInterface>>> infoList) {
-		final List<Object> parameterList = ((WrAnnotationAt ) metaobjectAnnotation).getJavaParameterList();
+	public Tuple2<StringBuffer, String> afterResTypes_codeToAdd(
+			ICompiler_afterResTypes compiler, List<Tuple2<WrAnnotation, List<ISlotSignature>>> infoList) {
+		final List<Object> parameterList = getAnnotation().getJavaParameterList();
 		if ( parameterList.size() != 2 ) {
-			compiler.error(metaobjectAnnotation.getFirstSymbol(),
+			compiler.error(annotation.getFirstSymbol(),
 					"This metaobject annotation should have exactly one string parameters");
 		}
 		/*
@@ -47,7 +47,7 @@ public class CyanMetaobjectAddMethodTo extends CyanMetaobjectAtAnnot
 		 */
 		for ( final Object obj : parameterList )
 			if ( ! (obj instanceof String) ) {
-				compiler.error(metaobjectAnnotation.getFirstSymbol(),
+				compiler.error(annotation.getFirstSymbol(),
 						"The parameters to this metaobject annotation should all be strings");
 			}
 		/*
@@ -74,13 +74,13 @@ public class CyanMetaobjectAddMethodTo extends CyanMetaobjectAtAnnot
 
 	@Override
 	public
-	Object afti_dsa_afsa_shareInfoPrototype(WrEnv env) {
-		return "addMethodTo of line " + metaobjectAnnotation.getMetaobjectAnnotationNumber();
+	Object afterResTypes_semAn_afterSemAn_shareInfoPrototype(WrEnv env) {
+		return "addMethodTo of line " + annotation.getAnnotationNumber();
 	}
 
 	@Override
 	public
-	void afti_dsa_afsa_receiveInfoPrototype(Set<Tuple4<String, Integer, Integer, Object>> moInfoSet, WrEnv env) {
+	void afterResTypes_semAn_afterSemAn_receiveInfoPrototype(Set<Tuple4<String, Integer, Integer, Object>> moInfoSet, WrEnv env) {
 		commentBeforeMethod = "/*\n";
 		for ( final Tuple4<String, Integer, Integer, Object> t : moInfoSet ) {
 			if ( t.f4 instanceof String )

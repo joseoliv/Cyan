@@ -3,21 +3,21 @@ package meta.cyanLang;
 import meta.AnnotationArgumentsKind;
 import meta.CyanMetaobjectLiteralObject;
 import meta.CyanMetaobjectAtAnnot;
-import meta.IAction_dsa;
-import meta.ICompiler_dsa;
+import meta.IAction_semAn;
+import meta.ICompiler_semAn;
 import meta.WrAnnotationAt;
 import meta.MetaHelper;
 import meta.lexer.MetaLexer;
 
-public class CyanMetaobjectParametersToString extends CyanMetaobjectAtAnnot implements IAction_dsa {
+public class CyanMetaobjectParametersToString extends CyanMetaobjectAtAnnot implements IAction_semAn {
 
 	public CyanMetaobjectParametersToString() {
 		super("parametersToString", AnnotationArgumentsKind.OneOrMoreParameters);
 	}
 
 	@Override
-	public StringBuffer dsa_codeToAdd(ICompiler_dsa compiler_dsa)  {
-		final WrAnnotationAt annotation = this.getMetaobjectAnnotation();
+	public StringBuffer semAn_codeToAdd(ICompiler_semAn compiler_semAn)  {
+		final WrAnnotationAt annotation = this.getAnnotation();
 		final StringBuffer s = new StringBuffer("\"");
 		for ( final Object obj : annotation.getJavaParameterList() ) {
 			s.append(MetaLexer.escapeJavaString(convert(obj)));

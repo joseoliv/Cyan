@@ -3,7 +3,7 @@ package meta.cyanLang;
 import java.util.List;
 import meta.AnnotationArgumentsKind;
 import meta.CyanMetaobjectAtAnnot;
-import meta.ICompilerAction_dpa;
+import meta.ICompilerAction_parsing;
 import meta.MetaHelper;
 import meta.WrAnnotationAt;
 import meta.WrExprAnyLiteral;
@@ -15,7 +15,7 @@ import meta.WrExprAnyLiteral;
  * and  variable genParamList to which is assigned an array with the generic prototype parameters (as strings).
    @author jose
  */
-public class CyanMetaobjectMOCParamAsArray extends CyanMetaobjectAtAnnot  implements meta.IAction_dpa {
+public class CyanMetaobjectMOCParamAsArray extends CyanMetaobjectAtAnnot  implements meta.IAction_parsing {
 
 	public CyanMetaobjectMOCParamAsArray() {
 		super("moCallParamAsArray", AnnotationArgumentsKind.OneOrMoreParameters);
@@ -23,8 +23,8 @@ public class CyanMetaobjectMOCParamAsArray extends CyanMetaobjectAtAnnot  implem
 
 
 	@Override
-	public StringBuffer dpa_codeToAdd(ICompilerAction_dpa compiler) {
-		final WrAnnotationAt annotation = this.getMetaobjectAnnotation();
+	public StringBuffer parsing_codeToAdd(ICompilerAction_parsing compiler) {
+		final WrAnnotationAt annotation = this.getAnnotation();
 		final StringBuffer s = new StringBuffer();
 
 		s.append("var moParamList = [ ");

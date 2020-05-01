@@ -13,7 +13,7 @@ import org.apache.commons.lang3.reflect.MethodUtils;
 import cyan.lang.CyString;
 import cyan.lang._Tuple_LT_GP_CyString_GP_CyString_GP_CyString_GT;
 import cyan.reflect._CyanMetaobjectAtAnnot;
-import cyan.reflect._IActionMethodMissing__dsa;
+import cyan.reflect._IActionMethodMissing__semAn;
 import error.ErrorKind;
 import lexer.Symbol;
 import meta.AttachedDeclarationKind;
@@ -22,7 +22,7 @@ import meta.CompilationStep;
 import meta.CyanMetaobjectAtAnnot;
 import meta.ExprReceiverKind;
 import meta.IActionAssignment_cge;
-import meta.IActionMethodMissing_dsa;
+import meta.IActionMethodMissing_semAn;
 import meta.IDeclaration;
 import meta.IdentStarKind;
 import meta.MetaHelper;
@@ -34,7 +34,7 @@ import meta.WrExprAnyLiteral;
 import meta.WrExprMessageSendWithKeywordsToExpr;
 import meta.WrMethodDec;
 import meta.WrMethodSignature;
-import meta.WrProgramUnit;
+import meta.WrPrototype;
 import saci.CyanEnv;
 import saci.Env;
 import saci.NameServer;
@@ -55,8 +55,9 @@ public class ExprMessageSendWithKeywordsToExpr extends ExprMessageSendWithKeywor
 	/**
 	 * @param the receiver and message. If the receiver is an implicit self, it should be null
 	 */
-	public ExprMessageSendWithKeywordsToExpr(Expr receiverExpr, MessageWithKeywords message, Symbol nextSymbol) {
-		super(message, nextSymbol);
+	public ExprMessageSendWithKeywordsToExpr(Expr receiverExpr, MessageWithKeywords message,
+			Symbol nextSymbol, MethodDec currentMethod) {
+		super(message, nextSymbol, currentMethod);
 		this.receiverExpr = receiverExpr;
 		methodSignatureForMessage = null;
 	}
@@ -99,7 +100,7 @@ public class ExprMessageSendWithKeywordsToExpr extends ExprMessageSendWithKeywor
 	@Override
 	public boolean isNREForInitOnce(Env env) {
 		final String name = receiverExpr.asString();
-		final ProgramUnit pu = env.getProject().getCyanLangPackage().searchPublicNonGenericProgramUnit(name);
+		final Prototype pu = env.getProject().getCyanLangPackage().searchPublicNonGenericPrototype(name);
 		if ( pu == null || ! message.getMethodName().equals("new:") ) {
 			return false;
 		}
@@ -306,8 +307,8 @@ public class ExprMessageSendWithKeywordsToExpr extends ExprMessageSendWithKeywor
 
 				//varTmpArray[i] = Type.genJavaExpr_CastJavaCyan(env, varTmpArray[i], exprType, javaMethod.getParameters()[i], paramExpr.getType());
 				/*
-				if ( exprType.ge instanceof ProgramUnit ) {
-					String puName = ((ProgramUnit) exprType).getName();
+				if ( exprType.ge instanceof Prototype ) {
+					String puName = ((Prototype) exprType).getName();
 					if ( NameServer.isBasicType(puName) ) {
 						/*
 						 * cast Cyan basic type value to Java basic type value
@@ -518,15 +519,15 @@ public class ExprMessageSendWithKeywordsToExpr extends ExprMessageSendWithKeywor
 					catch ( final error.CompileErrorException e ) {
 					}
 					catch ( final NoClassDefFoundError e ) {
-						final WrAnnotation annotation = ((CyanMetaobjectAtAnnot) changeCyanMetaobject).getMetaobjectAnnotation();
+						final WrAnnotation annotation = ((CyanMetaobjectAtAnnot) changeCyanMetaobject).getAnnotation();
 						env.error(
 								meta.GetHiddenItem.getHiddenSymbol(annotation.getFirstSymbol()),
 								e.getMessage() + " " + NameServer.messageClassNotFoundException);
 					}
 					catch ( final RuntimeException e ) {
-						final WrAnnotation annotation = ((CyanMetaobjectAtAnnot) changeCyanMetaobject).getMetaobjectAnnotation();
+						final WrAnnotation annotation = ((CyanMetaobjectAtAnnot) changeCyanMetaobject).getAnnotation();
 						env.thrownException(
-								meta.GetHiddenItem.getHiddenCyanMetaobjectAnnotation(annotation),
+								meta.GetHiddenItem.getHiddenCyanAnnotation(annotation),
 								meta.GetHiddenItem.getHiddenSymbol(annotation.getFirstSymbol()), e);
 					}
 					finally {
@@ -805,7 +806,7 @@ public class ExprMessageSendWithKeywordsToExpr extends ExprMessageSendWithKeywor
 			}
 		}
 		else {
-			receiverType = env.getCurrentProgramUnit();
+			receiverType = env.getCurrentPrototype();
 			env.getCurrentMethod().setSelfLeak(true);
 		}
 
@@ -919,10 +920,10 @@ public class ExprMessageSendWithKeywordsToExpr extends ExprMessageSendWithKeywor
 						methodSignatureList = env.getCurrentObjectDec().searchMethodPrivateProtectedPublicPackageSuperProtectedPublicPackage(
 								methodNameWithParamNumber, env);
 
-						ProgramUnit pu = (ProgramUnit ) receiverType.getInsideType();
-						List<ProgramUnit> superList = pu.get_this_and_all_superPrototypes();
+						Prototype pu = (Prototype ) receiverType.getInsideType();
+						List<Prototype> superList = pu.get_this_and_all_superPrototypes();
 
-						for ( ProgramUnit current : superList ) {
+						for ( Prototype current : superList ) {
 							List<MethodSignature> currentMSList = current.searchMethodPrivateProtectedPublicPackage(methodNameWithParamNumber, env);
 							if ( currentMSList != null ) {
 								allMethodSignatureList.addAll(currentMSList);
@@ -931,7 +932,7 @@ public class ExprMessageSendWithKeywordsToExpr extends ExprMessageSendWithKeywor
 
 
 					}
-					receiverType = env.getCurrentProgramUnit();
+					receiverType = env.getCurrentPrototype();
 				}
 				else {
 					/*
@@ -949,9 +950,9 @@ public class ExprMessageSendWithKeywordsToExpr extends ExprMessageSendWithKeywor
 								methodNameWithParamNumber, env);
 
 
-						ProgramUnit pu = (ProgramUnit ) receiverType.getInsideType();
-						List<ProgramUnit> superList = pu.get_this_and_all_superPrototypes();
-						for ( ProgramUnit current : superList ) {
+						Prototype pu = (Prototype ) receiverType.getInsideType();
+						List<Prototype> superList = pu.get_this_and_all_superPrototypes();
+						for ( Prototype current : superList ) {
 							List<MethodSignature> currentMSList = current.searchMethodPrivateProtectedPublicPackage(methodNameWithParamNumber, env);
 							if ( currentMSList != null ) {
 								allMethodSignatureList.addAll(currentMSList);
@@ -966,7 +967,7 @@ public class ExprMessageSendWithKeywordsToExpr extends ExprMessageSendWithKeywor
 
 				if ( methodSignatureList == null || methodSignatureList.size() == 0 ) {
 
-					if ( env.getCompInstSet().contains(CompilationInstruction.dsa_actions) && lookForMethodAtCompileTime(env, receiverType) ) {
+					if ( env.getCompInstSet().contains(CompilationInstruction.semAn_actions) && lookForMethodAtCompileTime(env, receiverType) ) {
 						return ;
 					}
 					else {
@@ -977,7 +978,8 @@ public class ExprMessageSendWithKeywordsToExpr extends ExprMessageSendWithKeywor
 				}
 
 				if ( receiverExpr == null )
-					receiverExpr = new ExprSelf(message.getFirstSymbol(), (ObjectDec ) receiverType);
+					receiverExpr = new ExprSelf(message.getFirstSymbol(),
+							(ObjectDec ) receiverType, currentMethod);
 			}
 			else {
 				if ( !(receiverExpr instanceof ast.ExprGenericPrototypeInstantiation)
@@ -989,9 +991,9 @@ public class ExprMessageSendWithKeywordsToExpr extends ExprMessageSendWithKeywor
 				methodSignatureList = receiverExpr.getType(env).searchMethodPublicPackageSuperPublicPackage(methodNameWithParamNumber, env);
 
 
-				ProgramUnit pu = (ProgramUnit ) receiverType.getInsideType();
-				List<ProgramUnit> superList = pu.get_this_and_all_superPrototypes();
-				for ( ProgramUnit current : superList ) {
+				Prototype pu = (Prototype ) receiverType.getInsideType();
+				List<Prototype> superList = pu.get_this_and_all_superPrototypes();
+				for ( Prototype current : superList ) {
 					List<MethodSignature> currentMSList = current.searchMethodPublicPackage(methodNameWithParamNumber, env);
 					if ( currentMSList != null ) {
 						allMethodSignatureList.addAll(currentMSList);
@@ -1009,9 +1011,9 @@ public class ExprMessageSendWithKeywordsToExpr extends ExprMessageSendWithKeywor
 						methodSignatureList = receiverExpr.getType(env).searchMethodPrivateProtectedPublicPackageSuperProtectedPublicPackage(methodNameWithParamNumber, env);
 
 
-						pu = (ProgramUnit ) receiverType.getInsideType();
+						pu = (Prototype ) receiverType.getInsideType();
 						superList = pu.get_this_and_all_superPrototypes();
-						for ( ProgramUnit current : superList ) {
+						for ( Prototype current : superList ) {
 							List<MethodSignature> currentMSList = current.searchMethodPrivateProtectedPublicPackage(methodNameWithParamNumber, env);
 							if ( currentMSList != null ) {
 								allMethodSignatureList.addAll(currentMSList);
@@ -1023,7 +1025,7 @@ public class ExprMessageSendWithKeywordsToExpr extends ExprMessageSendWithKeywor
 
 
 
-						if ( env.getCompInstSet().contains(CompilationInstruction.dsa_actions) && lookForMethodAtCompileTime(env, receiverType) ) {
+						if ( env.getCompInstSet().contains(CompilationInstruction.semAn_actions) && lookForMethodAtCompileTime(env, receiverType) ) {
 							return ;
 						}
 						else {
@@ -1059,6 +1061,7 @@ public class ExprMessageSendWithKeywordsToExpr extends ExprMessageSendWithKeywor
 			*/
 
 			if ( receiverKind == ExprReceiverKind.SELF_R ) {
+				//TODO replace currentMethod by this.currentMethod and remove local variable declaration
 				final MethodDec currentMethod = env.getCurrentMethod();
 				currentMethod.addSelfMessagePassing(methodSignatureList.get(0));
 				currentMethod.setSelfLeak(true);
@@ -1134,8 +1137,8 @@ public class ExprMessageSendWithKeywordsToExpr extends ExprMessageSendWithKeywor
 					if ( !isNew && receiverIsPrototype ) {
 						ObjectDec protoOfMethod = aMethod.getDeclaringObject();
 						// protoOfMethod == Type.Any && aMethod.getIsFinal
-						if ( receiverType != null && receiverType instanceof ProgramUnit ) {
-							ProgramUnit rpu = (ProgramUnit ) receiverType;
+						if ( receiverType != null && receiverType instanceof Prototype ) {
+							Prototype rpu = (Prototype ) receiverType;
 							List<MethodSignature> initMSList = rpu.searchMethodPrivateProtectedPublicPackage("init", env);
 							if ( (initMSList == null || initMSList.size() == 0)
 									&& rpu != Type.Nil ) {
@@ -1207,9 +1210,9 @@ public class ExprMessageSendWithKeywordsToExpr extends ExprMessageSendWithKeywor
 					if ( env.getProject().getCompilerManager().getCompilationStep().ordinal() < CompilationStep.step_7.ordinal() ) {
 
 
-//							ProgramUnit pu = (ProgramUnit ) receiverType;
-//							List<ProgramUnit> superList = pu.getAllSuperPrototypes();
-//							for ( ProgramUnit current : superList ) {
+//							Prototype pu = (Prototype ) receiverType;
+//							List<Prototype> superList = pu.getAllSuperPrototypes();
+//							for ( Prototype current : superList ) {
 //								List<MethodSignature> currentMSList = current.searchMethodPublicPackage(methodName, env);
 //								if ( currentMSList != null ) {
 //									allMethodSignatureList.addAll(currentMSList);
@@ -1287,8 +1290,8 @@ public class ExprMessageSendWithKeywordsToExpr extends ExprMessageSendWithKeywor
 		int i = 0;
 		for ( final Expr paramExpr : message.getkeywordParameterList().get(0).getExprList() ) {
 			final Type exprType = paramExpr.getType();
-			if ( exprType.getInsideType() instanceof ProgramUnit ) {
-				final String puName = ((ProgramUnit) exprType).getName();
+			if ( exprType.getInsideType() instanceof Prototype ) {
+				final String puName = ((Prototype) exprType).getName();
 				parameterTypes[i] = NameServer.getJavaClassFromCyanName(puName);
 			}
 			else if ( exprType instanceof TypeJavaClass ) {
@@ -1491,6 +1494,7 @@ public class ExprMessageSendWithKeywordsToExpr extends ExprMessageSendWithKeywor
 						}
 					}
 
+					SecurityException lastExceptionThrown = null;
 					if ( ! foundMethod ) {
 						foundMethod = false;
 
@@ -1529,19 +1533,29 @@ public class ExprMessageSendWithKeywordsToExpr extends ExprMessageSendWithKeywor
 										aReflectGenericTypeName);
 								foundMethod = true;
 								checkStaticPublicMethod(env);
-
+								lastExceptionThrown = null;
 								break;
 							}
-							catch ( NoSuchMethodException
-									| SecurityException eee) {
+							catch ( NoSuchMethodException eee ) { }
+							catch (SecurityException eee) {
+								lastExceptionThrown = eee;
 							}
 
 						}
 
 					}
 					if ( ! foundMethod ) {
-						env.error(this.getFirstSymbol(), "A Java method for the message passing '" + methodName + "' was not found "
-								+ "or there was a security exception (class SecurityException)");
+						String s = "";
+						for (Method m : aClassJavaReceiverType.getMethods() ) {
+							s += m.getName() + " ";
+						}
+						if ( lastExceptionThrown != null ) {
+							env.error(this.getFirstSymbol(), "There was a security exception (class SecurityException) when searching for method " + methodName);
+						}
+						else {
+							env.error(this.getFirstSymbol(), "A Java method for the message passing '" + methodName + "' was not found "
+									+ " The available methods are '" + s + "'");
+						}
 					}
 
 
@@ -1597,6 +1611,8 @@ public class ExprMessageSendWithKeywordsToExpr extends ExprMessageSendWithKeywor
 						}
 					}
 					final Class<?> [][] allComb = ExprMessageSend.allCombinations2(parameterTypes);
+					SecurityException lastExceptionThrown = null;
+
 					for ( final Class<?>[] classArray : allComb ) {
 						try {
 							javaMethod = javaReceiverType.getClassLoad(env, this.getFirstSymbol()).getMethod(methodName, classArray);
@@ -1610,18 +1626,29 @@ public class ExprMessageSendWithKeywordsToExpr extends ExprMessageSendWithKeywor
 									aReflectGenericTypeName);
 							foundMethod = true;
 							checkStaticPublicMethod(env);
-
+							lastExceptionThrown = null;
 							break;
 						}
-						catch ( NoSuchMethodException
-								| SecurityException eee) {
+						catch ( NoSuchMethodException eee ) {
 
+						}
+						catch (SecurityException eee) {
+							lastExceptionThrown = eee;
 						}
 
 					}
 					if ( ! foundMethod ) {
-						env.error(this.getFirstSymbol(), "A Java method for the message passing '" + methodName + "' was not found "
-								+ "or there was a security exception (class SecurityException)");
+						String s = "";
+						for (Method m : aClassJavaReceiverType.getMethods() ) {
+							s += m.getName() + " ";
+						}
+						if ( lastExceptionThrown != null ) {
+							env.error(this.getFirstSymbol(), "There was a security exception (class SecurityException) when searching for method " + methodName);
+						}
+						else {
+							env.error(this.getFirstSymbol(), "A Java method for the message passing '" + methodName + "' was not found "
+									+ " The available methods are '" + s + "'");
+						}
 					}
 
 
@@ -1823,27 +1850,29 @@ public class ExprMessageSendWithKeywordsToExpr extends ExprMessageSendWithKeywor
 		final ObjectDec proto = (ObjectDec ) receiverType;
 
 		final List<AnnotationAt> metaobjectAnnotationList =
-				proto.getMetaobjectAnnotationThisAndSuperCTDNUList();
+				proto.getAnnotationThisAndSuperCTDNUList();
 		if ( metaobjectAnnotationList.size() == 0 ) {
 			return false;
 		}
-		WrProgramUnit lastProtoWithAnnotReplacedCode = null;
+		WrPrototype lastProtoWithAnnotReplacedCode = null;
 
 		AnnotationAt lastAnnotWhichReplacedCode = null;
 
 		for ( final AnnotationAt annot : metaobjectAnnotationList ) {
 			final CyanMetaobjectAtAnnot cyanMetaobject = annot.getCyanMetaobject();
 
-			checkAnnotIActionMethodMissing_dsa(env, annot);
+			checkAnnotIActionMethodMissing_semAn(env, annot);
 
 			_CyanMetaobjectAtAnnot other = (_CyanMetaobjectAtAnnot ) cyanMetaobject.getMetaobjectInCyan();
 
-			boolean actionMissing = cyanMetaobject instanceof IActionMethodMissing_dsa ||
-			        (other != null && other instanceof _IActionMethodMissing__dsa);
+			boolean actionMissing = cyanMetaobject instanceof IActionMethodMissing_semAn
+					||
+			        (other != null && other instanceof _IActionMethodMissing__semAn)
+			        ;
 
 			if ( !actionMissing ) {
 				env.error(this.getFirstSymbol(), "Internal error: metaobject '" + annot.getCyanMetaobject().getName() + "' should implement "
-						+ meta.IActionMethodMissing_dsa.class.getName());
+						+ meta.IActionMethodMissing_semAn.class.getName());
 				return false;
 			}
 
@@ -1854,14 +1883,14 @@ public class ExprMessageSendWithKeywordsToExpr extends ExprMessageSendWithKeywor
 			StringBuffer sb = null;
 			try {
 				if ( other == null ) {
-					final IActionMethodMissing_dsa doesNot = (IActionMethodMissing_dsa ) cyanMetaobject;
-					codeType = doesNot.dsa_missingKeywordMethod(
+					final IActionMethodMissing_semAn doesNot = (IActionMethodMissing_semAn ) cyanMetaobject;
+					codeType = doesNot.semAn_missingKeywordMethod(
 							receiverExpr == null ? null : receiverExpr.getI(),
 							message == null ? null : message.getI(), env.getI());
 				}
 				else {
-					final _IActionMethodMissing__dsa doesNot = (_IActionMethodMissing__dsa ) other;
-					_Tuple_LT_GP_CyString_GP_CyString_GP_CyString_GT tdd = doesNot._dsa__missingKeywordMethod_3(
+					final _IActionMethodMissing__semAn doesNot = (_IActionMethodMissing__semAn ) other;
+					_Tuple_LT_GP_CyString_GP_CyString_GP_CyString_GT tdd = doesNot._semAn__missingKeywordMethod_3(
 							receiverExpr == null ? null : receiverExpr.getI(),
 							message == null ? null : message.getI(), env.getI());
 
@@ -1876,7 +1905,6 @@ public class ExprMessageSendWithKeywordsToExpr extends ExprMessageSendWithKeywor
 								f3.s
 								);
 					}
-
 
 				}
 			}
@@ -1896,7 +1924,7 @@ public class ExprMessageSendWithKeywordsToExpr extends ExprMessageSendWithKeywor
 
 
 			if ( codeType != null  ) {
-				WrProgramUnit protoOfAnnotWantsToReplaceMessagePassing = ExprMessageSendWithKeywordsToExpr.currentPrototypeFromAnnot(annot);
+				WrPrototype protoOfAnnotWantsToReplaceMessagePassing = ExprMessageSendWithKeywordsToExpr.currentPrototypeFromAnnot(annot);
 
 				if ( protoOfAnnotWantsToReplaceMessagePassing == lastProtoWithAnnotReplacedCode ) {
 					// two annotations are trying to replace a message passing by code and
@@ -1930,17 +1958,17 @@ public class ExprMessageSendWithKeywordsToExpr extends ExprMessageSendWithKeywor
 						/*
 						 * this message send has already been replaced by another expression
 						 */
-						if ( cyanMetaobjectAnnotationThatReplacedStatByAnotherOne != null ) {
+						if ( cyanAnnotationThatReplacedStatByAnotherOne != null ) {
 							env.warning(this.getFirstSymbol(), "Metaobject annotation '" + cyanMetaobject.getName() +
 									"' at line " + annot.getFirstSymbol().getLineNumber()  +
 									" of prototype " + annot.getPackageOfAnnotation() + "." +
 									annot.getPrototypeOfAnnotation() +
 									" is trying to replace message send '" + this.asString() +
 									"' by an expression. But this has already been asked by metaobject annotation '" +
-									cyanMetaobjectAnnotationThatReplacedStatByAnotherOne.getCyanMetaobject().getName() + "'" +
-									" at line " + cyanMetaobjectAnnotationThatReplacedStatByAnotherOne.getFirstSymbol().getLineNumber() +
-									" of prototype " + cyanMetaobjectAnnotationThatReplacedStatByAnotherOne.getPackageOfAnnotation() + "." +
-									cyanMetaobjectAnnotationThatReplacedStatByAnotherOne.getPrototypeOfAnnotation());
+									cyanAnnotationThatReplacedStatByAnotherOne.getCyanMetaobject().getName() + "'" +
+									" at line " + cyanAnnotationThatReplacedStatByAnotherOne.getFirstSymbol().getLineNumber() +
+									" of prototype " + cyanAnnotationThatReplacedStatByAnotherOne.getPackageOfAnnotation() + "." +
+									cyanAnnotationThatReplacedStatByAnotherOne.getPrototypeOfAnnotation());
 						}
 						else {
 							env.warning(this.getFirstSymbol(), "Metaobject annotation '" + cyanMetaobject.getName() +
@@ -1977,7 +2005,7 @@ public class ExprMessageSendWithKeywordsToExpr extends ExprMessageSendWithKeywor
 
 					env.replaceStatementByCode(this, annot, sb, typeOfCode);
 
-					cyanMetaobjectAnnotationThatReplacedStatByAnotherOne = annot;
+					cyanAnnotationThatReplacedStatByAnotherOne = annot;
 
 					if ( typeOfCode == null )
 						env.error(true,
@@ -1999,11 +2027,11 @@ public class ExprMessageSendWithKeywordsToExpr extends ExprMessageSendWithKeywor
 	}
 
 
-	public static WrProgramUnit currentPrototypeFromAnnot(
+	public static WrPrototype currentPrototypeFromAnnot(
 			AnnotationAt firstMO) {
 		IDeclaration dec = firstMO.getDeclaration();
-		if ( dec instanceof WrProgramUnit ) {
-			return (WrProgramUnit ) dec;
+		if ( dec instanceof WrPrototype ) {
+			return (WrPrototype ) dec;
 		}
 		else if ( dec instanceof WrMethodDec ) {
 			return ((WrMethodDec ) dec).getDeclaringObject();
@@ -2017,7 +2045,7 @@ public class ExprMessageSendWithKeywordsToExpr extends ExprMessageSendWithKeywor
 	}
 
 
-	public static void checkAnnotIActionMethodMissing_dsa(Env env,
+	public static void checkAnnotIActionMethodMissing_semAn(Env env,
 			final AnnotationAt annot
 			) {
 		final CyanMetaobjectAtAnnot cyanMetaobject = annot.getCyanMetaobject();
@@ -2025,7 +2053,7 @@ public class ExprMessageSendWithKeywordsToExpr extends ExprMessageSendWithKeywor
 				AttachedDeclarationKind.METHOD_DEC,
 				AttachedDeclarationKind.METHOD_SIGNATURE_DEC ) ) {
 			env.error(annot.getFirstSymbol(), "The metaobject class of this annotation implements interface "
-					+ "'" + IActionMethodMissing_dsa.class.getCanonicalName() + "'. Then this annotation can only"
+					+ "'" + IActionMethodMissing_semAn.class.getCanonicalName() + "'. Then this annotation can only"
 							+ " be attached to prototypes, methods, and method interfacees");
 		}
 	}

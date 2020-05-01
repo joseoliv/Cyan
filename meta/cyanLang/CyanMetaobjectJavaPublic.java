@@ -3,12 +3,12 @@ package meta.cyanLang;
 import meta.AnnotationArgumentsKind;
 import meta.AttachedDeclarationKind;
 import meta.CyanMetaobjectAtAnnot;
-import meta.ICheckDeclaration_afsa;
-import meta.ICompiler_dsa;
+import meta.ICheckDeclaration_afterSemAn;
+import meta.ICompiler_semAn;
 import meta.WrAnnotationAt;
 import meta.WrFieldDec;
 
-public class CyanMetaobjectJavaPublic extends CyanMetaobjectAtAnnot implements ICheckDeclaration_afsa {
+public class CyanMetaobjectJavaPublic extends CyanMetaobjectAtAnnot implements ICheckDeclaration_afterSemAn {
 
 	public CyanMetaobjectJavaPublic() {
 		super("javaPublic", AnnotationArgumentsKind.ZeroParameters,
@@ -18,8 +18,8 @@ public class CyanMetaobjectJavaPublic extends CyanMetaobjectAtAnnot implements I
 
 
 	@Override
-	public void afsa_checkDeclaration(ICompiler_dsa compiler) {
-		final WrAnnotationAt annotation = (WrAnnotationAt  ) this.metaobjectAnnotation;
+	public void afterSemAn_checkDeclaration(ICompiler_semAn compiler) {
+		final WrAnnotationAt annotation = (WrAnnotationAt  ) this.annotation;
 		final WrFieldDec iv = (WrFieldDec ) annotation.getDeclaration();
 		iv.setJavaPublic(true);
 		if ( ! annotation.getPackageOfAnnotation().startsWith("cyan.") ) {

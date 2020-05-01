@@ -1,4 +1,4 @@
-package meta;
+ package meta;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -20,7 +20,7 @@ abstract public class CyanMetaobject implements Cloneable {
 	 *
 	 *
 
-        ast.CyanMetaobjectAnnotation                    Annotation
+        ast.CyanAnnotation                    Annotation
         ast.CyanMetaobjectLiteralObjectAnnotation       AnnotationLiteralObject
         ast.CyanMetaobjectMacroCall                     AnnotationMacroCall
         ast.CyanMetaobjectWithAtAnnotation              AnnotationAt
@@ -44,8 +44,8 @@ abstract public class CyanMetaobject implements Cloneable {
 		errorList = null;
 	}
 
-	public WrAnnotation getMetaobjectAnnotation() {
-		return metaobjectAnnotation;
+	public WrAnnotation getAnnotation() {
+		return annotation;
 	}
 
 	/**
@@ -73,14 +73,14 @@ abstract public class CyanMetaobject implements Cloneable {
 		this.packageName = packageName;
 	}
 
-	public void setMetaobjectAnnotation(WrAnnotation metaobjectAnnotation) {
-		this.metaobjectAnnotation = metaobjectAnnotation;
+	public void setAnnotation(WrAnnotation metaobjectAnnotation) {
+		this.annotation = metaobjectAnnotation;
 	}
 
 	/*
-	public void setMetaobjectAnnotation(Annotation metaobjectAnnotation, int inutil) {
-		if ( metaobjectAnnotation != this.metaobjectAnnotation ) {
-			System.out.println("metaobjectAnnotation != metaobjectAnnotation");
+	public void setAnnotation(Annotation annotation, int inutil) {
+		if ( annotation != this.metaobjectAnnotation ) {
+			System.out.println("annotation != annotation");
 			System.exit(1);
 		}
 	}
@@ -115,7 +115,7 @@ abstract public class CyanMetaobject implements Cloneable {
 	 * </code><br>
 	 *
 	 * This method may be called even before the metaobject annotation is set. Therefore it should not
-	 * consider that the field cyanMetaobjectAnnotation is non-null.
+	 * consider that the field cyanAnnotation is non-null.
 	 * 	   @return
 	 */
 	abstract public String getPackageOfType(); // { return null; }
@@ -131,7 +131,7 @@ abstract public class CyanMetaobject implements Cloneable {
 	/**
 	 *
 	 * This method should be called by a IDE plugin to show the text associated
-	 * to the metaobject annotation <code>metaobjectAnnotation</code> in several colors
+	 * to the metaobject annotation <code>annotation</code> in several colors
 	 * (text highlighting).
 	 *
 	 * Each tuple (color number, line number, column number, size). <br>
@@ -140,7 +140,7 @@ abstract public class CyanMetaobject implements Cloneable {
 	 * of the annotation has number 0. Then the line number is relative to the
 	 * start of the annotation, not the source file being edited.
 	 *
-	 * <code>metaobjectAnnotation</code> is redundant nowadays because this class
+	 * <code>annotation</code> is redundant nowadays because this class
 	 * already has a field with the same contents.
 	 *
 	 * @return
@@ -175,7 +175,7 @@ abstract public class CyanMetaobject implements Cloneable {
 			errorList = new ArrayList<>();
 		}
 		errorList.add(new CyanMetaobjectError(
-				metaobjectAnnotation.getFirstSymbol(), message));
+				annotation.getFirstSymbol(), message));
 	}
 
 
@@ -223,13 +223,13 @@ abstract public class CyanMetaobject implements Cloneable {
 
 
 	/** check if all packages in the list shouldImportList are imported by the current compilation unit
-	   @param compiler_dsa
+	   @param compiler_semAn
 	 */
-	protected void checkIfPackageWasImported(ICompiler_afti compiler_afti, String ...shouldImportList) {
+	protected void checkIfPackageWasImported(ICompiler_afterResTypes compiler_afterResTypes, String ...shouldImportList) {
 		for ( final String shouldImportName : shouldImportList ) {
 			boolean found = false;
-			final WrEnv  env = compiler_afti.getEnv();
-			if ( compiler_afti.getEnv().getImportedPackageSet() != null ) {
+			final WrEnv  env = compiler_afterResTypes.getEnv();
+			if ( compiler_afterResTypes.getEnv().getImportedPackageSet() != null ) {
 				for ( final WrCyanPackage aPackage : env.getImportedPackageSet() ) {
 					final String name = aPackage.getPackageName();
 					if ( name.equals(shouldImportName) ) {
@@ -249,13 +249,13 @@ abstract public class CyanMetaobject implements Cloneable {
 
 
 	/** check if all packages in the list shouldImportList are imported by the current compilation unit
-	   @param compiler_dsa
+	   @param compiler_semAn
 	 */
-	protected void checkIfPackageWasImported(ICompiler_dsa compiler_dsa, String ...shouldImportList) {
+	protected void checkIfPackageWasImported(ICompiler_semAn compiler_semAn, String ...shouldImportList) {
 		for ( final String shouldImportName : shouldImportList ) {
 			boolean found = false;
-			if ( compiler_dsa.getEnv().getImportedPackageSet() != null ) {
-				for ( final WrCyanPackage aPackage : compiler_dsa.getEnv().getImportedPackageSet() ) {
+			if ( compiler_semAn.getEnv().getImportedPackageSet() != null ) {
+				for ( final WrCyanPackage aPackage : compiler_semAn.getEnv().getImportedPackageSet() ) {
 					final String name = aPackage.getPackageName();
 					if ( name.equals(shouldImportName) ) {
 						found = true;
@@ -273,13 +273,13 @@ abstract public class CyanMetaobject implements Cloneable {
 
 
 	/** check if all packages in the list shouldImportList are imported by the current compilation unit
-	   @param compiler_dsa
+	   @param compiler_semAn
 	 */
-	protected void checkIfPackageWasImported(ICompiler_dpa compiler_dpa, String ...shouldImportList) {
+	protected void checkIfPackageWasImported(ICompiler_parsing compiler_parsing, String ...shouldImportList) {
 		for ( final String shouldImportName : shouldImportList ) {
 			boolean found = false;
-			if ( compiler_dpa.getCompilationUnit().getImportPackageSet() != null ) {
-				for ( final WrCyanPackage aPackage : compiler_dpa.getCompilationUnit().getImportPackageSet() ) {
+			if ( compiler_parsing.getCompilationUnit().getImportPackageSet() != null ) {
+				for ( final WrCyanPackage aPackage : compiler_parsing.getCompilationUnit().getImportPackageSet() ) {
 					final String name = aPackage.getPackageName();
 					if ( name.equals(shouldImportName) ) {
 						found = true;
@@ -319,9 +319,9 @@ abstract public class CyanMetaobject implements Cloneable {
 	 * return the program unit in which the annotation is. null if none.
 	   @return
 	 */
-	public WrProgramUnit getCurrentProgramUnit() {
+	public WrPrototype getCurrentPrototype() {
 		final CompilationUnitSuper cunit =
-				metaobjectAnnotation.getFirstSymbol().hidden.getCompilationUnit();
+				annotation.getFirstSymbol().hidden.getCompilationUnit();
 		if ( cunit instanceof CompilationUnit ) {
 			return ((CompilationUnit ) cunit).getPublicPrototype().getI();
 		}
@@ -363,7 +363,7 @@ abstract public class CyanMetaobject implements Cloneable {
 	 * annotation an object of a class that inherits from CyanMetaobject is created.
 	 * Then this field is set with the annotation.
 	 */
-	protected WrAnnotation metaobjectAnnotation;
+	protected WrAnnotation annotation;
 
 	/**
 	 * a metaobject codified in Cyan has a companion metaobject in Java. This points to the companion

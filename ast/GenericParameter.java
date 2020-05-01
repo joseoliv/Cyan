@@ -194,7 +194,7 @@ public class GenericParameter implements ASTNode {
 						// this should always be true
 						String str = parameter.asString();
 						pu = saci.Compiler.singleTypeFromString(str, parameter.getFirstSymbol(), "Prototype '" +
-								str + "' was not found", env.getCurrentCompilationUnit(), env.getCurrentProgramUnit(), env);
+								str + "' was not found", env.getCurrentCompilationUnit(), env.getCurrentPrototype(), env);
 					}
 					if ( pu == null ) {
 						t = parameter.ifPrototypeReturnsNameWithPackageAndType(env);
@@ -214,10 +214,10 @@ public class GenericParameter implements ASTNode {
 
 		/*
 		Type t = parameter.getType(env);
-		if ( ! (t.getInsideType() instanceof ProgramUnit) ) {
+		if ( ! (t.getInsideType() instanceof Prototype) ) {
 			env.error(parameter.getFirstSymbol(), "Type of the parameter should be a Cyan prototype");
 		}
-		ProgramUnit paramType = (ProgramUnit ) t.getInsideType();
+		Prototype paramType = (Prototype ) t.getInsideType();
 		return paramType.getFullName();
 		*/
 	}

@@ -36,8 +36,8 @@ public class ExprObjectCreation extends Expr {
 
 
 	public ExprObjectCreation(Expr prototypeType,
-			List<Expr> parameterList, Symbol rightParSymbol) {
-		super();
+			List<Expr> parameterList, Symbol rightParSymbol, MethodDec method) {
+		super(method);
 		this.prototype = prototypeType;
 		this.parameterList = parameterList;
 		this.rightParSymbol = rightParSymbol;
@@ -80,7 +80,7 @@ public class ExprObjectCreation extends Expr {
 	@Override
 	public boolean isNREForInitOnce(Env env) {
 		final String name = MetaHelper.removeSpaces(prototype.asString());
-		final ProgramUnit pu = env.getProject().getCyanLangPackage().searchPublicNonGenericProgramUnit(name);
+		final Prototype pu = env.getProject().getCyanLangPackage().searchPublicNonGenericPrototype(name);
 		if ( pu == null ) {
 			return false;
 		}
@@ -166,8 +166,8 @@ public class ExprObjectCreation extends Expr {
 				}
 
 	   			/*
-				if ( exprType.getInsideType() instanceof ProgramUnit ) {
-					String puName = ((ProgramUnit) exprType).getName();
+				if ( exprType.getInsideType() instanceof Prototype ) {
+					String puName = ((Prototype) exprType).getName();
 					if ( NameServer.isBasicType(puName) ) {
 						/*
 						 * cast Cyan basic type value to Java basic type value
@@ -309,14 +309,14 @@ public class ExprObjectCreation extends Expr {
 				catch ( final error.CompileErrorException e ) {
 				}
 				catch ( final NoClassDefFoundError e ) {
-					final WrAnnotation annotation = ((CyanMetaobjectAtAnnot) changeCyanMetaobject).getMetaobjectAnnotation();
+					final WrAnnotation annotation = ((CyanMetaobjectAtAnnot) changeCyanMetaobject).getAnnotation();
 					env.error(
 							meta.GetHiddenItem.getHiddenSymbol(annotation.getFirstSymbol()), e.getMessage() + " " + NameServer.messageClassNotFoundException);
 				}
 				catch ( final RuntimeException e ) {
-					final WrAnnotation annotation = ((CyanMetaobjectAtAnnot) changeCyanMetaobject).getMetaobjectAnnotation();
+					final WrAnnotation annotation = ((CyanMetaobjectAtAnnot) changeCyanMetaobject).getAnnotation();
 					env.thrownException(
-							meta.GetHiddenItem.getHiddenCyanMetaobjectAnnotation(annotation),
+							meta.GetHiddenItem.getHiddenCyanAnnotation(annotation),
 							meta.GetHiddenItem.getHiddenSymbol(annotation.getFirstSymbol()), e);
 				}
 				finally {
@@ -389,7 +389,7 @@ public class ExprObjectCreation extends Expr {
 
 		/*
 		 * it is a profound mistery why method searchPackagePrototype appears here.
-		 * It should be env.searchVisibleProgramUnit and env.searchVisibleJavaClass
+		 * It should be env.searchVisiblePrototype and env.searchVisibleJavaClass
 		 */
 		type = env.searchPackagePrototype(prototype.asString(), prototype.getFirstSymbol());
 
@@ -406,7 +406,7 @@ public class ExprObjectCreation extends Expr {
 		if ( prototype instanceof ExprIdentStar ) {
 			eis = (ExprIdentStar) prototype;
 			final String fullName = prototype.asString();
-			if ( env.searchVisibleProgramUnit(fullName, prototype.getFirstSymbol(), true) == null) {
+			if ( env.searchVisiblePrototype(fullName, prototype.getFirstSymbol(), true) == null) {
 				if ( env.searchVisibleJavaClass(fullName) == null) {
 					env.error(prototype.getFirstSymbol(),  "Prototype '" + fullName + "' was not found");
 				}
@@ -435,9 +435,9 @@ public class ExprObjectCreation extends Expr {
 			++i;
 		}
 		protoName = symList.get(size-1).getSymbolString();
-		ProgramUnit pu;
+		Prototype pu;
 		if ( packageName.length() == 0 ) {
-			pu = env.searchVisibleProgramUnit(protoName, prototype.getFirstSymbol(), );
+			pu = env.searchVisiblePrototype(protoName, prototype.getFirstSymbol(), );
 		}
 
 		if ( protoName == null ) {
@@ -456,8 +456,8 @@ public class ExprObjectCreation extends Expr {
 					int i = 0;
 					for ( final Expr paramExpr : parameterList ) {
 						final Type exprType = paramExpr.getType();
-						if ( exprType.getInsideType() instanceof ProgramUnit ) {
-							final String puName = ((ProgramUnit) exprType).getName();
+						if ( exprType.getInsideType() instanceof Prototype ) {
+							final String puName = ((Prototype) exprType).getName();
 							parameterTypes[i] = NameServer.getJavaClassFromCyanName(puName);
 						}
 						else if ( exprType instanceof TypeJava ) {

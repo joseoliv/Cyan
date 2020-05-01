@@ -9,7 +9,7 @@ import ast.CompilationUnit;
 import ast.CyanPackage;
 import ast.MethodDec;
 import ast.MethodSignature;
-import ast.ProgramUnit;
+import ast.Prototype;
 import ast.StatementLocalVariableDec;
 import ast.Type;
 import saci.Env;
@@ -38,11 +38,11 @@ public class WrEnv {
 
 
 	public WrType createNewGenericPrototype(WrSymbol firstSymbol,
-			WrCompilationUnit currentCompilationUnit, WrProgramUnit currentProgramUnit,
+			WrCompilationUnit currentCompilationUnit, WrPrototype currentPrototype,
 			String fullPrototypeName, String errorMessage) {
 		return hidden.createNewGenericPrototype(firstSymbol.hidden,
 				currentCompilationUnit.hidden,
-				(ProgramUnit ) currentProgramUnit.hidden, fullPrototypeName,
+				(Prototype ) currentPrototype.hidden, fullPrototypeName,
 				errorMessage);
 	}
 
@@ -79,16 +79,16 @@ public class WrEnv {
 			case step_1:
 			case step_4:
 			case step_7:
-				this.compilationPhase = CompilationPhase.dpa;
+				this.compilationPhase = CompilationPhase.parsing;
 				break;
 			case step_3:
-				this.compilationPhase = CompilationPhase.afti;
+				this.compilationPhase = CompilationPhase.afterResTypes;
 				break;
 			case step_6:
-				this.compilationPhase = CompilationPhase.dsa;
+				this.compilationPhase = CompilationPhase.semAn;
 				break;
 			case step_9:
-				this.compilationPhase = CompilationPhase.afsa;
+				this.compilationPhase = CompilationPhase.afterSemAn;
 				break;
 			default:
 				error(null, "Internal error in WrEnv::getCompilationPhase. compilationStep has an illegal value");
@@ -100,7 +100,7 @@ public class WrEnv {
 
 
 	public WrType getCyException() {
-		ProgramUnit pu = hidden.getCyException();
+		Prototype pu = hidden.getCyException();
 		return pu == null ? null : pu.getI();
 	}
 
@@ -130,13 +130,13 @@ public class WrEnv {
 		hidden.removeAllLocalVariableDec();
 	}
 
-	public void addDependentToCurrentProgramUnit( WrProgramUnit dependentProgramUnit ) {
+	public void addDependentToCurrentPrototype( WrPrototype dependentPrototype ) {
 
-		if ( this.getCurrentProgramUnit() != null ) {
-			Type cpu = getCurrentProgramUnit().hidden;
-			if ( cpu instanceof ProgramUnit ) {
-				ProgramUnit pu = (ProgramUnit ) cpu;
-				pu.addDependentProgramUnit(dependentProgramUnit.getHidden());
+		if ( this.getCurrentPrototype() != null ) {
+			Type cpu = getCurrentPrototype().hidden;
+			if ( cpu instanceof Prototype ) {
+				Prototype pu = (Prototype ) cpu;
+				pu.addDependentPrototype(dependentPrototype.getHidden());
 			}
 		}
 	}
@@ -145,7 +145,7 @@ public class WrEnv {
 	public WrMethodSignature searchMethodSignature(WrMethodSignature ms,
 			List<WrMethodSignature> msList2) {
 
-		// objDec.checkDependenteProgramUnit(this);
+		// objDec.checkDependentePrototype(this);
 
 		if ( msList2 != null ) {
 			final List<MethodSignature> methodSignatureList = new ArrayList<>();
@@ -180,9 +180,9 @@ public class WrEnv {
 	}
 
 
-	public WrType searchPackagePrototype( WrProgramUnit whoIsAsking,
+	public WrType searchPackagePrototype( WrPrototype whoIsAsking,
 			String packageName, String prototypeName) {
-		whoIsAsking.addThisAsDependenteToCurrentProgramUnit(this);
+		whoIsAsking.addThisAsDependenteToCurrentPrototype(this);
 
 		Type t = hidden.searchPackagePrototype(packageName, prototypeName);
 		return t == null ? null : t.getI();
@@ -190,15 +190,16 @@ public class WrEnv {
 
 	public WrType searchPackagePrototype(String packagePrototypeName,
 			WrSymbol symUsedInError) {
+		// objDec.addThisAsDependenteToCurrentPrototype(this);
 		Type t = hidden.searchPackagePrototype(packagePrototypeName,
 				symUsedInError.hidden);
 		return t == null ? null : t.getI();
 	}
 
 	public List<WrMethodSignature> searchMethodProtectedPublicSuperProtectedPublic(
-			WrProgramUnit objDec, String methodName) {
+			WrPrototype objDec, String methodName) {
 
-		objDec.addThisAsDependenteToCurrentProgramUnit(this);
+		objDec.addThisAsDependenteToCurrentPrototype(this);
 
 		if ( objDec.isInterface() ) {
 			return null;
@@ -220,10 +221,10 @@ public class WrEnv {
 		}
 	}
 
-	public List<WrMethodSignature> searchMethodPublicSuperPublic(WrProgramUnit objDec, String methodName) {
+	public List<WrMethodSignature> searchMethodPublicSuperPublic(WrPrototype objDec, String methodName) {
 		// List<MethodSignature> msList = pu.searchMethodPublicPackageSuperPublicPackage(methodName, hidden);
 
-		objDec.addThisAsDependenteToCurrentProgramUnit(this);
+		objDec.addThisAsDependenteToCurrentPrototype(this);
 
 		final List<MethodSignature> msList =
 				objDec.hidden.searchMethodPublicPackageSuperPublicPackage(methodName, hidden);
@@ -245,8 +246,8 @@ public class WrEnv {
 		return cunit == null ? null : cunit.getI();
 	}
 
-	public WrProgramUnit getCurrentProgramUnit() {
-		ProgramUnit pu = hidden.getCurrentProgramUnit();
+	public WrPrototype getCurrentPrototype() {
+		Prototype pu = hidden.getCurrentPrototype();
 		return pu == null ? null : pu.getI();
 	}
 

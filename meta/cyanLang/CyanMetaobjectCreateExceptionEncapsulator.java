@@ -4,8 +4,8 @@ package meta.cyanLang;
 import java.util.List;
 import meta.AnnotationArgumentsKind;
 import meta.CyanMetaobjectAtAnnot;
-import meta.IAction_dpa;
-import meta.ICompilerAction_dpa;
+import meta.IAction_parsing;
+import meta.ICompilerAction_parsing;
 
 /**
  * This metaobject create the  methods for the CatchConverter prototype
@@ -13,7 +13,7 @@ import meta.ICompilerAction_dpa;
  */
 
 public class CyanMetaobjectCreateExceptionEncapsulator extends CyanMetaobjectAtAnnot 
-	implements IAction_dpa {
+	implements IAction_parsing {
 
 		public CyanMetaobjectCreateExceptionEncapsulator() { 
 			super("createExceptionEncapsulator", AnnotationArgumentsKind.ZeroParameters);
@@ -21,12 +21,12 @@ public class CyanMetaobjectCreateExceptionEncapsulator extends CyanMetaobjectAtA
 
 
 		@Override
-		public StringBuffer dpa_codeToAdd(ICompilerAction_dpa compiler) {
+		public StringBuffer parsing_codeToAdd(ICompilerAction_parsing compiler) {
 			
 			StringBuffer s = new StringBuffer();
 			
 			if ( ! compiler.getCurrentPrototypeId().equals("ExceptionEncapsulator") ) {
-				compiler.error(this.getMetaobjectAnnotation().getFirstSymbol(), "Metaobject '" + getName() + 
+				compiler.error(this.getAnnotation().getFirstSymbol(), "Metaobject '" + getName() + 
 						"' should only be used in prototype ExceptionEncapsulator");
 				return null;
 			}
@@ -34,23 +34,23 @@ public class CyanMetaobjectCreateExceptionEncapsulator extends CyanMetaobjectAtA
 			
 			List<List<String>> strListList = compiler.getGenericPrototypeArgListList();
 			/* if ( strListList == null || ! compiler.getCurrentPrototypeName().startsWith("Union") ) {
-				compiler.error(this.getMetaobjectAnnotation().getFirstSymbol(), "Metaobject '" + getName() + 
+				compiler.error(this.getAnnotation().getFirstSymbol(), "Metaobject '" + getName() + 
 						"' should only be used in a generic prototype", 
-						this.getMetaobjectAnnotation().getFirstSymbol().getSymbolString(), ErrorKind.metaobject_error);
+						this.getAnnotation().getFirstSymbol().getSymbolString(), ErrorKind.metaobject_error);
 				return null;
 			}
 			*/
 			
 			int sizeListList = strListList.size();
 			if ( sizeListList != 1 ) {
-				compiler.error(this.getMetaobjectAnnotation().getFirstSymbol(), 
+				compiler.error(this.getAnnotation().getFirstSymbol(), 
 						"Prototype 'ExceptionEncapsulator' should have just one pair of '<' and '>' with parameters (like 'ExceptionEncapsulator<Exception1, Exception2>')");
 				return null;
 			}
 			List<String> strList = strListList.get(0);
 			int size = strList.size();
 			if ( size < 2 ) {
-				compiler.error(this.getMetaobjectAnnotation().getFirstSymbol(), 
+				compiler.error(this.getAnnotation().getFirstSymbol(), 
 						"Prototype 'ExceptionEncapsulator' should have at least two parameters");
 				return null;
 			}

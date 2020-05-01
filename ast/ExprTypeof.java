@@ -21,7 +21,8 @@ import saci.Env;
  */
 public class ExprTypeof extends Expr {
 
-	public ExprTypeof(Symbol typeofSymbol, Expr expr) {
+	public ExprTypeof(Symbol typeofSymbol, Expr expr, MethodDec method) {
+		super(method);
 		this.typeofSymbol = typeofSymbol;
 		this.expr = expr;
 	}

@@ -9,11 +9,11 @@ package meta;
  * inherits from this interface, then the .iyan file will have this
  * annotation even if the metaobject class does not inherits from the
  * following selected group of interfaces:
- *     - IActionMessageSend_dsa
- *     - IActionMethodMissing_dsa
- *     - ICheckSubprototype_afsa
- *     - ICheckOverride_afsa
- *     - ICheckMessageSend_afsa
+ *     - IActionMessageSend_semAn
+ *     - IActionMethodMissing_semAn
+ *     - ICheckSubprototype_afterSemAn
+ *     - ICheckOverride_afterSemAn
+ *     - ICheckMessageSend_afterSemAn
  *     - IActionAssignment_cge
  *
    @author jose

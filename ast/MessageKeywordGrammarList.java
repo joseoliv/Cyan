@@ -8,7 +8,7 @@ import java.util.List;
 import meta.Token;
 import meta.Tuple2;
 import meta.WrEnv;
-import meta.WrProgramUnit;
+import meta.WrPrototype;
 import meta.WrSymbol;
 import meta.cyanLang.IMessageKeyword;
 import meta.cyanLang.MessageKeywordGrammar;
@@ -253,7 +253,7 @@ public class MessageKeywordGrammarList extends MessageKeywordGrammar {
 
 
 	@Override
-	public WrProgramUnit getParameterType(WrEnv env) {
+	public WrPrototype getParameterType(WrEnv env) {
 		// TODO Auto-generated method stub
 		return null;
 	}

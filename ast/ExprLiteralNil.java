@@ -19,8 +19,8 @@ public class ExprLiteralNil extends ExprLiteral {
 	/**
 	 * @param symbol
 	 */
-	public ExprLiteralNil(Symbol symbol) {
-		super(symbol);
+	public ExprLiteralNil(Symbol symbol, MethodDec currentMethod) {
+		super(symbol, currentMethod);
 	}
 
 	@Override

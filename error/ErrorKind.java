@@ -528,7 +528,7 @@ public enum ErrorKind {
 	syntax_error_object("Syntax error: keyword 'object' is missplaced. Maybe an attempt to declare an inner object",
 			new String[] { "statementText", "methodSignature", "prototypeName", "supertype", "implementedInterfaces",
 					"visibleLocalVariableList", "fieldList", "methodList" } ),
-	dpa_compilation_phase_literal_objects_and_macros_are_not_allowed("Literal objects and macros in a compilation step that does not allow literal objects or macros",
+	parsing_compilation_phase_literal_objects_and_macros_are_not_allowed("Literal objects and macros in a compilation step that does not allow literal objects or macros",
 			new String[] {"statementText", "methodSignature", "prototypeName", "supertype", "implementedInterfaces",
 			"visibleLocalVariableList", "fieldList", "methodList" } ),
 	right_symbol_sequence_expected("A right symbol sequence of a metaobject annotation was expected",

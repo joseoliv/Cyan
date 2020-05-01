@@ -17,23 +17,23 @@ package meta;
  */
 public enum CompilationInstruction {
 	/**
-	 * dpa actions are allowed. dpa = During Parsing
+	 * parsing actions are allowed. parsing = During Parsing
 	 */
-	dpa_actions,
+	parsing_actions,
 	/**
-	 * afti actions are allowed. afti = After Typing Interfaces
+	 * AF_RES_TYPES actions are allowed. AF_RES_TYPES = After Typing Interfaces
 	 */
-	afti_actions,
+	afterResTypes_actions,
 	/**
-	 * dsa actions are allowed. dsa = During Semantic Analysis
+	 * SEM_AN actions are allowed. SEM_AN = During Semantic Analysis
 	 */
-	dsa_actions,
+	semAn_actions,
 	/**
 	 * check actions in the code in step 9 of the compilation, calculate internal types (cit)
 	 */
-	dsa_check,
+	semAn_check,
 	/**
-	 * check actions made at the end of step 8 of the compilation, calculate interfaces. Therefore, after typing interfaces (afti)
+	 * check actions made at the end of step 8 of the compilation, calculate interfaces. Therefore, after typing interfaces (AF_RES_TYPES)
 	 */
 	ati3_check,
 	/**
@@ -58,7 +58,7 @@ public enum CompilationInstruction {
 	 * first compilation phase in which the text of each compilation unit is
 	 * the original one supplied by the user
 	 */
-	dpa_originalSourceCode,
+	parsing_originalSourceCode,
 	/**
 	 * the source code may have annotations to metaobjects that implement interface {@link IInformCompilationError}.
 	 * This interface should be implemented by all metaobjects that need to inform the compiler that
@@ -70,7 +70,7 @@ public enum CompilationInstruction {
 	matchExpectedCompilationErrors,
 	/**
 	 * the source being compiled is from the project file, extension <code>".pyan"</code>. If this
-	 * option is used, no other should be but dpa_actions
+	 * option is used, no other should be but parsing_actions
 	 */
 	pyanSourceCode,
 	/**

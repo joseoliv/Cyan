@@ -35,7 +35,7 @@ public class CyanMetaobjectCompilationContextPop extends CyanMetaobjectAtAnnot {
 
 	@Override
 	public void check() {
-		final List<Object> javaObjectList = this.getMetaobjectAnnotation().getJavaParameterList();
+		final List<Object> javaObjectList = this.getAnnotation().getJavaParameterList();
 
 		boolean ok = false;
 		if ( javaObjectList != null ) {
@@ -48,9 +48,9 @@ public class CyanMetaobjectCompilationContextPop extends CyanMetaobjectAtAnnot {
 			}
 		}
 		if ( ! ok ) {
-			final WrAnnotationAt cyanMetaobjectAnnotation = this.getMetaobjectAnnotation();
+			final WrAnnotationAt cyanAnnotation = this.getAnnotation();
 			final List<CyanMetaobjectError> errorList = new ArrayList<>();
-			errorList.add(new CyanMetaobjectError(cyanMetaobjectAnnotation.getFirstSymbol(),
+			errorList.add(new CyanMetaobjectError(cyanAnnotation.getFirstSymbol(),
 					"Metaobject '" + this.getName() + "' should have one or three parameters"));
 		}
 

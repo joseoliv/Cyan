@@ -35,7 +35,8 @@ public class ExprAnyLiteralIdent extends ExprAnyLiteral {
 	/**
 	 * @param symbol
 	 */
-	public ExprAnyLiteralIdent(ExprIdentStar identExpr) {
+	public ExprAnyLiteralIdent(ExprIdentStar identExpr, MethodDec method) {
+		super(method);
 		this.identExpr = identExpr;
 	}
 

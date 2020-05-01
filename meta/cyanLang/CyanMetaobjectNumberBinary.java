@@ -4,7 +4,7 @@ import java.awt.Frame;
 import meta.CyanMetaobjectNumber;
 import meta.ICodeg;
 import meta.ICompiler_ded;
-import meta.ICompiler_dsa;
+import meta.ICompiler_semAn;
 
 public class CyanMetaobjectNumberBinary extends CyanMetaobjectNumber implements ICodeg {
 
@@ -12,7 +12,7 @@ public class CyanMetaobjectNumberBinary extends CyanMetaobjectNumber implements 
 		super(new String[] { "bin", "Bin", "BIN" });
 	}
 
-	public void dpa_parse(String code) {
+	public void parsing_parse(String code) {
 
 		number = 0;
 		String numberStr = code.substring(0,  code.length() - 3).replace("_", "");
@@ -27,10 +27,10 @@ public class CyanMetaobjectNumberBinary extends CyanMetaobjectNumber implements 
 	}
 
 	@Override
-	public StringBuffer dsa_codeToAdd(ICompiler_dsa compiler_dsa) {
+	public StringBuffer semAn_codeToAdd(ICompiler_semAn compiler_semAn) {
 		// // return (StringBuffer ) getInfo();
 		String code = this.getUsefulString();
-		dpa_parse(code);
+		parsing_parse(code);
 		return new StringBuffer("" + number);
 	}
 	@Override

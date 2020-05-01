@@ -5,8 +5,8 @@ import meta.AnnotationArgumentsKind;
 import meta.AttachedDeclarationKind;
 import meta.CyanMetaobjectAtAnnot;
 import meta.IAction_dpp;
-import meta.ICompilerAction_dpa;
-import meta.ICompilerInfo_dpa;
+import meta.ICompilerAction_parsing;
+import meta.ICompilerInfo_parsing;
 import meta.ICompiler_dpp;
 import meta.IDeclaration;
 import meta.IDeclarationWritable;
@@ -28,7 +28,7 @@ import meta.WrProgram_dpp;
    @author José
  */
 public class CyanMetaobjectAnnot extends CyanMetaobjectAtAnnot  implements
-				ICompilerInfo_dpa, IAction_dpp { //ICompilerInfo_dpa {
+				ICompilerInfo_parsing, IAction_dpp { //ICompilerInfo_parsing {
 
 	public CyanMetaobjectAnnot() {
 		super("annot", AnnotationArgumentsKind.OneParameter,
@@ -43,7 +43,7 @@ public class CyanMetaobjectAnnot extends CyanMetaobjectAtAnnot  implements
 
 	@Override
 	public 	void check() {
-		final List<WrExprAnyLiteral> exprList = ((WrAnnotationAt ) metaobjectAnnotation).getRealParameterList();
+		final List<WrExprAnyLiteral> exprList = getAnnotation().getRealParameterList();
 		featureValue = exprList.get(0);
 		if ( featureValue.isExprLiteralNil()) {
 			addError("'Nil' is not allowed as a feature value");
@@ -60,18 +60,18 @@ public class CyanMetaobjectAnnot extends CyanMetaobjectAtAnnot  implements
 
 //	@Override
 //	public List<Tuple2<String, WrExprAnyLiteral>> infoListToDeclaration() {
-//		// List<Expr> exprList = ((AnnotationAt ) metaobjectAnnotation).getRealParameterList();
-//		// // Tuple2<String, ExprAnyLiteral> t = (Tuple2<String, ExprAnyLiteral> ) getMetaobjectAnnotation().getInfo_dpa();
+//		// List<Expr> exprList = ((AnnotationAt ) annotation).getRealParameterList();
+//		// // Tuple2<String, ExprAnyLiteral> t = (Tuple2<String, ExprAnyLiteral> ) getAnnotation().getInfo_parsing();
 //		final List<Tuple2<String, WrExprAnyLiteral>> array = new ArrayList<>();
 //		array.add(new Tuple2<String, WrExprAnyLiteral>("annot", this.featureValue));
 //		return array;
 //	}
 
 	@Override
-//	public Tuple2<StringBuffer, String> afti_codeToAdd(
-//			ICompiler_afti compiler, List<Tuple2<Annotation, List<ISlotInterface>>> infoList)
+//	public Tuple2<StringBuffer, String> afterResTypes_codeToAdd(
+//			ICompiler_afterResTypes compiler, List<Tuple2<Annotation, List<ISlotSignature>>> infoList)
 	public
-	void action_dpa(ICompilerAction_dpa compiler){
+	void action_parsing(ICompilerAction_parsing compiler){
 		IDeclaration idec = this.getAttachedDeclaration();
 
 		if ( idec instanceof IDeclarationWritable ) {

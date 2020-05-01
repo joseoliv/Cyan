@@ -20,7 +20,9 @@ public class StatementCast extends Statement {
 	 */
 	public StatementCast(Symbol castSymbol, List<CastRecord> castRecordList,
 						StatementList castStatementList,
-                        StatementList elseStatementList, Symbol rightCBEndsIf, Symbol lastElse) {
+                        StatementList elseStatementList, Symbol rightCBEndsIf, Symbol lastElse,
+                        MethodDec method) {
+		super(method);
 		this.castSymbol = castSymbol;
 		this.castRecordList = castRecordList;
 		this.castStatementList = castStatementList;

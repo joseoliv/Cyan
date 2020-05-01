@@ -6,10 +6,10 @@ import java.util.Set;
 import lexer.Lexer;
 import meta.AnnotationArgumentsKind;
 import meta.CyanMetaobjectAtAnnot;
-import meta.IAction_dpa;
-import meta.ICompilerAction_dpa;
-import meta.ICompiler_afti;
-import meta.ISlotInterface;
+import meta.IAction_parsing;
+import meta.ICompilerAction_parsing;
+import meta.ICompiler_afterResTypes;
+import meta.ISlotSignature;
 import meta.MetaHelper;
 import meta.Tuple2;
 import meta.WrAnnotation;
@@ -21,23 +21,23 @@ import meta.WrType;
    @author jose
  */
 public class CyanMetaobjectCreateUnion extends CyanMetaobjectAtAnnot
-	implements IAction_dpa, meta.IAction_afti {
+	implements IAction_parsing, meta.IAction_afterResTypes {
 
 		public CyanMetaobjectCreateUnion() {
 			super("createUnion", AnnotationArgumentsKind.ZeroParameters);
 		}
 
 		@Override
-		public Tuple2<StringBuffer, String> afti_codeToAdd(
-				ICompiler_afti compiler_afti, List<Tuple2<WrAnnotation, List<ISlotInterface>>> infoList) {
+		public Tuple2<StringBuffer, String> afterResTypes_codeToAdd(
+				ICompiler_afterResTypes compiler_afterResTypes, List<Tuple2<WrAnnotation, List<ISlotSignature>>> infoList) {
 
-			// // if ( (Boolean ) this.getMetaobjectAnnotation().getInfo_dpa() ) { return null; }
+			// // if ( (Boolean ) this.getAnnotation().getInfo_parsing() ) { return null; }
 
 			if ( hasLowerCase ) { return null; }
 			Set<String> fullNameSet = new HashSet<String>();
 			int n = 0;
-			List<WrGenericParameter> gpList = compiler_afti.getProgramUnit()
-					.getGenericParameterListList(compiler_afti.getEnv()).get(0);
+			List<WrGenericParameter> gpList = compiler_afterResTypes.getPrototype()
+					.getGenericParameterListList(compiler_afterResTypes.getEnv()).get(0);
 			for ( WrGenericParameter gp : gpList ) {
 				String fullName = gp.getType().getFullName();
 				if ( ! fullNameSet.add(fullName) ) {
@@ -45,7 +45,7 @@ public class CyanMetaobjectCreateUnion extends CyanMetaobjectAtAnnot
 				}
 				for (int k = 0; k < n; ++k) {
 					if ( gpList.get(k).getType().isSupertypeOf(gp.getType(),
-							    compiler_afti.getEnv())
+							    compiler_afterResTypes.getEnv())
 							&& gp.getType() != WrType.Dyn ) {
 						this.addError("Type '" + gpList.get(k).getType().getFullName() + "' should appear after type '"
 								+ gp.getType().getFullName() + "' in the union because it is a supertype of it. The last type will never be used");
@@ -58,28 +58,28 @@ public class CyanMetaobjectCreateUnion extends CyanMetaobjectAtAnnot
 		}
 
 		@Override
-		public StringBuffer dpa_codeToAdd(ICompilerAction_dpa compiler) {
+		public StringBuffer parsing_codeToAdd(ICompilerAction_parsing compiler) {
 
 			StringBuffer s = new StringBuffer();
 			List<List<String>> strListList = compiler.getGenericPrototypeArgListList();
 			if ( strListList == null || ! compiler.getCurrentPrototypeId().equals("Union") ) {
-				compiler.error(this.getMetaobjectAnnotation().getFirstSymbol(), "Metaobject '" + getName() +
+				compiler.error(this.getAnnotation().getFirstSymbol(), "Metaobject '" + getName() +
 						"' should only be used in generic prototype 'Union'");
 				return null;
 			}
 
-			String protoName = Lexer.addSpaceAfterComma(this.metaobjectAnnotation.getPrototypeOfAnnotation());
+			String protoName = Lexer.addSpaceAfterComma(this.annotation.getPrototypeOfAnnotation());
 
 			int sizeListList = strListList.size();
 			if ( sizeListList != 1 ) {
-				compiler.error(this.getMetaobjectAnnotation().getFirstSymbol(),
+				compiler.error(this.getAnnotation().getFirstSymbol(),
 						"Prototype 'Union' should have just one pair of '<' and '>' with parameters (like 'Union<Int, Char>')");
 				return null;
 			}
 			this.strList = strListList.get(0);
 			int sizeList = strList.size();
 			if ( sizeList <= 1 ) {
-				compiler.error(this.getMetaobjectAnnotation().getFirstSymbol(),
+				compiler.error(this.getAnnotation().getFirstSymbol(),
 						"Prototype 'Union' should have  at least two parameters");
 				return null;
 			}
@@ -94,7 +94,7 @@ public class CyanMetaobjectCreateUnion extends CyanMetaobjectAtAnnot
 			for ( String str : strList ) {
 				if ( str.equals("Nil") || str.equals(MetaHelper.cyanLanguagePackageName + ".Nil") ) {
 					if ( nilIndex >= 0 ) {
-						compiler.error(this.getMetaobjectAnnotation().getFirstSymbol(),
+						compiler.error(this.getAnnotation().getFirstSymbol(),
 								"Prototype 'Union' with more than one 'Nil' as parameter");
 						return null;
 					}
@@ -116,13 +116,13 @@ public class CyanMetaobjectCreateUnion extends CyanMetaobjectAtAnnot
 			 * OR
 			 *        true, false, true, false
 			 */
-			// // this.getMetaobjectAnnotation().setInfo_dpa( hasLowerCase );
+			// // this.getAnnotation().setInfo_parsing( hasLowerCase );
 			if ( hasLowerCase ) {
 				/*
 				 * check whether lowerCaseParameter is of the form "true, false, true, false, ..."
 				 */
 				if ( sizeList%2 != 0 || sizeList < 4 ) {
-					compiler.error(this.getMetaobjectAnnotation().getFirstSymbol(),
+					compiler.error(this.getAnnotation().getFirstSymbol(),
 							"Prototype 'Union' with lower-case parameters should have an even number of parameters greater or equal to 4"
 							);
 					return null;
@@ -132,7 +132,7 @@ public class CyanMetaobjectCreateUnion extends CyanMetaobjectAtAnnot
 					String prototypeName = strList.get(2*k+1);
 					if ( Character.isUpperCase(symbolName.charAt(0)) ||
 						 (Character.isLowerCase(prototypeName.charAt(0)) && prototypeName.indexOf('.') < 0 )  ) {
-						compiler.error(this.getMetaobjectAnnotation().getFirstSymbol(),
+						compiler.error(this.getAnnotation().getFirstSymbol(),
 								"Prototype 'Union' with lower-case parameters should have the form Union<lowerCase, UpperCase, lowerCase, UpperCase, ...>"
 								);
 						return null;
@@ -145,9 +145,9 @@ public class CyanMetaobjectCreateUnion extends CyanMetaobjectAtAnnot
 					compiler.errorAtGenericPrototypeInstantiation("Prototype 'Union' with lower-case parameters cannot have 'Nil' as a type parameter");
 
 					/*
-					compiler.error(this.getMetaobjectAnnotation().getFirstSymbol(),
+					compiler.error(this.getAnnotation().getFirstSymbol(),
 							"Prototype 'Union' with lower-case parameters cannot have 'Nil' as a type parameter",
-							this.getMetaobjectAnnotation().getFirstSymbol().getSymbolString(), ErrorKind.metaobject_error);
+							this.getAnnotation().getFirstSymbol().getSymbolString(), ErrorKind.metaobject_error);
 					*/
 
 					return null;
