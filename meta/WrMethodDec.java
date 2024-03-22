@@ -234,7 +234,7 @@ public class WrMethodDec extends WrSlotDec implements IDeclarationWritable {
 	}
 
 	/**
-	 * return the ChooseFoldersCyanInstallation Unit that declared this method.
+	 * return the Program Unit that declared this method.
 	   @return
 	 */
 	public WrPrototype getDeclaringObject() {

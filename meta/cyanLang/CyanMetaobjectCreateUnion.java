@@ -423,7 +423,7 @@ public class CyanMetaobjectCreateUnion extends CyanMetaobjectAtAnnot
 //				}
 //				s.append("{\n");
 //				s.append("          // unless there is a compiler error, this will never be executed\n");
-//				s.append("            throw: CyException\n");
+//				s.append("            throw CyException\n");
 //				s.append("        }\n");
 //				s.append("    }\n");
 //				*/
@@ -501,7 +501,7 @@ public class CyanMetaobjectCreateUnion extends CyanMetaobjectAtAnnot
 //				}
 //				s.append(" {\n");
 //				s.append("            // unless there is a compiler error, this will never be executed\n");
-//				s.append("            throw: CyException\n");
+//				s.append("            throw CyException\n");
 //				s.append("        }\n");
 //				s.append("    }\n");
 //				*/
@@ -552,7 +552,7 @@ public class CyanMetaobjectCreateUnion extends CyanMetaobjectAtAnnot
 //			s.append("    override\n");
 //			s.append("    func cast: Any other -> " + currentPrototypeName + " {\n");
 //			s.append("        if other isA: " + currentPrototypeName + " { @javacode{* return (" + javaNameCurrentPrototype + " ) _other; *} };\n");
-//			s.append("        throw: ExceptionCast(\"Cannot cast \" + (other prototypeName) + \" to '" + currentPrototypeName + "'\");\n");
+//			s.append("        throw ExceptionCast(\"Cannot cast \" + (other prototypeName) + \" to '" + currentPrototypeName + "'\");\n");
 //			s.append("    }\n\n");
 //		    */
 //

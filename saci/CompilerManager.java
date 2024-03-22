@@ -499,7 +499,7 @@ public class CompilerManager {
 				// while statement.
 				for (int i = numCompilationUnitsAlreadyCompiled; i < sizeNonGenericCompilationUnitList; i++) {
 					compilationUnit = nonGenericCompilationUnitList.get(i);
-//					if ( compilationUnit.getFilename().equals("ChooseFoldersCyanInstallation.cyan") ) {
+//					if ( compilationUnit.getFilename().equals("Program.cyan") ) {
 //						System.out.println("$$$$$ ");
 //					}
 					if ( compilationUnit.getAlreadPreviouslyCompiled() ) {
@@ -739,16 +739,16 @@ public class CompilerManager {
 
 		Env newEnv = new Env(env.getProject());
 		/*
-		 * If a generic prototype is created when method calcInterfaceTypes of ChooseFoldersCyanInstallation is being executed
+		 * If a generic prototype is created when method calcInterfaceTypes of Program is being executed
 		 * (env.getProject().getProgram().getInCalcInterfaceTypes() returns true), it is not necessary
 		 * to call its method calcInterfaceTypes. It will be called in the loop of
-		 * method ChooseFoldersCyanInstallation::calcInterfaceTypes.
+		 * method Program::calcInterfaceTypes.
 
-		 * If a generic prototype is created when method calcInternalTypes of ChooseFoldersCyanInstallation is being executed,
+		 * If a generic prototype is created when method calcInternalTypes of Program is being executed,
 		 * method calcInterfaceTypes of this generic prototype should be called because the interface
 		 * of this prototype is necessary in methods calcInternalTypes. Method calcInternalTypes
 		 * of this newly created generic prototype will be called in the loop of
-		 * method ChooseFoldersCyanInstallation::calcInternalTypes.
+		 * method Program::calcInternalTypes.
 		 *
 		 * calcInternalTypes cannot be called when a generic prototype is created when
 		 * the compiler is calling calcInterfaceTypes. If this is allowed, some calcInternalType
@@ -2174,7 +2174,7 @@ public class CompilerManager {
 	   @param prototypeFileName
 	   @param packageName
 	   @param hiddenDirectory
-	   @return  // C:\Dropbox\Cyan\cyanTests\simple\\main\ChooseFoldersCyanInstallation\--tmpkeepValue_n\keepValue_n
+	   @return  // C:\Dropbox\Cyan\cyanTests\simple\\main\Program\--tmpkeepValue_n\keepValue_n
 	 */
 	public String getPathFileHiddenDirectory(String prototypeFileName, String packageName,
 			DirectoryKindPPP hiddenDirectory) {

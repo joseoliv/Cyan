@@ -64,8 +64,8 @@ public interface ICompilerAction_parsing extends IAbstractCyanCompiler {
 
 	/** At the beginning of each instantiation of a generic prototype, the
 	 * compiler adds an annotation <br>
-	 * <code> {@literal @}genericPrototypeInstantiationInfo("main", "ChooseFoldersCyanInstallation", 2457, 9) </code><br>
-	 * that gives information on the package (main), prototype (ChooseFoldersCyanInstallation), line, and column
+	 * <code> {@literal @}genericPrototypeInstantiationInfo("main", "Program", 2457, 9) </code><br>
+	 * that gives information on the package (main), prototype (Program), line, and column
 	 * of the instantiation. Metaobject of annotation genericPrototypeInstantiationInfo uses
 	 * the four methods below to set these information. The methods can also be
 	 * used by metaobjects that create new prototypes. If there is an error in

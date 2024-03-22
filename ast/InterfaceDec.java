@@ -401,7 +401,7 @@ public class InterfaceDec extends Prototype {
 			ms.genCyan(pw, true, cyanEnv, true);
 			pw.println(" {");
 			pw.add();
-			pw.printlnIdent("throw: ExceptionCannotCallInterfaceMethod");
+			pw.printlnIdent("throw ExceptionCannotCallInterfaceMethod");
 			pw.sub();
 			pw.printlnIdent("}");
 			pw.println();

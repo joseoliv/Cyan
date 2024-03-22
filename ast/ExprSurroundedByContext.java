@@ -12,7 +12,7 @@ import saci.Env;
    such as <code>i+j</code> in
  * <code> <br>
  * {@literal @}markDeletedCode(1)
- * {@literal @}pushCompilationContext(atisemAn_id_2, "number(bin, Bin, BIN)", main, ChooseFoldersCyanInstallation, 6) i + j {@literal @}popCompilationContext(atisemAn_id_2)<br><br>
+ * {@literal @}pushCompilationContext(atisemAn_id_2, "number(bin, Bin, BIN)", main, Program, 6) i + j {@literal @}popCompilationContext(atisemAn_id_2)<br><br>
  *
  * The metaobject annotations that precede the expression should be a regular metaobject annotation, optionally markDeletedCode, and necessarily
  * pushCompilationContext. The metaobject annotation that follows the expression should be popCompilationContext.

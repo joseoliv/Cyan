@@ -55,7 +55,7 @@ public class MessageSendToAnnotation {
 	}
 
 	/*
-	public boolean action(ChooseFoldersCyanInstallation p, ExprGenericPrototypeInstantiation e) {
+	public boolean action(Program p, ExprGenericPrototypeInstantiation e) {
 		switch (message) {
 		case "writeCode" :
 			p.addCompilationUnitToWrite( e );

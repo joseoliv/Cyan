@@ -75,7 +75,7 @@ public class CyanMetaobjectCreateFieldIfAccessed extends CyanMetaobjectAtAnnot
 				"   cast " + typeName + " " + tmpName + " = missingFieldMap get: \"" + fieldName + "\" {\r\n" +
 				"       ^ " + tmpName + "\r\n" +
 				"   }\r\n" +
-				"   throw: ExceptionStr(\"Field " + fieldName + " was not found\")\r\n" +
+				"   throw ExceptionStr(\"Field " + fieldName + " was not found\")\r\n" +
 				"   \r\n" +
 				"} eval";
 		return new Tuple3<String, String, StringBuffer>("cyan.lang", typeName,

@@ -430,9 +430,9 @@ public class StatementLocalVariableDec extends Statement implements VariableDecI
 			/**
 			 * change the context parameter types of an inner object that uses this variable. That is,
 			 * the object is something like
-                object Fun_0__(ChooseFoldersCyanInstallation self__, Any &s12)  extends Function<Nil>
+                object Fun_0__(Program self__, Any &s12)  extends Function<Nil>
                     ...
-    				func new: ChooseFoldersCyanInstallation self__, Any &s12 -> Fun_0__ { ... }
+    				func new: Program self__, Any &s12 -> Fun_0__ { ... }
     				...
     			end
 

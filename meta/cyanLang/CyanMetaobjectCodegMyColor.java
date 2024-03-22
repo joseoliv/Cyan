@@ -24,7 +24,7 @@ public class CyanMetaobjectCodegMyColor extends CyanMetaobjectAtAnnotCodeg
 	@Override
 	public StringBuffer semAn_codeToAdd(ICompiler_semAn compiler_semAn) {
 
-		compiler_semAn.writeTextFile( new char[] { 'a', 'b', 'c' },  "videoComments.txt", "ChooseFoldersCyanInstallation", "main", DirectoryKindPPP.DATA);
+		compiler_semAn.writeTextFile( new char[] { 'a', 'b', 'c' },  "videoComments.txt", "Program", "main", DirectoryKindPPP.DATA);
 		return new StringBuffer(this.getAnnotation().getCodegInfo().toString());
 	}
 

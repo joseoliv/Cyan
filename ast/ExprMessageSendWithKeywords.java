@@ -313,6 +313,7 @@ abstract public class ExprMessageSendWithKeywords extends ExprMessageSend {
 	/**
 	 * true if this message send do not return. It is true if it is a message send
 	 * to 'throw:' or other method that do not return
+	 * Method 'throw:' has been deprecated.
 	 */
 	protected boolean doNotReturn;
 

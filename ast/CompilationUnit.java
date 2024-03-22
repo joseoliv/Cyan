@@ -239,8 +239,8 @@ public class CompilationUnit extends CompilationUnitSuper implements ASTNode, Cl
 							// genParam is just like Int in <Int, Int>
 
 							// all packages of all real parameters should be imported. That is,
-							// if this compilation unit defines "object Stack<ChooseFoldersCyanInstallation> ... end" then
-							// it should import package "main" in which "ChooseFoldersCyanInstallation" is declared
+							// if this compilation unit defines "object Stack<Program> ... end" then
+							// it should import package "main" in which "Program" is declared
 
 							//  realPrototypeName is something like  "Stack(1)"
 
@@ -462,7 +462,7 @@ public class CompilationUnit extends CompilationUnitSuper implements ASTNode, Cl
 
 			genCyan(pw, cyanEnv);
 			//#$
-//			ChooseFoldersCyanInstallation p = env.getProject().getProgram();
+//			Program p = env.getProject().getProgram();
 //			Prototype originProgUnit = env.getCurrentCompilationUnit().getPublicPrototype();
 //			p.addInstantiatedPrototypeName_to_WhereInfo(
 //					originProgUnit.getFullName(),

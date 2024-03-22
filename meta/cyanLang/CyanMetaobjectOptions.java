@@ -1,3 +1,4 @@
+
 package meta.cyanLang;
 
 import java.util.List;
@@ -15,7 +16,7 @@ import meta.WrCyanPackage_dpp;
 import meta.WrProgram_dpp;
 
 public class CyanMetaobjectOptions extends CyanMetaobjectAtAnnot
-implements IAction_dpp {
+		implements IAction_dpp {
 
 	public CyanMetaobjectOptions() {
 		super("options", AnnotationArgumentsKind.OneOrMoreParameters,
@@ -25,8 +26,6 @@ implements IAction_dpp {
 				Token.PUBLIC);
 	}
 
-
-
 	@Override
 	public void check() {
 
@@ -34,37 +33,61 @@ implements IAction_dpp {
 		int i = 0;
 		List<Object> paramList = annot.getJavaParameterList();
 		int size = paramList.size();
-		while ( i < size ) {
+		while (i < size) {
 			Object param = paramList.get(i);
 			if ( !(param instanceof String) ) {
-				addError("The " + i + "th parameter of this annotation should have type 'String'");
-				return ;
+				addError("The " + (i + 1)
+						+ "th parameter of this annotation should have type 'String'");
+				return;
 			}
-			String op = (String ) param;
-			switch ( op.toLowerCase(Locale.US) ) {
+			String op = (String) param;
+			switch (op.toLowerCase(Locale.US)) {
 			case MetaHelper.maxnumroundsfixmetastr:
 				++i;
-				if ( i >= paramList.size() || !(paramList.get(i) instanceof Integer) ) {
-					addError("After option '" + op + "', we expect an Int number");
-					return ;
+				if ( i >= paramList.size()
+						|| !(paramList.get(i) instanceof Integer) ) {
+					addError("After option '" + op
+							+ "', we expect an Int number");
+					return;
 				}
-				this.maxNumRoundsFixMeta = (Integer ) paramList.get(i);
-				if ( this.maxNumRoundsFixMeta > maxNumRoundsFixMetaMax  ) {
-					addError("Value of '" + MetaHelper.maxnumroundsfixmetastr + "' is too big."
-							+ " Use a value less than " + maxNumRoundsFixMetaMax);
-					return ;
+				this.maxNumRoundsFixMeta = (Integer) paramList.get(i);
+				if ( this.maxNumRoundsFixMeta > maxNumRoundsFixMetaMax ) {
+					addError("Value of '" + MetaHelper.maxnumroundsfixmetastr
+							+ "' is too big." + " Use a value less than "
+							+ maxNumRoundsFixMetaMax);
+					return;
 				}
 				break;
+			case "debug":
+				MetaHelper.onDebug = true;
+				break;
 			case MetaHelper.timeoutMillisecondsMetaobjectsStr:
-				if ( i >= paramList.size() || !(paramList.get(i) instanceof Integer) ) {
-					addError("After option '" + op + "', we expect an Int number");
-					return ;
+				if ( i >= paramList.size() ) {
+					addError("After option '" + op
+							+ "', we expect an long number");
+					return;
 				}
-				this.timeoutMillisecondsMetaobjects = (Integer ) paramList.get(i);
-				if ( this.timeoutMillisecondsMetaobjects > timeoutMillisecondsMetaobjectsMax ) {
-					addError("Value of '" + MetaHelper.timeoutMillisecondsMetaobjectsStr + "' is too big."
-							+ " Use a value less than " + timeoutMillisecondsMetaobjectsMax);
-					return ;
+				// if ( paramList.get(i + 1) instanceof Long ) {
+				// timeoutMillisecondsMetaobjects = (Long) paramList
+				// .get(i + 1);
+				// }
+				else if ( paramList.get(i + 1) instanceof Integer ) {
+					timeoutMillisecondsMetaobjects = (Integer) paramList
+							.get(i + 1);
+					++i;
+				}
+				else {
+					addError("After option '" + op
+							+ "', we expect an long number");
+					return;
+				}
+				if ( !MetaHelper.onDebug
+						&& this.timeoutMillisecondsMetaobjects > timeoutMillisecondsMetaobjectsMax ) {
+					addError("Value of '"
+							+ MetaHelper.timeoutMillisecondsMetaobjectsStr
+							+ "' is too big." + " Use a value less than "
+							+ timeoutMillisecondsMetaobjectsMax);
+					return;
 				}
 				break;
 			default:
@@ -75,31 +98,39 @@ implements IAction_dpp {
 
 	}
 
-
 	@Override
 	public void dpp_action(ICompiler_dpp compiler) {
 		IDeclaration idec = this.getAttachedDeclaration();
-		if (idec instanceof WrProgram_dpp ) {
-			final WrProgram_dpp program = (WrProgram_dpp ) this.getAttachedDeclaration();
+		if ( idec instanceof WrProgram_dpp ) {
+			final WrProgram_dpp program = (WrProgram_dpp) this
+					.getAttachedDeclaration();
 			if ( maxNumRoundsFixMeta > 0 ) {
-				program.setProgramKeyValue(MetaHelper.maxnumroundsfixmetastr, this.maxNumRoundsFixMeta);
+				program.setProgramKeyValue(MetaHelper.maxnumroundsfixmetastr,
+						this.maxNumRoundsFixMeta);
 			}
 			if ( this.timeoutMillisecondsMetaobjects >= 0 ) {
-				program.setProgramKeyValue(MetaHelper.timeoutMillisecondsMetaobjectsStr, this.timeoutMillisecondsMetaobjects);
+				program.setProgramKeyValue(
+						MetaHelper.timeoutMillisecondsMetaobjectsStr,
+						this.timeoutMillisecondsMetaobjects);
 			}
 		}
-		else if ( idec instanceof WrCyanPackage_dpp ){
+		else if ( idec instanceof WrCyanPackage_dpp ) {
 			// a package
-			final WrCyanPackage_dpp cp = (WrCyanPackage_dpp ) this.getAttachedDeclaration();
+			final WrCyanPackage_dpp cp = (WrCyanPackage_dpp) this
+					.getAttachedDeclaration();
 			if ( maxNumRoundsFixMeta > 0 ) {
-				cp.setPackageKeyValue(MetaHelper.maxnumroundsfixmetastr, this.maxNumRoundsFixMeta);
+				cp.setPackageKeyValue(MetaHelper.maxnumroundsfixmetastr,
+						this.maxNumRoundsFixMeta);
 			}
 			if ( this.timeoutMillisecondsMetaobjects >= 0 ) {
-				cp.setPackageKeyValue(MetaHelper.timeoutMillisecondsMetaobjectsStr, this.timeoutMillisecondsMetaobjects);
+				cp.setPackageKeyValue(
+						MetaHelper.timeoutMillisecondsMetaobjectsStr,
+						this.timeoutMillisecondsMetaobjects);
 			}
 		}
 		else {
-			this.addError("In metaobject 'options', there is probably an internal error");
+			this.addError(
+					"In metaobject 'options', there is probably an internal error");
 		}
 
 	}
@@ -108,10 +139,10 @@ implements IAction_dpp {
 		return timeoutMillisecondsMetaobjects;
 	}
 
-	private int maxNumRoundsFixMeta = -1;
-	private int timeoutMillisecondsMetaobjects = -1;
+	private int					maxNumRoundsFixMeta					= -1;
+	private int					timeoutMillisecondsMetaobjects		= -1;
 
-	private static final int maxNumRoundsFixMetaMax = 10;
-	private static final int timeoutMillisecondsMetaobjectsMax = 20;
+	private static final int	maxNumRoundsFixMetaMax				= 10;
+	private static final int	timeoutMillisecondsMetaobjectsMax	= 30000000;
 
 }

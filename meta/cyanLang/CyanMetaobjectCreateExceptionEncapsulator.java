@@ -69,7 +69,7 @@ public class CyanMetaobjectCreateExceptionEncapsulator extends CyanMetaobjectAtA
 				String source = strList.get(i);
 				signatureList += "    func eval: " + source + ";\n";
 				s.append("    func eval: " + source + " e { \n");
-				s.append("        throw: " + encapsulator + "(e)" );
+				s.append("        throw " + encapsulator + "(e)" );
 				s.append("    }\n");
 
 			}

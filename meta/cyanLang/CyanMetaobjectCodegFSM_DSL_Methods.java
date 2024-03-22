@@ -187,7 +187,7 @@ public class CyanMetaobjectCodegFSM_DSL_Methods extends CyanMetaobjectAtAnnot
 				"            }\n" +
 				"        }\n");
 		s.append(
-				"        throw: ExceptionStr(\"Error in method call: the Finite State \" ++ \n" +
+				"        throw ExceptionStr(\"Error in method call: the Finite State \" ++ \n" +
 				"           \"Machine of " + this.getName() + " does not allow transition from '\" ++ origin ++\n" +
 				"           \"' using method  '\" ++ label ++ \"'\");\n" +
 				"");
@@ -284,7 +284,7 @@ public class CyanMetaobjectCodegFSM_DSL_Methods extends CyanMetaobjectAtAnnot
 //				"            }\n" +
 //				"        }\n");
 //		s.append(
-//				"        throw: ExceptionStr(\"Error in method call: the Finite State \" ++ \n" +
+//				"        throw ExceptionStr(\"Error in method call: the Finite State \" ++ \n" +
 //				"           \"Machine of " + this.getName() + " does not allow transition from '\" ++ origin ++\n" +
 //				"           \"' using method  '\" ++ label ++ \"'\");\n" +
 //				"");

@@ -401,7 +401,7 @@ public class ObjectDec extends Prototype {
 	@Override
 	public void genJava(PWInterface pw, Env env) {
 
-//		if ( this.getName().equals("ChooseFoldersCyanInstallation") ) {
+//		if ( this.getName().equals("Program") ) {
 //			saci.MyFile.write(this.compilationUnit);
 //		}
 
@@ -2464,7 +2464,7 @@ public class ObjectDec extends Prototype {
 		}
 
 
-		/* if ( this.getName().equals("ChooseFoldersCyanInstallation") &&
+		/* if ( this.getName().equals("Program") &&
 			this.getCompilationUnit().getProgram().getProject().getCompilerManager().getCompilationStep() == CompilationStep.step_9 )
 			MyFile.write(this.getCompilationUnit());  */
 
@@ -2853,7 +2853,7 @@ public class ObjectDec extends Prototype {
 
 
 	/**
-	 * see comment on ChooseFoldersCyanInstallation::calculatesTypes(Env env)
+	 * see comment on Program::calculatesTypes(Env env)
 	 */
 	@Override
 	public void calcInterfaceTypes(Env env) {
@@ -3278,6 +3278,7 @@ public class ObjectDec extends Prototype {
 		return this.sha256Code;
 	}
 
+	@Override
 	public boolean allFieldsInitializedInDeclaration() {
 		for ( FieldDec f : this.fieldList ) {
 			if ( f.getExpr() == null ) {

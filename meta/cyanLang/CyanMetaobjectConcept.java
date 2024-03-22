@@ -2661,7 +2661,7 @@ public class CyanMetaobjectConcept extends CyanMetaobjectAtAnnot
 
 	/**
 	 * return true if 'e' is a type, which should start with an upper-case letter without any dots as
-	 * "Int", "ChooseFoldersCyanInstallation" or it should be a package name followed by a prototype name as
+	 * "Int", "Program" or it should be a package name followed by a prototype name as
 	 * "main.Program", "cyan.lang.Int"
 	 */
     static public boolean isType(WrExpr e) {

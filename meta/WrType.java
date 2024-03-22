@@ -1,9 +1,11 @@
+
 package meta;
 
 import java.util.List;
 import ast.InterfaceDec;
 import ast.ObjectDec;
 import ast.Type;
+import saci.NameServer;
 
 abstract public class WrType extends WrASTNode {
 
@@ -11,27 +13,39 @@ abstract public class WrType extends WrASTNode {
 		this.hidden = hidden;
 	}
 
-
-	public static WrType Byte = null;
-	public static WrType Short = null;
-	public static WrType Int = null;
-	public static WrType Long = null;
-	public static WrType Float = null;
-	public static WrType Double = null;
-	public static WrType Char = null;
-	public static WrType Boolean = null;
-	public static WrType String = null;
-	public static WrType Nil = null;
-	public static WrType Any = null;
-	public static WrType Dyn = null;
+	public static WrType	Byte	= null;
+	public static WrType	Short	= null;
+	public static WrType	Int		= null;
+	public static WrType	Long	= null;
+	public static WrType	Float	= null;
+	public static WrType	Double	= null;
+	public static WrType	Char	= null;
+	public static WrType	Boolean	= null;
+	public static WrType	String	= null;
+	public static WrType	Nil		= null;
+	public static WrType	Any		= null;
+	public static WrType	Dyn		= null;
 
 	abstract public String getFullName();
+
 	abstract public String getName();
+
 	final public String getPackageName() {
 		return hidden.getPackageName();
 	}
 
+	public String getNameNoCyanLang() {
+		if ( this.getPackageName()
+				.equals(NameServer.cyanLanguagePackageName) ) {
+			return getName();
+		}
+		else {
+			return getFullName();
+		}
+	}
+
 	abstract public boolean isSupertypeOf(WrType other, WrEnv env);
+
 	abstract public WrType getInsideType();
 
 	@SuppressWarnings("unused")
@@ -45,17 +59,22 @@ abstract public class WrType extends WrASTNode {
 		return hidden;
 	}
 
-	public boolean isInterface() { return hidden instanceof InterfaceDec; }
-	public boolean isObjectDec() { return hidden instanceof ObjectDec; }
+	public boolean isInterface() {
+		return hidden instanceof InterfaceDec;
+	}
+
+	public boolean isObjectDec() {
+		return hidden instanceof ObjectDec;
+	}
 
 	Type hidden;
 
 	public String getNameWithAttachedTypes() {
 		return hidden.getNameWithAttachedTypes();
 	}
+
 	public String getJavaName() {
 		return hidden.getJavaName();
 	}
-
 
 }

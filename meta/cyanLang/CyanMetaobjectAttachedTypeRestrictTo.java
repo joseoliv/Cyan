@@ -42,7 +42,7 @@ public class CyanMetaobjectAttachedTypeRestrictTo extends CyanMetaobjectAtAnnot
 		 *    var Int@restrictTo{* self >= 0 && self <= 12 *} n;
 		 *    n = k;
 		 *
-		 *    n = { Int tmp = k; if  !(Text with self replaced by tmp)  { throw: ExceptionStr() } ^tmp } eval
+		 *    n = { Int tmp = k; if  !(Text with self replaced by tmp)  { throw ExceptionStr() } ^tmp } eval
 		 */
 
 		final WrAnnotationAt annot = this.getAnnotation();
@@ -71,7 +71,7 @@ public class CyanMetaobjectAttachedTypeRestrictTo extends CyanMetaobjectAtAnnot
 				"'.  The expression value is $" + escapeString(tmpVar);
 		sb.append("{ let " + attachedTypeName + " " + tmpVar + " = " + rightExpr.asString() + "; \r\n" +
 				"              if !(" + text + ") { \r\n" +
-				"                  throw: ExceptionStr(\"" + msg + "\")\r\n" +
+				"                  throw ExceptionStr(\"" + msg + "\")\r\n" +
 				"              } \r\n" +
 				"              ^" + tmpVar + " \r\n" +
 				"           } eval ");

@@ -728,7 +728,7 @@ public class CyanPackage implements ASTNode, Declaration {
 	private boolean hasGenericPrototype;
 
 	/**
-	 * ChooseFoldersCyanInstallation to which this Cyan package belongs to
+	 * Program to which this Cyan package belongs to
 	 */
 	private Program program;
 

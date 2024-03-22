@@ -148,6 +148,15 @@ public class TypeWithAnnotations extends Type {
 		return insideType;
 	}
 
+	public Type getInsideTypeNoAnnotations() {
+		Type t = insideType;
+		while ( t != null && t instanceof TypeWithAnnotations ) {
+			TypeWithAnnotations ta = (TypeWithAnnotations ) t;
+			t = ta.insideType;
+		}
+		return t;
+	}
+
 	public void setInsideType(Type insideType) {
 		this.insideType = insideType;
 	}

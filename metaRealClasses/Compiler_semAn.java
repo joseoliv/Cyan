@@ -462,9 +462,9 @@ public class Compiler_semAn implements ICompiler_semAn {
 	 * This map is only created on demand. The key has the format: the package name, a single space, prototype name.
 	 * It can be, for example,<br>
 	 * <code>
-	 * "br.main ChooseFoldersCyanInstallation"
+	 * "br.main Program"
 	 * </code><br>
-	 * The package name is "br.main" and the prototype name is "ChooseFoldersCyanInstallation".
+	 * The package name is "br.main" and the prototype name is "Program".
 	 *
 	 * This method is NOT in interface ICompiler_semAn. It should not be used for now.
 	 *

@@ -72,7 +72,7 @@ public class CyanMetaobjectCreateExceptionConverter extends CyanMetaobjectAtAnno
 				String target = strList.get(i+1);
 				signatureList += "    func eval: " + source + " ;\n";
 				s.append("    func eval: " + source + " e { \n");
-				s.append("        throw: " + target + "()\n" );
+				s.append("        throw " + target + "()\n" );
 				s.append("    }\n");
 
 				if ( set.contains(source) ) {

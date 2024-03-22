@@ -32,6 +32,7 @@ import ast.Prototype;
 import ast.Statement;
 import ast.Type;
 import ast.TypeDynamic;
+import chooseFile.ChooseFoldersCyanInstallation;
 import cyan.lang.CyByte;
 import cyan.lang.CyInt;
 import cyan.lang.CyString;
@@ -483,7 +484,7 @@ public class Saci {
         String dir = "C:\\Dropbox\\Cyan\\cyanTests\\codegTest\\";
         final MyFile fp = new MyFile(dir + "project.pyan");
         final char[] sourceProject = fp.readFile();
-        final MyFile fs = new MyFile(dir + "main\\ChooseFoldersCyanInstallation.cyan");
+        final MyFile fs = new MyFile(dir + "main\\Program.cyan");
         final char[] sourceProgram = fs.readFile();
 
         final PrintWriter printWriter = new PrintWriter(System.out, true);
@@ -494,8 +495,8 @@ public class Saci {
 
         for (int kk = 0; kk < 1; ++kk) {
             // System.exit( aSaci.run(args) );
-            aSaci.parseSingleSource(aSaci.cyanLangDir, aSaci.javaLibDir, "main", "ChooseFoldersCyanInstallation", sourceProgram,
-                    // "package main object ChooseFoldersCyanInstallation func run { let G<Int> g; g m println; }
+            aSaci.parseSingleSource(aSaci.cyanLangDir, aSaci.javaLibDir, "main", "Program", sourceProgram,
+                    // "package main object Program func run { let G<Int> g; g m println; }
                     // end\0".toCharArray(),
                     dir + "project.pyan", sourceProject, false);
             for (ICodeg codeg : aSaci.getOtherCodegList()) {
@@ -941,15 +942,24 @@ public class Saci {
         if ( cyanLangDir == null ) {
             cyanLangDir = System.getenv("CYAN_HOME");
             if ( cyanLangDir == null ) {
-                error("Missing system environment variable 'CYAN_HOME'. Reinstall the Cyan compiler");
-                return false;
+            	ChooseFoldersCyanInstallation.setEnvironmentVariables(true, true);
+                cyanLangDir = System.getenv("CYAN_HOME");
+            	if ( cyanLangDir == null ) {
+                    error("Missing system environment variable 'CYAN_HOME'. Reinstall the Cyan compiler");
+                    return false;
+            	}
             }
             cyanLangDir = meta.MetaHelper.removeQuotes(cyanLangDir);
             File f = new File(cyanLangDir);
             if ( !f.exists() || !f.isDirectory() ) {
-                error("Directory '" + cyanLangDir + "' does not exist. '" + cyanLangDir
-                        + "' is the value of the System variable CYAN_HOME. Reinstall the Cyan compiler");
-                return false;
+            	ChooseFoldersCyanInstallation.setEnvironmentVariables(true, true);
+                cyanLangDir = System.getenv("CYAN_HOME");
+            	f = new File(cyanLangDir);
+            	if ( !f.exists() || !f.isDirectory() )  {
+                    error("Directory '" + cyanLangDir + "' does not exist. '" + cyanLangDir
+                            + "' is the value of the System variable CYAN_HOME. Reinstall the Cyan compiler");
+                    return false;
+            	}
             }
         }
         if ( javaLibDir == null ) {
@@ -1406,7 +1416,7 @@ public class Saci {
                                                 }
                                             }
                                             // MyFile.write(env.searchPackagePrototype("main",
-                                            // "ChooseFoldersCyanInstallation").getCompilationUnit());
+                                            // "Program").getCompilationUnit());
 
                                         }
                                     }
@@ -1447,57 +1457,62 @@ public class Saci {
          */
         Saci.javaHome = System.getenv(NameServer.JAVA_HOME_FOR_CYAN);
         if ( Saci.javaHome == null ) {
-            File jdk = new File("C:\\ChooseFoldersCyanInstallation Files\\Java");
-            if ( jdk.exists() && jdk.isDirectory() ) {
-                String jdk18 = "jdk1.8.0_";
-                File updated_jdk = null;
-                String updated_jdk_str = null;
-                int updated_version = -1;
-                for (File f : jdk.listFiles()) {
-                    String dirName = f.getName();
-                    if ( dirName.startsWith(jdk18) ) {
-                        if ( updated_jdk == null ) {
-                            updated_jdk = f;
-                            updated_jdk_str = dirName.substring(jdk18.length(), dirName.length());
-                            try {
-                                updated_version = Integer.parseInt(updated_jdk_str);
-                            } catch (NumberFormatException e) {
-                                updated_version = -1;
-                                updated_jdk = null;
-                                updated_jdk_str = null;
-                            }
-                        }
-                        else {
-                            String last_jdk_str = dirName.substring(jdk18.length(), dirName.length());
-                            int last_version = -1;
-                            try {
-                                last_version = Integer.parseInt(last_jdk_str);
-                            } catch (NumberFormatException e) {
-                            }
-                            if ( last_version > updated_version ) {
-                                updated_jdk = f;
-                                updated_jdk_str = last_jdk_str;
-                            }
-                        }
-                    }
-                }
-                if ( updated_jdk != null ) {
-                    try {
-                        Saci.javaHome = updated_jdk.getCanonicalPath();
-                    } catch (IOException e) {
-                        Saci.javaHome = null;
-                    }
-                }
+        	ChooseFoldersCyanInstallation.setEnvironmentVariables(true, true);
+            Saci.javaHome = System.getenv(NameServer.JAVA_HOME_FOR_CYAN);
+        	if ( Saci.javaHome == null ) {
 
-            }
-            if ( Saci.javaHome == null ) {
-                System.out.println("Set environment variable " + NameServer.JAVA_HOME_FOR_CYAN
-                        + ". For this time only, the compiler will use variable java.home instead");
-                Saci.javaHome = System.getenv("java.home");
+                File jdk = new File("C:\\Program Files\\Java");
+                if ( jdk.exists() && jdk.isDirectory() ) {
+                    String jdk18 = "jdk1.8.0_";
+                    File updated_jdk = null;
+                    String updated_jdk_str = null;
+                    int updated_version = -1;
+                    for (File f : jdk.listFiles()) {
+                        String dirName = f.getName();
+                        if ( dirName.startsWith(jdk18) ) {
+                            if ( updated_jdk == null ) {
+                                updated_jdk = f;
+                                updated_jdk_str = dirName.substring(jdk18.length(), dirName.length());
+                                try {
+                                    updated_version = Integer.parseInt(updated_jdk_str);
+                                } catch (NumberFormatException e) {
+                                    updated_version = -1;
+                                    updated_jdk = null;
+                                    updated_jdk_str = null;
+                                }
+                            }
+                            else {
+                                String last_jdk_str = dirName.substring(jdk18.length(), dirName.length());
+                                int last_version = -1;
+                                try {
+                                    last_version = Integer.parseInt(last_jdk_str);
+                                } catch (NumberFormatException e) {
+                                }
+                                if ( last_version > updated_version ) {
+                                    updated_jdk = f;
+                                    updated_jdk_str = last_jdk_str;
+                                }
+                            }
+                        }
+                    }
+                    if ( updated_jdk != null ) {
+                        try {
+                            Saci.javaHome = updated_jdk.getCanonicalPath();
+                        } catch (IOException e) {
+                            Saci.javaHome = null;
+                        }
+                    }
+
+                }
                 if ( Saci.javaHome == null ) {
-                    error("The environment variable 'java.home' was not found");
-                    printErrorList(printWriter, new Env(project));
-                    return;
+                    System.out.println("Set environment variable " + NameServer.JAVA_HOME_FOR_CYAN
+                            + ". For this time only, the compiler will use variable java.home instead");
+                    Saci.javaHome = System.getenv("java.home");
+                    if ( Saci.javaHome == null ) {
+                        error("The environment variable 'java.home' was not found");
+                        printErrorList(printWriter, new Env(project));
+                        return;
+                    }
                 }
             }
         }
@@ -2260,8 +2275,8 @@ public class Saci {
                 }
                 eachCompUnit.setText(newText);
                 /*
-                if ( eachCompUnit.getFullFileNamePath().contains("ChooseFoldersCyanInstallation") ) {
-                	printText("ChooseFoldersCyanInstallation", newText, newText.length);
+                if ( eachCompUnit.getFullFileNamePath().contains("Program") ) {
+                	printText("Program", newText, newText.length);
                 }
                 */
 

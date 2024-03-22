@@ -173,7 +173,7 @@ public class CyanMetaobjectAttachedTypeRange
 						 " Its value is $" + tmpVar;
 				sb.append("({ (: " + typeNameLimits + " " + tmpVar + " :) \r\n" +
 						"              if " + tmpVar + " < " + firstStr + " || " + tmpVar + " > " + lastStr + " { \r\n" +
-						"                  throw: ExceptionStr(\"" + msg + "\")\r\n" +
+						"                  throw ExceptionStr(\"" + msg + "\")\r\n" +
 						"              } \r\n" +
 						"              ^" + tmpVar + " \r\n" +
 						"           } eval: (" + rightExpr.asString() + ")) ");

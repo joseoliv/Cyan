@@ -417,7 +417,7 @@ final public class CyanEnv {
 	}
 
 	/**
-	 * the current ChooseFoldersCyanInstallation unit
+	 * the current Program unit
 	 */
 	private Prototype	currentPrototype;
 

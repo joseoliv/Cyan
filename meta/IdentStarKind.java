@@ -1,6 +1,6 @@
 package meta;
 /**
- * represents the kind of a qualified identifier such as "count",  "main.Program", "ChooseFoldersCyanInstallation", "factorial"
+ * represents the kind of a qualified identifier such as "count",  "main.Program", "Program", "factorial"
    @author jose
  */
 public enum IdentStarKind {

@@ -171,7 +171,7 @@ public class CyanMetaobjectCreateArrayMethods  extends CyanMetaobjectAtAnnot
 					"");
 
 			if ( insideType instanceof WrPrototype ) {
-				strSlotList = genSortMethos(paramTypeName, env, javaParamTypeName,
+				strSlotList = genSortMethods(paramTypeName, env, javaParamTypeName,
 						insideType, strSlotList, s);
 
 			}
@@ -238,7 +238,7 @@ public class CyanMetaobjectCreateArrayMethods  extends CyanMetaobjectAtAnnot
 	   @param s
 	   @return
 	 */
-	private static String genSortMethos(String paramTypeName, WrEnv env,
+	private static String genSortMethods(String paramTypeName, WrEnv env,
 			String javaParamTypeName, WrType insideType, String strSlotList,
 			StringBuffer s) {
 		WrPrototype pu = (WrPrototype ) insideType.getInsideType();

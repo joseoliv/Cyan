@@ -1418,7 +1418,7 @@ public class MethodDec extends SlotDec {
 			if ( expr == null ) {
 				// an abstract method
 
-				pwChar.printlnIdent("throw: ExceptionCannotCallAbstractMethod(\"" +
+				pwChar.printlnIdent("throw ExceptionCannotCallAbstractMethod(\"" +
 						this.declaringObject.getFullName() +
 						"::" +
 						this.getMethodSignatureAsString() +

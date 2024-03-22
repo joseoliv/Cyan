@@ -148,12 +148,26 @@ public class MetaInfoServer {
 								||
 								(other != null && other instanceof _ICheckMessageSend__afterSemAn)
 								) {
-
+							WrPrototype puExpr;
 							if ( !(exprType instanceof Prototype) ) {
-								env.error(symForError, "Internal error in MetaInfoServer: type is not a ChooseFoldersCyanInstallation Unit");
-								return ;
+								if ( exprType instanceof TypeWithAnnotations ) {
+									Type tt = ((TypeWithAnnotations ) exprType).getInsideTypeNoAnnotations();
+									if ( tt instanceof Prototype ) {
+										puExpr = ((Prototype ) tt).getI();
+									}
+									else {
+										env.error(symForError, "Internal error in MetaInfoServer: type is not a Program Unit");
+										return ;
+									}
+								}
+								else {
+									env.error(symForError, "Internal error in MetaInfoServer: type is not a Program Unit");
+									return ;
+								}
 							}
-							WrPrototype puExpr = ((Prototype ) exprType).getI();
+							else {
+								puExpr = ((Prototype ) exprType).getI();
+							}
 							try {
 								int timeoutMilliseconds = Timeout.getTimeoutMilliseconds( env,
 										env.getProject().getProgram().getI(),
@@ -334,7 +348,7 @@ public class MetaInfoServer {
 
 
 							if ( !(exprType instanceof Prototype) ) {
-								env.error(unarySymbol, "Internal error in MetaInfoServer: type is not a ChooseFoldersCyanInstallation Unit");
+								env.error(unarySymbol, "Internal error in MetaInfoServer: type is not a Program Unit");
 								return ;
 							}
 							WrPrototype puExpr = ((Prototype ) exprType).getI();

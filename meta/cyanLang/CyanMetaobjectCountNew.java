@@ -22,7 +22,7 @@ import meta.WrType;
         cast table = (System globalTable get: "CountNew") {
             type table get: "main.Program"
                 case Int count2 {
-                    "$count2 objects of ChooseFoldersCyanInstallation were created" println
+                    "$count2 objects of Program were created" println
                 }
         }
  *

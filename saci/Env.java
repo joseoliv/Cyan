@@ -1056,8 +1056,8 @@ public class Env implements Cloneable {
                  * file with the expanded source code
                  */
                 message = message
-                        + "\nLook for the error in the expanded source code, not in the original one. If the source code is 'ChooseFoldersCyanInstallation.cyan' of package 'main', the "
-                        + "expanded source code should be in 'full-main-ChooseFoldersCyanInstallation.cyan' in the directory of the project.";
+                        + "\nLook for the error in the expanded source code, not in the original one. If the source code is 'Program.cyan' of package 'main', the "
+                        + "expanded source code should be in 'full-main-Program.cyan' in the directory of the project.";
             }
         }
 
@@ -1085,8 +1085,8 @@ public class Env implements Cloneable {
                  * help of metaobjects. Give to the user the line number of the
                  * file with the expanded source code
                  */
-                message = "Look for the error in the expanded source code, not in the original one. If the source code is 'ChooseFoldersCyanInstallation.cyan' of package 'main', the "
-                        + "expanded source code should be in 'full-main-ChooseFoldersCyanInstallation.cyan' in the directory of the project. \n"
+                message = "Look for the error in the expanded source code, not in the original one. If the source code is 'Program.cyan' of package 'main', the "
+                        + "expanded source code should be in 'full-main-Program.cyan' in the directory of the project. \n"
                         + message;
             }
         }
@@ -1221,9 +1221,9 @@ public class Env implements Cloneable {
              * else { / * error was in code produced by the compiler, maybe with
              * the help of metaobjects. Give to the user the line number of the
              * file with the expanded source code / specificMessage =
-             * "Look for the error in the expanded source code, not in the original one. If the source code is 'ChooseFoldersCyanInstallation.cyan', the "
+             * "Look for the error in the expanded source code, not in the original one. If the source code is 'Program.cyan', the "
              * +
-             * "expanded source code should be in 'full-ChooseFoldersCyanInstallation.cyan' in the directory of the project."
+             * "expanded source code should be in 'full-Program.cyan' in the directory of the project."
              * + specificMessage; }
              */
         }
@@ -3524,9 +3524,9 @@ public class Env implements Cloneable {
      * This map is only created on demand. The key has the format: the package
      * name, a single space, prototype name. It can be, for example,<br>
      * <code>
-     * "br.main ChooseFoldersCyanInstallation"
+     * "br.main Program"
      * </code><br>
-     * The package name is "br.main" and the prototype name is "ChooseFoldersCyanInstallation".
+     * The package name is "br.main" and the prototype name is "Program".
      *
      */
 
@@ -3542,7 +3542,7 @@ public class Env implements Cloneable {
 
     // throw new ExceptionContainer__(new _ExceptionCast(
     // "Cannot cast expression '(`sprint: \"aa\", 'A' `swith: 0, 3.14)' of line '62'
-    // of file 'ChooseFoldersCyanInstallation.cyan' to cyan.lang.Any") );
+    // of file 'Program.cyan' to cyan.lang.Any") );
     public String javaCodeForCastException(Expr exprToCast, Type leftType) {
         return "new _ExceptionCast( new CyString(\"Cannot cast expression '"
                 + MetaLexer.escapeJavaString(exprToCast.asString()) + "' to '" + leftType.getFullName() + "' in line "
@@ -3708,9 +3708,9 @@ public class Env implements Cloneable {
      * only created on demand. The key to this map is the package name, space,
      * prototype name. It can be, for example,<br>
      * <code>
-     * "br.main ChooseFoldersCyanInstallation"
+     * "br.main Program"
      * </code><br>
-     * The package name is "br.main" and the prototype name is "ChooseFoldersCyanInstallation".
+     * The package name is "br.main" and the prototype name is "Program".
      *
      */
     HashMap<String, Set<WrPrototype>> mapPackageSpaceCyanTypeNameToSubtypeList;
@@ -3720,9 +3720,9 @@ public class Env implements Cloneable {
      * excluded). This list is only created on demand. The key to this map is
      * the package name, space, prototype name. It can be, for example,<br>
      * <code>
-     * "br.main ChooseFoldersCyanInstallation"
+     * "br.main Program"
      * </code><br>
-     * The package name is "br.main" and the prototype name is "ChooseFoldersCyanInstallation".
+     * The package name is "br.main" and the prototype name is "Program".
      *
      */
     HashMap<String, Set<ObjectDec>> mapPackageSpacePrototypeNameToSubprototypeList;

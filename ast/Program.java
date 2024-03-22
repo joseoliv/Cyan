@@ -1235,7 +1235,7 @@ public class Program implements ASTNode, Declaration {
                                     }
                                     if ( lastWithSameNameAsMethod == null || lastMSList == null ) {
                                         env.error(method.getFirstSymbol(),
-                                                "Internal error in calcInterfaceTypes of ChooseFoldersCyanInstallation");
+                                                "Internal error in calcInterfaceTypes of Program");
                                     }
                                     else {
                                         int n = lastMSList.get(0).getMethod().getMethodNumber();
@@ -1615,7 +1615,7 @@ public class Program implements ASTNode, Declaration {
      */
     public void genJava(Env env) {
 
-        // Prototype mainPrototype = env.searchPackagePrototype("main", "ChooseFoldersCyanInstallation");
+        // Prototype mainPrototype = env.searchPackagePrototype("main", "Program");
         // before generating code,
 
         final String mainPackageName = project.getMainPackage();
@@ -1870,10 +1870,10 @@ public class Program implements ASTNode, Declaration {
 
                     } catch (final NullPointerException e) {
                         e.printStackTrace();
-                        env.error(null, "Internal error in ChooseFoldersCyanInstallation::genJava. NPE in " +
+                        env.error(null, "Internal error in Program::genJava. NPE in " +
                                 newFileName);
                     } catch (final ClassCastException e) {
-                        env.error(null, "ClassCastException in ChooseFoldersCyanInstallation::genJava" +
+                        env.error(null, "ClassCastException in Program::genJava" +
                                 newFileName);
                     } catch (final Exception e) {
                         env.error(null, "Error in writing to file " +
@@ -1977,7 +1977,7 @@ public class Program implements ASTNode, Declaration {
                 Process proc = null;
                 try {
                     /*
-                     *  javac  -cp "C:/ChooseFoldersCyanInstallation Files/Java/jdk1.8.0_201/jre/lib/rt.jar";"C:\Dropbox\Cyan\lib\cyan.lang.jar"  -sourcepath "C:\Dropbox\Cyan\lib";"C:\Dropbox\Cyan\cyanTests\java-for-master"
+                     *  javac  -cp "C:/Program Files/Java/jdk1.8.0_201/jre/lib/rt.jar";"C:\Dropbox\Cyan\lib\cyan.lang.jar"  -sourcepath "C:\Dropbox\Cyan\lib";"C:\Dropbox\Cyan\cyanTests\java-for-master"
                      *  "C:\Dropbox\Cyan\cyanTests\java-for-master\main\P.java"
                      */
                     for (CyanPackage cp : this.packageList) {
@@ -2515,7 +2515,7 @@ public class Program implements ASTNode, Declaration {
             if ( t == null ) {
                 env.error(null, "Internal error: program unit '" +
                         pu.getFullName() +
-                        "' was not found in topological sorting (ChooseFoldersCyanInstallation.java)");
+                        "' was not found in topological sorting (Program.java)");
                 return null;
             }
             final List<Prototype> superList = t.f1;
@@ -2545,7 +2545,7 @@ public class Program implements ASTNode, Declaration {
                         if ( superT == null ) {
                             env.error(null, "Internal error: program unit '" +
                                     superInter.getFullName() +
-                                    "' was not found in topological sorting (ChooseFoldersCyanInstallation.java)");
+                                    "' was not found in topological sorting (Program.java)");
                             return null;
                         }
                         superT.f2.add(pu);
@@ -2564,7 +2564,7 @@ public class Program implements ASTNode, Declaration {
                     if ( superT == null ) {
                         env.error(null, "Internal error: program unit '" +
                                 superProto.getFullName() +
-                                "' was not found in topological sorting (ChooseFoldersCyanInstallation.java)");
+                                "' was not found in topological sorting (Program.java)");
                         return null;
                     }
                     superT.f2.add(pu);
@@ -2586,7 +2586,7 @@ public class Program implements ASTNode, Declaration {
                         if ( superT == null ) {
                             env.error(null, "Internal error: program unit '" +
                                     superInter.getFullName() +
-                                    "' was not found in topological sorting (ChooseFoldersCyanInstallation.java)");
+                                    "' was not found in topological sorting (Program.java)");
                             return null;
                         }
                         superT.f2.add(pu);
@@ -2894,7 +2894,7 @@ public class Program implements ASTNode, Declaration {
                             "method. It should be without parameters or with just parameter 'Array<String>'");
                 } catch (final CompileErrorException e) {
                 } catch (final Throwable e) {
-                    System.out.println("Internal error in ChooseFoldersCyanInstallation. Class name: " +
+                    System.out.println("Internal error in Program. Class name: " +
                             e.getClass().getName());
                 }
                 return false;

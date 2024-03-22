@@ -62,7 +62,7 @@ public class CyanMetaobjectAttachedTypeLetter extends CyanMetaobjectAtAnnot impl
 						 "' expression '" + rightExpr.asString() + "' should be a letter";
 				sb.append("         { let Char " + tmpVar + " = "  + rightExpr.asString() + "; \r\n" +
 						"              if ! (" + tmpVar + " isLetter) { \r\n" +
-						"                  throw: ExceptionStr(\"" + msg + "\")\r\n" +
+						"                  throw ExceptionStr(\"" + msg + "\")\r\n" +
 						"              } \r\n" +
 						"              ^" + tmpVar + " \r\n" +
 						"           } eval ");

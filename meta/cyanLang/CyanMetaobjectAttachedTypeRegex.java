@@ -87,7 +87,7 @@ public class CyanMetaobjectAttachedTypeRegex extends CyanMetaobjectAtAnnot imple
 					 CyanMetaobject.escapeString(strPattern) + "'. Its value is '$" + tmpVar + "'";
 			sb.append("({ (: String " + tmpVar + " :) \r\n" +
 					"              if ! (RegExpr(\"" + strPattern +  "\") ~= " + tmpVar + ") { \r\n" +
-					"                  throw: ExceptionStr(\"" + msg + "\")\r\n" +
+					"                  throw ExceptionStr(\"" + msg + "\")\r\n" +
 					"              } \r\n" +
 					"              ^" + tmpVar + " \r\n" +
 					"           } eval: (" + rightExpr.asString() + ")) ");
