@@ -1,0 +1,6 @@
+**/--tmp
+*.sav
+*.bak
+full-*.*
+
+# git remote add origin "https://github.com/joseoliv/TestsForCyanMaster"

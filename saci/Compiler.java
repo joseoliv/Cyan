@@ -297,7 +297,7 @@ public final class Compiler implements Cloneable {
 	}
 
 	/**
-
+	
 	 */
 	public void pushStartMacroKeyworsemAnllMacros() {
 		for (final String keyword : this.metaObjectMacroTable.keySet()) {
@@ -1049,6 +1049,9 @@ public final class Compiler implements Cloneable {
 		projCyanName.remove(0);
 
 		for (final String packageName : projCyanName) {
+			if ( packageName.startsWith(".") ) {
+				continue;
+			}
 
 			if ( !packageName.contains(MetaHelper.prefixNonPackageDir)
 					&& !packageName.endsWith(NameServer.temporaryDirName)
@@ -1753,7 +1756,7 @@ public final class Compiler implements Cloneable {
 	}
 
 	/**
-
+	
 	 */
 	private void checkCodegList() {
 		if ( codegList.size() > 0 ) {

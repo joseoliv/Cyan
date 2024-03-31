@@ -1,3 +1,4 @@
+
 package ast;
 
 import java.util.List;
@@ -10,10 +11,9 @@ import saci.NameServer;
 
 public class StatementTry extends Statement {
 
-
 	public StatementTry(Symbol trySymbol, StatementList statementList,
-			List<Expr> catchExprList,
-			StatementList finallyStatementList, MethodDec currentMethod) {
+			List<Expr> catchExprList, StatementList finallyStatementList,
+			MethodDec currentMethod) {
 		super(currentMethod);
 		this.trySymbol = trySymbol;
 		this.statementList = statementList;
@@ -32,9 +32,9 @@ public class StatementTry extends Statement {
 			return this.finallyStatementList.alwaysReturn(env);
 		}
 		else {
-			return this.statementList.alwaysReturn(env);
+			return false; // this.statementList.alwaysReturn(env);
 		}
-    }
+	}
 
 	@Override
 	public boolean alwaysBreak(Env env) {
@@ -45,9 +45,7 @@ public class StatementTry extends Statement {
 		else {
 			return this.statementList.alwaysBreak(env);
 		}
-    }
-
-
+	}
 
 	@Override
 	public void calcInternalTypes(Env env) {
@@ -63,14 +61,15 @@ public class StatementTry extends Statement {
 
 				statementList.calcInternalTypes(env);
 
-				numLocalVariablesToPop = env.numberOfLocalVariables() - numLocalVariables;
+				numLocalVariablesToPop = env.numberOfLocalVariables()
+						- numLocalVariables;
 
-				env.popNumLocalVariableDec(numLocalVariablesToPop); //parameterList.size());
+				env.popNumLocalVariableDec(numLocalVariablesToPop); // parameterList.size());
 
 				env.removeLocalVarInfoLastLevel();
 
 				int i = 0;
-				for ( Expr e : catchExprList ) {
+				for (Expr e : catchExprList) {
 					try {
 						env.pushCheckUsePossiblyNonInitializedPrototype(true);
 						e.calcInternalTypes(env);
@@ -78,8 +77,10 @@ public class StatementTry extends Statement {
 						final Type t = e.getType();
 						List<MethodSignature> emsList = null;
 
-						emsList = t.searchMethodPublicPackageSuperPublicPackage("eval:1", env);
-						checkCatchParameter(env, i, emsList, e.getFirstSymbol());
+						emsList = t.searchMethodPublicPackageSuperPublicPackage(
+								"eval:1", env);
+						checkCatchParameter(env, i, emsList,
+								e.getFirstSymbol());
 
 					}
 					finally {
@@ -93,14 +94,16 @@ public class StatementTry extends Statement {
 				env.popControlFlowStack();
 			}
 
-			if ( this.finallyStatementList != null && this.finallyStatementList.getStatementList().size() > 0 ) {
+			if ( this.finallyStatementList != null && this.finallyStatementList
+					.getStatementList().size() > 0 ) {
 				numLocalVariables = env.numberOfLocalVariables();
 
 				finallyStatementList.calcInternalTypes(env);
 
-				numLocalVariablesToPop = env.numberOfLocalVariables() - numLocalVariables;
+				numLocalVariablesToPop = env.numberOfLocalVariables()
+						- numLocalVariables;
 
-				env.popNumLocalVariableDec(numLocalVariablesToPop); //parameterList.size());
+				env.popNumLocalVariableDec(numLocalVariablesToPop); // parameterList.size());
 
 				env.removeLocalVarInfoLastLevel();
 
@@ -113,21 +116,23 @@ public class StatementTry extends Statement {
 		}
 	}
 
-
-	private static void checkCatchParameter(Env env, int i, List<MethodSignature> emsList,
-			Symbol errSymbol) {
+	private static void checkCatchParameter(Env env, int i,
+			List<MethodSignature> emsList, Symbol errSymbol) {
 		if ( emsList == null || emsList.size() == 0 ) {
 			/*
-			 * each parameter to a catch: keyword should have at least one 'eval:' method
+			 * each parameter to a catch: keyword should have at least one
+			 * 'eval:' method
 			 */
-			env.error(errSymbol, "This expression has a type that does not define an 'eval:' method");
-			return ;
+			env.error(errSymbol,
+					"This expression has a type that does not define an 'eval:' method");
+			return;
 		}
 		else {
-			for ( final MethodSignature ems : emsList ) {
+			for (final MethodSignature ems : emsList) {
 				final ParameterDec param = ems.getParameterList().get(0);
 				/*
-				 * each 'eval:' method should accept one parameter whose type is sub-prototype of CyException
+				 * each 'eval:' method should accept one parameter whose type is
+				 * sub-prototype of CyException
 				 */
 				final Type paramType = param.getType();
 
@@ -140,20 +145,21 @@ public class StatementTry extends Statement {
 
 					boolean signalError = true;
 					if ( paramType instanceof Prototype ) {
-						final Prototype proto = (Prototype ) paramType;
-						if ( proto.getGenericParameterListList() != null &&
-								proto.getGenericParameterListList().size() == 1 ) {}
+						final Prototype proto = (Prototype) paramType;
+						if ( proto.getGenericParameterListList() != null
+								&& proto.getGenericParameterListList()
+										.size() == 1 ) {
+						}
 					}
 					if ( signalError ) {
 						env.error(errSymbol,
 								"The type of this expression defines an 'eval:' method that accepts a parameter that is not subtype of '"
-						+ cyException.getFullName() + "'");
+										+ cyException.getFullName() + "'");
 					}
 				}
 			}
 		}
 	}
-
 
 	public void addCatchExpr(Expr expr) {
 		catchExprList.add(expr);
@@ -162,7 +168,7 @@ public class StatementTry extends Statement {
 	@Override
 	public void accept(ASTVisitor visitor) {
 		this.statementList.accept(visitor);
-		for ( Expr e : this.catchExprList ) {
+		for (Expr e : this.catchExprList) {
 			e.accept(visitor);
 		}
 		visitor.visit(this);
@@ -177,25 +183,33 @@ public class StatementTry extends Statement {
 	}
 
 	/*
-
-\p{TryStat} ::= ``try''\/ StatementList \{ ``catch''\/ Expr \} [ ``finally'' StatListBracket ]  	 *
+	 *
+	 * \p{TryStat} ::= ``try''\/ StatementList \{ ``catch''\/ Expr \} [
+	 * ``finally'' StatListBracket ] *
 	 */
 	@Override
 	public void genCyanReal(PWInterface pw, boolean printInMoreThanOneLine,
 			CyanEnv cyanEnv, boolean genFunctions) {
 		pw.print("try ");
 		pw.add();
-		if ( statementList != null )
-		    statementList.genCyan(pw, printInMoreThanOneLine, cyanEnv, genFunctions);
+		if ( statementList != null ) statementList.genCyan(pw,
+				printInMoreThanOneLine, cyanEnv, genFunctions);
 		pw.sub();
 		if ( catchExprList != null ) {
-			for ( Expr e : this.catchExprList ) {
+			for (Expr e : this.catchExprList) {
 				pw.printIdent("catch ");
-				e.genCyan(pw, printInMoreThanOneLine, cyanEnv, genFunctions );
+				e.genCyan(pw, printInMoreThanOneLine, cyanEnv, genFunctions);
 			}
 		}
 		if ( this.finallyStatementList != null ) {
-			this.finallyStatementList.genCyan(pw, printInMoreThanOneLine, cyanEnv, genFunctions);
+			pw.println();
+			pw.printlnIdent("finally {");
+			pw.add();
+			this.finallyStatementList.genCyan(pw, printInMoreThanOneLine,
+					cyanEnv, genFunctions);
+			pw.sub();
+			pw.printlnIdent("}");
+
 		}
 	}
 
@@ -216,22 +230,23 @@ public class StatementTry extends Statement {
 		if ( this.catchExprList.size() > 0 ) {
 			pw.printlnIdent("catch (ExceptionContainer__ t) {");
 			pw.add();
-			pw.printlnIdent("Object []" + exprTmpVar + " = new Object[" +
-				    this.catchExprList.size() + "];");
-				int i = 0;
-				for ( Expr e : this.getCatchExprList() ) {
-					String eCatch = e.genJavaExpr(pw, env);
-					pw.printlnIdent(exprTmpVar + "[" + i + "] = " + eCatch + ";");
-					++i;
-				}
+			pw.printlnIdent("Object []" + exprTmpVar + " = new Object["
+					+ this.catchExprList.size() + "];");
+			int i = 0;
+			for (Expr e : this.getCatchExprList()) {
+				String eCatch = e.genJavaExpr(pw, env);
+				pw.printlnIdent(exprTmpVar + "[" + i + "] = " + eCatch + ";");
+				++i;
+			}
 
-			pw.printlnIdent("CyanRuntime.catchException(" + exprTmpVar +
-					",  t);");
+			pw.printlnIdent(
+					"CyanRuntime.catchException(" + exprTmpVar + ",  t);");
 
 			pw.sub();
 			pw.printlnIdent("}");
 		}
-		if ( finallyStatementList != null && finallyStatementList.getStatementList() != null ) {
+		if ( finallyStatementList != null
+				&& finallyStatementList.getStatementList() != null ) {
 			pw.printlnIdent("finally {");
 			pw.add();
 			this.finallyStatementList.genJava(pw, env);
@@ -268,17 +283,15 @@ public class StatementTry extends Statement {
 		return finallyStatementList;
 	}
 
-	private Symbol trySymbol;
+	private Symbol			trySymbol;
 
-//	private List<Symbol> catchSymbolList;
-//	private Symbol finallySymbol;
-//	private Symbol rightCB_finally;
+	// private List<Symbol> catchSymbolList;
+	// private Symbol finallySymbol;
+	// private Symbol rightCB_finally;
 
+	private StatementList	statementList;
+	private StatementList	finallyStatementList;
 
-	private StatementList statementList;
-	private StatementList finallyStatementList;
-
-
-	private List<Expr> catchExprList;
-	private WrStatementTry iStatementTry;
+	private List<Expr>		catchExprList;
+	private WrStatementTry	iStatementTry;
 }

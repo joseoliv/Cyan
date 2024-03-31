@@ -1,3 +1,4 @@
+
 package ast;
 
 import lexer.Symbol;
@@ -8,8 +9,8 @@ import saci.Env;
 
 public class StatementThrow extends Statement {
 
-
-	public StatementThrow(Symbol throwSymbol, Expr expr, MethodDec currentMethod) {
+	public StatementThrow(Symbol throwSymbol, Expr expr,
+			MethodDec currentMethod) {
 		super(currentMethod);
 		this.throwSymbol = throwSymbol;
 		this.expr = expr;
@@ -22,15 +23,14 @@ public class StatementThrow extends Statement {
 			expr.calcInternalTypes(env);
 			Prototype cyException = env.getCyException();
 			if ( !cyException.isSupertypeOf(expr.getType(), env) ) {
-				env.error(expr.getFirstSymbol(), "This expression should be subtype of CyException");
+				env.error(expr.getFirstSymbol(),
+						"This expression should be subtype of CyException");
 			}
 		}
 		finally {
 			env.popCheckUsePossiblyNonInitializedPrototype();
 		}
 	}
-
-
 
 	@Override
 	public void accept(ASTVisitor visitor) {
@@ -50,7 +50,7 @@ public class StatementThrow extends Statement {
 	public void genCyanReal(PWInterface pw, boolean printInMoreThanOneLine,
 			CyanEnv cyanEnv, boolean genFunctions) {
 		pw.print("throw ");
-		expr.genCyan(pw, printInMoreThanOneLine, cyanEnv, genFunctions );
+		expr.genCyan(pw, printInMoreThanOneLine, cyanEnv, genFunctions);
 	}
 
 	@Override
@@ -64,20 +64,27 @@ public class StatementThrow extends Statement {
 	}
 
 	@Override
-	public boolean demandSemicolon() { return true; }
+	public boolean demandSemicolon() {
+		return true;
+	}
 
 	@Override
 	public void genJava(PWInterface pw, Env env) {
 		String tmpVar = expr.genJavaExpr(pw, env);
-		pw.printIdent("throw new ExceptionContainer__(" + tmpVar +")");
+		pw.printIdent("throw new ExceptionContainer__(" + tmpVar + ")");
 	}
 
 	public Expr getExpr() {
 		return expr;
 	}
 
-	private Expr expr;
-	private WrStatementThrow iStatementThrow;
-	private Symbol throwSymbol;
+	@Override
+	public boolean alwaysReturn(Env env) {
+		return true;
+	}
+
+	private Expr				expr;
+	private WrStatementThrow	iStatementThrow;
+	private Symbol				throwSymbol;
 
 }
