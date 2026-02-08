@@ -557,12 +557,19 @@ public final class Compiler implements Cloneable {
 
 				if ( other == null ) {
 
-					to.run( // Executors.callable(
-							() -> {
-								icp.dpp_action(compiler_dpp);
-								return null;
-							}, timeoutMilliseconds, "dpp_action",
-							annotation.getCyanMetaobject(), project);
+					if ( Saci.timeLimitForMetaobjects ) {
+						to.run( // Executors.callable(
+								() -> {
+									icp.dpp_action(compiler_dpp);
+									return null;
+								}, timeoutMilliseconds, "dpp_action",
+								annotation.getCyanMetaobject(), project);
+
+					}
+					else {
+						icp.dpp_action(compiler_dpp);
+					}
+
 					// icp.dpp_action(compiler_dpp);
 				}
 				else {
@@ -2605,10 +2612,16 @@ public final class Compiler implements Cloneable {
 						annotation.getFirstSymbol());
 
 				Timeout<StringBuffer> to = new Timeout<>();
-				sb = to.run(() -> {
-					return codeGen.parsing_codeToAdd(compiler_parsing);
-				}, timeoutMilliseconds, "parsing_codeToAdd", cyanMetaobject,
-						project);
+
+				if ( Saci.timeLimitForMetaobjects ) {
+					sb = to.run(() -> {
+						return codeGen.parsing_codeToAdd(compiler_parsing);
+					}, timeoutMilliseconds, "parsing_codeToAdd", cyanMetaobject,
+							project);
+				}
+				else {
+					sb = codeGen.parsing_codeToAdd(compiler_parsing);
+				}
 
 				// sb = codeGen.parsing_codeToAdd(compiler_parsing);
 			}
@@ -3235,11 +3248,20 @@ public final class Compiler implements Cloneable {
 			if ( other == null ) {
 				Timeout<List<Tuple2<String, StringBuffer>>> to = new Timeout<>();
 				final IActionNewPrototypes_parsing actionNewPrototype = (IActionNewPrototypes_parsing) cyanMetaobject;
-				prototypeNameCodeList = to.run(
-						() -> actionNewPrototype.parsing_NewPrototypeList(
-								compilerAction_dpaLocal),
-						timeoutMilliseconds, "parsing_NewPrototypeList",
-						cyanMetaobject, project);
+
+				if ( Saci.timeLimitForMetaobjects ) {
+					prototypeNameCodeList = to.run(
+							() -> actionNewPrototype.parsing_NewPrototypeList(
+									compilerAction_dpaLocal),
+							timeoutMilliseconds, "parsing_NewPrototypeList",
+							cyanMetaobject, project);
+
+				}
+				else {
+					prototypeNameCodeList = actionNewPrototype
+							.parsing_NewPrototypeList(compilerAction_dpaLocal);
+				}
+
 				// prototypeNameCodeList = actionNewPrototype
 				// .parsing_NewPrototypeList(compilerAction_dpaLocal);
 			}
@@ -8615,11 +8637,17 @@ public final class Compiler implements Cloneable {
 				if ( other == null ) {
 					final IActionNewPrototypes_parsing actionNewPrototype = (IActionNewPrototypes_parsing) cyanMacro;
 					Timeout<List<Tuple2<String, StringBuffer>>> to = new Timeout<>();
-					prototypeNameCodeList = to.run(
-							() -> actionNewPrototype.parsing_NewPrototypeList(
-									compilerAction_dpa1),
-							timeoutMilliseconds, "parsing_NewPrototypeList",
-							cyanMacro, project);
+					if ( Saci.timeLimitForMetaobjects ) {
+						prototypeNameCodeList = to.run(() -> actionNewPrototype
+								.parsing_NewPrototypeList(compilerAction_dpa1),
+								timeoutMilliseconds, "parsing_NewPrototypeList",
+								cyanMacro, project);
+
+					}
+					else {
+						prototypeNameCodeList = actionNewPrototype
+								.parsing_NewPrototypeList(compilerAction_dpa1);
+					}
 
 					// prototypeNameCodeList = actionNewPrototype
 					// .parsing_NewPrototypeList(compilerAction_dpa1);
@@ -11560,13 +11588,21 @@ public final class Compiler implements Cloneable {
 								final IActionNewPrototypes_parsing actionNewPrototype = (IActionNewPrototypes_parsing) cyanMetaobject;
 
 								Timeout<List<Tuple2<String, StringBuffer>>> to = new Timeout<>();
-								prototypeNameCodeList = to.run(
-										() -> actionNewPrototype
-												.parsing_NewPrototypeList(
-														compilerAction_dpa1),
-										timeoutMilliseconds,
-										"parsing_NewPrototypeList",
-										cyanMetaobject, project);
+								if ( Saci.timeLimitForMetaobjects ) {
+									prototypeNameCodeList = to.run(
+											() -> actionNewPrototype
+													.parsing_NewPrototypeList(
+															compilerAction_dpa1),
+											timeoutMilliseconds,
+											"parsing_NewPrototypeList",
+											cyanMetaobject, project);
+
+								}
+								else {
+									prototypeNameCodeList = actionNewPrototype
+											.parsing_NewPrototypeList(
+													compilerAction_dpa1);
+								}
 
 								// prototypeNameCodeList = actionNewPrototype
 								// .parsing_NewPrototypeList(compilerAction_dpa1);

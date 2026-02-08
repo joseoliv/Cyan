@@ -1487,7 +1487,7 @@ public class MetaHelper {
 	/**
 	 * seconds a metaobject method can take to run
 	 */
-	public static final int					timeoutMillisecondsMetaobjectsDefaultValue	= 10000;
+	public static final int					timeoutMillisecondsMetaobjectsDefaultValue	= 1000;
 	public static final String				timeoutMillisecondsMetaobjectsStr			= "timeoutmillisecondsmetaobjects";
 
 	/*

@@ -22,6 +22,7 @@ import meta.WrExprSelfPeriodIdent;
 import saci.CyanEnv;
 import saci.Env;
 import saci.NameServer;
+import saci.Saci;
 
 /**
  * represents the access to a field of self.
@@ -258,12 +259,21 @@ public class ExprSelfPeriodIdent extends Expr
 					if ( other == null ) {
 						IActionFieldMissing_semAn access = (IActionFieldMissing_semAn) cyanMetaobject;
 						Timeout<Tuple3<String, String, StringBuffer>> to = new Timeout<>();
-						t = to.run(() -> {
-							return access.semAn_replaceGetMissingField(
-									this.getI(), env.getI());
 
-						}, timeoutMilliseconds, "semAn_replaceGetMissingField",
-								cyanMetaobject, env);
+						if ( Saci.timeLimitForMetaobjects ) {
+							t = to.run(() -> {
+								return access.semAn_replaceGetMissingField(
+										this.getI(), env.getI());
+
+							}, timeoutMilliseconds,
+									"semAn_replaceGetMissingField",
+									cyanMetaobject, env);
+
+						}
+						else {
+							t = access.semAn_replaceGetMissingField(this.getI(),
+									env.getI());
+						}
 
 						// t = access.semAn_replaceGetMissingField(this.getI(),
 						// env.getI());
@@ -423,11 +433,19 @@ public class ExprSelfPeriodIdent extends Expr
 					if ( other == null ) {
 						IActionFieldAccess_semAn access = (IActionFieldAccess_semAn) cyanMetaobject;
 
-						sb = to.run(() -> {
-							return access.semAn_replaceGetField(
-									fieldExpr.getI(), env.getI());
-						}, timeoutMilliseconds, "semAn_replaceGetField",
-								cyanMetaobject, env);
+						if ( Saci.timeLimitForMetaobjects ) {
+							sb = to.run(() -> {
+								return access.semAn_replaceGetField(
+										fieldExpr.getI(), env.getI());
+							}, timeoutMilliseconds, "semAn_replaceGetField",
+									cyanMetaobject, env);
+
+						}
+						else {
+							sb = access.semAn_replaceGetField(fieldExpr.getI(),
+									env.getI());
+						}
+
 						// sb = access.semAn_replaceGetField(fieldExpr.getI(),
 						// env.getI());
 					}

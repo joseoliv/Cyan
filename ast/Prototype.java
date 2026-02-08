@@ -72,6 +72,7 @@ import saci.CompilerManager_afterResTypes;
 import saci.CyanEnv;
 import saci.Env;
 import saci.NameServer;
+import saci.Saci;
 
 /**
  * This class is a superclass of ObjectDec and InterfaceDec
@@ -774,11 +775,22 @@ public abstract class Prototype extends Type
 
 				try {
 					if ( other == null ) {
-						to.run(Executors.callable(() -> {
+
+						if ( Saci.timeLimitForMetaobjects ) {
+
+							to.run(Executors.callable(() -> {
+								fp.afterSemAn_checkDeclaration(
+										compiler_afterResTypes);
+							}), timeoutMilliseconds,
+									"afterSemAn_checkDeclaration", metaobject,
+									env);
+
+						}
+						else {
+
 							fp.afterSemAn_checkDeclaration(
 									compiler_afterResTypes);
-						}), timeoutMilliseconds, "afterSemAn_checkDeclaration",
-								metaobject, env);
+						}
 
 						// fp.afterSemAn_checkDeclaration(compiler_afterResTypes);
 					}
@@ -899,13 +911,23 @@ public abstract class Prototype extends Type
 									try {
 										if ( other == null ) {
 											ICheckOverride_afterSemAn fp = (ICheckOverride_afterSemAn) metaobject;
-											to.run(Executors.callable(() -> {
+
+											if ( Saci.timeLimitForMetaobjects ) {
+												to.run(Executors
+														.callable(() -> {
+															fp.afterSemAn_checkOverride(
+																	compiler_semAn,
+																	method.getI());
+														}), timeoutMilliseconds,
+														"afterSemAn_checkOverride",
+														metaobject, env);
+
+											}
+											else {
 												fp.afterSemAn_checkOverride(
 														compiler_semAn,
 														method.getI());
-											}), timeoutMilliseconds,
-													"afterSemAn_checkOverride",
-													metaobject, env);
+											}
 
 											// fp.afterSemAn_checkOverride(compiler_semAn,
 											// method.getI());
@@ -1227,6 +1249,26 @@ public abstract class Prototype extends Type
 												infoListFist),
 								timeoutMilliseconds, "afterResTypes_codeToAdd",
 								cyanMetaobject, env);
+
+						if ( Saci.timeLimitForMetaobjects ) {
+							codeSlot = to.run(
+									() -> ((IAction_afterResTypes) cyanMetaobject)
+											.afterResTypes_codeToAdd(
+													compiler_afterResTypes,
+													infoListFist),
+									timeoutMilliseconds,
+									"afterResTypes_codeToAdd", cyanMetaobject,
+									env);
+
+						}
+						else {
+							codeSlot = ((IAction_afterResTypes) cyanMetaobject)
+									.afterResTypes_codeToAdd(
+											compiler_afterResTypes,
+											infoListFist);
+
+						}
+
 						String errorMessage = to.getErrorMessage();
 						if ( errorMessage != null ) {
 							env.error(annot.getFirstSymbol(), errorMessage);
@@ -1387,13 +1429,23 @@ public abstract class Prototype extends Type
 					if ( cyanMetaobject instanceof IAction_afterResTypes ) {
 						Timeout<List<Tuple3<String, StringBuffer, Boolean>>> to = new Timeout<>();
 
-						statsList = to.run(
-								() -> ((IAction_afterResTypes) cyanMetaobject)
-										.afterResTypes_beforeMethodCodeList(
-												compiler_afterResTypes),
-								timeoutMilliseconds,
-								"afterResTypes_beforeMethodCodeList",
-								cyanMetaobject, env);
+						if ( Saci.timeLimitForMetaobjects ) {
+							statsList = to.run(
+									() -> ((IAction_afterResTypes) cyanMetaobject)
+											.afterResTypes_beforeMethodCodeList(
+													compiler_afterResTypes),
+									timeoutMilliseconds,
+									"afterResTypes_beforeMethodCodeList",
+									cyanMetaobject, env);
+
+						}
+						else {
+							statsList = ((IAction_afterResTypes) cyanMetaobject)
+									.afterResTypes_beforeMethodCodeList(
+											compiler_afterResTypes);
+
+						}
+
 						// statsList = ((IAction_afterResTypes )
 						// cyanMetaobject).afterResTypes_beforeMethodCodeList(compiler_afterResTypes);
 					}
@@ -1501,13 +1553,23 @@ public abstract class Prototype extends Type
 				try {
 					if ( cyanMetaobject instanceof IAction_afterResTypes ) {
 						Timeout<List<Tuple2<String, String[]>>> to = new Timeout<>();
-						renameMethodList = to.run(
-								() -> ((IAction_afterResTypes) cyanMetaobject)
-										.afterResTypes_renameMethod(
-												compiler_afterResTypes),
-								timeoutMilliseconds,
-								"afterResTypes_renameMethod", cyanMetaobject,
-								env);
+
+						if ( Saci.timeLimitForMetaobjects ) {
+							renameMethodList = to.run(
+									() -> ((IAction_afterResTypes) cyanMetaobject)
+											.afterResTypes_renameMethod(
+													compiler_afterResTypes),
+									timeoutMilliseconds,
+									"afterResTypes_renameMethod",
+									cyanMetaobject, env);
+
+						}
+						else {
+							renameMethodList = ((IAction_afterResTypes) cyanMetaobject)
+									.afterResTypes_renameMethod(
+											compiler_afterResTypes);
+
+						}
 						// renameMethodList = ((IAction_afterResTypes )
 						// cyanMetaobject).afterResTypes_renameMethod(compiler_afterResTypes);
 					}
@@ -1696,18 +1758,27 @@ public abstract class Prototype extends Type
 
 						if ( other == null ) {
 							Timeout<Tuple2<StringBuffer, String>> to = new Timeout<>();
-							codeSlot = to.run(
-									() -> ((IAction_afterResTypes) cyanMetaobject)
-											.afterResTypes_codeToAdd(
-													compiler_afterResTypes,
-													infoListFinal),
-									timeoutMilliseconds,
-									"afterResTypes_codeToAdd", cyanMetaobject,
-									env);
-							// codeSlot = ((IAction_afterResTypes )
-							// cyanMetaobject)
-							// .afterResTypes_codeToAdd(compiler_afterResTypes,
-							// infoList);
+							if ( Saci.timeLimitForMetaobjects ) {
+								codeSlot = to.run(
+										() -> ((IAction_afterResTypes) cyanMetaobject)
+												.afterResTypes_codeToAdd(
+														compiler_afterResTypes,
+														infoListFist),
+										timeoutMilliseconds,
+										"afterResTypes_codeToAdd",
+										cyanMetaobject, env);
+
+							}
+							else {
+								codeSlot = ((IAction_afterResTypes) cyanMetaobject)
+										.afterResTypes_codeToAdd(
+												compiler_afterResTypes,
+												infoListFist);
+
+							} // codeSlot = ((IAction_afterResTypes )
+								// cyanMetaobject)
+								// .afterResTypes_codeToAdd(compiler_afterResTypes,
+								// infoList);
 						}
 						else {
 							// from List<Tuple2<WrAnnotation,
@@ -2497,14 +2568,23 @@ public abstract class Prototype extends Type
 
 						if ( other == null ) {
 
-							to.run(Executors.callable(() -> {
+							if ( Saci.timeLimitForMetaobjects ) {
+								to.run(Executors.callable(() -> {
+									((ICheckSubprototype_afterSemAn) cyanMetaobject)
+											.afterSemAn_checkSubprototype(
+													compiler_semAn,
+													this.getI());
+
+								}), timeoutMilliseconds,
+										"afterSemAn_checkSubprototype",
+										cyanMetaobject, env);
+
+							}
+							else {
 								((ICheckSubprototype_afterSemAn) cyanMetaobject)
 										.afterSemAn_checkSubprototype(
 												compiler_semAn, this.getI());
-
-							}), timeoutMilliseconds,
-									"afterSemAn_checkSubprototype",
-									cyanMetaobject, env);
+							}
 
 							// ((ICheckSubprototype_afterSemAn )
 							// cyanMetaobject).afterSemAn_checkSubprototype(

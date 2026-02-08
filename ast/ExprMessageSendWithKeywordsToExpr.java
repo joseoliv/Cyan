@@ -40,6 +40,7 @@ import meta.WrPrototype;
 import saci.CyanEnv;
 import saci.Env;
 import saci.NameServer;
+import saci.Saci;
 import saci.TupleTwo;
 
 /**
@@ -2455,14 +2456,24 @@ public class ExprMessageSendWithKeywordsToExpr extends ExprMessageSendWithKeywor
 					final IActionMethodMissing_semAn doesNot = (IActionMethodMissing_semAn) cyanMetaobject;
 					Timeout<Tuple3<StringBuffer, String, String>> to = new Timeout<>();
 
-					codeType = to.run(() -> {
-						return doesNot.semAn_missingKeywordMethod(
+					if ( Saci.timeLimitForMetaobjects ) {
+						codeType = to.run(() -> {
+							return doesNot.semAn_missingKeywordMethod(
+									receiverExpr == null ? null
+											: receiverExpr.getI(),
+									message == null ? null : message.getI(),
+									env.getI());
+						}, timeoutMilliseconds, "semAn_missingKeywordMethod",
+								cyanMetaobject, env);
+
+					}
+					else {
+						codeType = doesNot.semAn_missingKeywordMethod(
 								receiverExpr == null ? null
 										: receiverExpr.getI(),
 								message == null ? null : message.getI(),
 								env.getI());
-					}, timeoutMilliseconds, "semAn_missingKeywordMethod",
-							cyanMetaobject, env);
+					}
 
 					// codeType = doesNot.semAn_missingKeywordMethod(
 					// receiverExpr == null ? null : receiverExpr.getI(),

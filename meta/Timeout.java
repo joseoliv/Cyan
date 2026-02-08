@@ -17,6 +17,7 @@ import error.CompileErrorException;
 import lexer.Symbol;
 import saci.Env;
 import saci.Project;
+import saci.Saci;
 
 public class Timeout<T> {
 
@@ -143,6 +144,8 @@ public class Timeout<T> {
 
 	public T runAux(Callable<T> toCall, int timeoutMilliSec,
 			String metaobjectMethodName, CyanMetaobject metaobject) {
+
+		Saci.numThreadsMO++;
 		try {
 			if ( timeoutMilliSec > 0 ) {
 				TimeBomb timeBomb = new TimeBomb(timeoutMilliSec,

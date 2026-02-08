@@ -57,6 +57,7 @@ import saci.CompilerManager;
 import saci.CyanEnv;
 import saci.Env;
 import saci.NameServer;
+import saci.Saci;
 
 /**
  * Represents a metaobject annotation such as
@@ -424,11 +425,20 @@ public class AnnotationAt extends Annotation {
 						Compiler_semAn compiler_semAnFinal = compiler_semAn;
 						if ( other == null ) {
 							final IAction_semAn cyanMetaobjectCodeGen = (IAction_semAn) cyanMetaobject;
-							cyanCode = to.run(() -> {
-								return cyanMetaobjectCodeGen
+
+							if ( Saci.timeLimitForMetaobjects ) {
+								cyanCode = to.run(() -> {
+									return cyanMetaobjectCodeGen
+											.semAn_codeToAdd(
+													compiler_semAnFinal);
+								}, timeoutMilliseconds, "semAn_codeToAdd",
+										this.cyanMetaobject, env);
+
+							}
+							else {
+								cyanCode = cyanMetaobjectCodeGen
 										.semAn_codeToAdd(compiler_semAnFinal);
-							}, timeoutMilliseconds, "semAn_codeToAdd",
-									this.cyanMetaobject, env);
+							}
 
 							// cyanCode =
 							// cyanMetaobjectCodeGen.semAn_codeToAdd(compiler_semAn);
@@ -564,12 +574,21 @@ public class AnnotationAt extends Annotation {
 					final Compiler_semAn compiler_semAnFinal = compiler_semAn;
 					if ( other == null ) {
 						Timeout<List<Tuple2<String, StringBuffer>>> to = new Timeout<>();
-						prototypeNameCodeList = to.run(() -> {
-							return ((IActionNewPrototypes_semAn) cyanMetaobject)
+
+						if ( Saci.timeLimitForMetaobjects ) {
+							prototypeNameCodeList = to.run(() -> {
+								return ((IActionNewPrototypes_semAn) cyanMetaobject)
+										.semAn_NewPrototypeList(
+												compiler_semAnFinal);
+							}, timeoutMilliseconds, "semAn_NewPrototypeList",
+									this.cyanMetaobject, env);
+
+						}
+						else {
+							prototypeNameCodeList = ((IActionNewPrototypes_semAn) cyanMetaobject)
 									.semAn_NewPrototypeList(
 											compiler_semAnFinal);
-						}, timeoutMilliseconds, "semAn_NewPrototypeList",
-								this.cyanMetaobject, env);
+						}
 
 						// prototypeNameCodeList = ((IActionNewPrototypes_semAn
 						// ) cyanMetaobject)
@@ -677,10 +696,18 @@ public class AnnotationAt extends Annotation {
 					if ( other == null ) {
 						Timeout<StringBuffer> to = new Timeout<>();
 						final IActionVariableDeclaration_semAn actionVar = (IActionVariableDeclaration_semAn) cyanMetaobject;
-						code = to.run(() -> {
-							return actionVar.semAn_codeToAddAfter(env.getI());
-						}, timeoutMilliseconds, "semAn_codeToAddAfter",
-								cyanMetaobject, env);
+
+						if ( Saci.timeLimitForMetaobjects ) {
+							code = to.run(() -> {
+								return actionVar
+										.semAn_codeToAddAfter(env.getI());
+							}, timeoutMilliseconds, "semAn_codeToAddAfter",
+									cyanMetaobject, env);
+
+						}
+						else {
+							code = actionVar.semAn_codeToAddAfter(env.getI());
+						}
 
 						// code = actionVar.semAn_codeToAddAfter(env.getI());
 					}
@@ -758,10 +785,19 @@ public class AnnotationAt extends Annotation {
 				final IActionStatement_semAn_afterSemAn actionVar = (IActionStatement_semAn_afterSemAn) cyanMetaobject;
 
 				WrExpr exprFinal = expr;
-				code = to.run(() -> {
-					return actionVar.semAn_replaceExpr(env.getI(), exprFinal);
-				}, timeoutMilliseconds, "semAn_replaceExpr", cyanMetaobject,
-						env);
+
+				if ( Saci.timeLimitForMetaobjects ) {
+					code = to.run(() -> {
+						return actionVar.semAn_replaceExpr(env.getI(),
+								exprFinal);
+					}, timeoutMilliseconds, "semAn_replaceExpr", cyanMetaobject,
+							env);
+
+				}
+				else {
+					code = actionVar.semAn_replaceExpr(env.getI(), exprFinal);
+				}
+
 			}
 			catch (final error.CompileErrorException e) {
 			}
